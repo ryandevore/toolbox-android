@@ -22,6 +22,15 @@ import java.util.Set;
  *
  * The main purpose of this class is to provide an easy to use wrapper for JSON web services.
  */
+
+/**
+ * UUHttpClientDelegate
+ *
+ * Useful Utilities - UUHttpClient is a simple wrapper for the java.net.HttpURLConnection class in the Android SDK.
+ *
+ * The main purpose of this class is to provide an easy to use wrapper for JSON web services.
+ *
+ */
 public final class UUHttpClient
 {
     protected static final String LOG_TAG = UUHttpClient.class.getName();

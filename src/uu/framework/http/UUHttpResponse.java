@@ -1,7 +1,10 @@
 package uu.framework.http;
 
 /**
- * Created by ryandevore on 3/25/14.
+ * UUHttpResponse
+ *
+ * Useful Utilities - Encapsulates response data from a UUHttpClient request call
+ *
  */
 public class UUHttpResponse
 {

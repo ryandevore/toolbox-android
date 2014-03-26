@@ -5,7 +5,10 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 /**
- * Wrapper for all request parameters used in a UUHttpClient request
+ * UUHttpRequest
+ *
+ * Useful Utilities - Wrapper to encapsulate all request params needed for a UUHttpClient request.
+ *
  */
 public class UUHttpRequest
 {

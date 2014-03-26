@@ -1,15 +1,15 @@
 package uu.framework.http;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Set;
 
 /**
- * Created by ryandevore on 3/26/14.
+ * UUHttpUtils
+ *
+ * Useful Utilities - A bag of helper methods for the UUHttpClient class
+ *
  */
 public class UUHttpUtils
 {
@@ -33,27 +33,6 @@ public class UUHttpUtils
             return str.getBytes(contentEncoding);
         }
         catch (Exception ex)
-        {
-            return null;
-        }
-    }
-
-    public static final JSONObject toJson(final HashMap<String, String> map)
-    {
-        try
-        {
-            JSONObject obj = new JSONObject();
-
-            Set<String> keys = map.keySet();
-            for (String key : keys)
-            {
-                String val = map.get(key);
-                obj.put(key, val);
-            }
-
-            return obj;
-        }
-        catch (JSONException ex)
         {
             return null;
         }

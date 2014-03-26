@@ -1,7 +1,10 @@
 package uu.framework.http;
 
 /**
- * Constant values used by uu.framework.http classes
+ * UUHttpConstants
+ *
+ * Useful Utilities - Constant values used by uu.framework.http classes
+ *
  */
 public final class UUHttpConstants
 {
