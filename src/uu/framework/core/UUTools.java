@@ -1,17 +1,5 @@
 package uu.framework.core;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -33,6 +21,18 @@ import android.media.ExifInterface;
 import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * UUTools - a handy bag o' useful methods
@@ -844,6 +844,16 @@ public final class UUTools
 		
 		return nativeArray;
 	}
+
+    public static final boolean isValidEmailAddress(final String emailAddress)
+    {
+        if (emailAddress == null || emailAddress.length() <= 0)
+        {
+            return false;
+        }
+
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches();
+    }
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Private Static Methods
