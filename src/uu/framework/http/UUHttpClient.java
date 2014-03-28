@@ -237,8 +237,8 @@ public final class UUHttpClient
     {
         try
         {
-            if (UUHttpConstants.MimeType.APPLICATION_JSON.equalsIgnoreCase(contentType) ||
-                UUHttpConstants.MimeType.TEXT_JSON.equalsIgnoreCase(contentType))
+            if (contentType.startsWith(UUHttpConstants.MimeType.APPLICATION_JSON) ||
+                contentType.startsWith(UUHttpConstants.MimeType.TEXT_JSON))
             {
                 String str = new String(rawResponse);
                 Log.d(LOG_TAG, "Raw JSON: " + str);
