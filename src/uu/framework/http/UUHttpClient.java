@@ -130,11 +130,8 @@ public final class UUHttpClient
             response.setContentType(urlConnection.getContentType());
             response.setContentEncoding(urlConnection.getContentEncoding());
 
-            if (response.getHttpResponseCode() == HttpURLConnection.HTTP_OK)
-            {
-                byte[] responseBuffer = readResponse(urlConnection);
-                response.setParsedResponse(parseResponse(response.getContentType(), response.getContentEncoding(), responseBuffer));
-            }
+            byte[] responseBuffer = readResponse(urlConnection);
+            response.setParsedResponse(parseResponse(response.getContentType(), response.getContentEncoding(), responseBuffer));
 
             Log.d(LOG_TAG, "HTTP Response Code: " + response.getHttpResponseCode());
             Log.d(LOG_TAG, "Response Content-Type:" + response.getContentType());
@@ -212,7 +209,16 @@ public final class UUHttpClient
 
     protected static byte[] readResponse(final HttpURLConnection connection) throws IOException
     {
-        InputStream in = new BufferedInputStream(connection.getInputStream());
+        InputStream in = null;
+
+        if (connection.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST)
+        {
+            in = new BufferedInputStream(connection.getErrorStream());
+        }
+        else
+        {
+            in = new BufferedInputStream(connection.getInputStream());
+        }
 
         int bytesRead = 0;
 
