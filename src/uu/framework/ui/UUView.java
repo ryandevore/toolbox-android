@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -129,6 +130,18 @@ public class UUView
 	public static final ListView findListViewById(final View view, final int id)
     {
 		return findViewById(view, id, ListView.class);
+    }
+
+    /**
+     * Finds an View by a resource id
+     *
+     * @param activity calling view
+     * @param id
+     * @return an ExpandableListView
+     */
+    public static final ExpandableListView findExpandableListViewById(final View view, final int id)
+    {
+        return findViewById(view, id, ExpandableListView.class);
     }
 
 	/**
