@@ -118,6 +118,31 @@ public final class UUJson
         return val;
     }
 
+    public static final double safeGetDouble(final JSONObject json, final String key)
+    {
+        return safeGetDouble(json, key);
+    }
+
+    public static final double safeGetDouble(final JSONObject json, final String key, final double defaultValue)
+    {
+        double val = defaultValue;
+
+        try
+        {
+            if (json.has(key))
+            {
+                val = json.getDouble(key);
+            }
+        }
+        catch (JSONException ex)
+        {
+            Log.v(LOG_TAG, "Error getting JSON Double", ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
     public static Object safeGet(final JSONObject json, final String key)
     {
         return safeGet(json, key, null);
