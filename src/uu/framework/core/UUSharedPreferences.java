@@ -110,6 +110,24 @@ public final class UUSharedPreferences
 		theSharedPrefsEditor.putFloat(key, value);
 		theSharedPrefsEditor.commit();
 	}
+
+    public static final double doubleForKey(final String key)
+    {
+        return doubleForKey(key, 0);
+    }
+
+    public static final double doubleForKey(final String key, final double defaultValue)
+    {
+        verifyReadSingleton();
+        return Double.longBitsToDouble(theSharedPrefs.getLong(key, Double.doubleToLongBits(defaultValue)));
+    }
+
+    public static final void setDoubleForKey(final String key, final double value)
+    {
+        verifyWriteSingleton();
+        theSharedPrefsEditor.putLong(key, Double.doubleToLongBits(value));
+        theSharedPrefsEditor.commit();
+    }
 	
 	public static final boolean boolForKey(final String key)
 	{
