@@ -1,7 +1,6 @@
 package uu.framework.http;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -35,7 +34,7 @@ public final class UUHttpClient
 {
     protected static final String LOG_TAG = UUHttpClient.class.getName();
 
-    public static void get(
+    public static UUHttpClientTask get(
             final String url,
             final HashMap<String, String> queryArguments,
             final UUHttpClientDelegate delegate)
@@ -43,9 +42,10 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.get(url, queryArguments);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
-    public static void delete(
+    public static UUHttpClientTask delete(
             final String url,
             final HashMap<String, String> queryArguments,
             final UUHttpClientDelegate delegate)
@@ -53,9 +53,10 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.delete(url, queryArguments);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
-    public static void post(
+    public static UUHttpClientTask post(
             final String url,
             final HashMap<String, String> queryArguments,
             final byte[] body,
@@ -65,9 +66,10 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.post(url, queryArguments, body, contentType);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
-    public static void put(
+    public static UUHttpClientTask put(
             final String url,
             final HashMap<String, String> queryArguments,
             final byte[] body,
@@ -77,9 +79,10 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.put(url, queryArguments, body, contentType);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
-    public static void jsonPost(
+    public static UUHttpClientTask jsonPost(
             final String url,
             final HashMap<String, String> queryArguments,
             final JSONObject body,
@@ -88,9 +91,10 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.jsonPost(url, queryArguments, body);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
-    public static void jsonPut(
+    public static UUHttpClientTask jsonPut(
             final String url,
             final HashMap<String, String> queryArguments,
             final JSONObject body,
@@ -99,6 +103,7 @@ public final class UUHttpClient
         UUHttpRequest request = UUHttpRequest.jsonPut(url, queryArguments, body);
         UUHttpClientTask task = new UUHttpClientTask(delegate);
         task.execute(request);
+        return task;
     }
 
 
@@ -258,48 +263,5 @@ public final class UUHttpClient
         }
 
         return null;
-    }
-
-}
-
-class UUHttpClientTask extends AsyncTask<UUHttpRequest, Void, UUHttpResponse>
-{
-    private UUHttpClientDelegate _delegate;
-
-    public UUHttpClientTask(final UUHttpClientDelegate delegate)
-    {
-        _delegate = delegate;
-    }
-
-    @Override
-    protected UUHttpResponse doInBackground(UUHttpRequest... uuHttpClientRequests)
-    {
-        if (uuHttpClientRequests != null && uuHttpClientRequests.length == 1)
-        {
-            UUHttpRequest request = uuHttpClientRequests[0];
-            return UUHttpClient.executeRequest(request);
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    @Override
-    protected void onPostExecute(UUHttpResponse uuHttpClientResponse)
-    {
-        super.onPostExecute(uuHttpClientResponse);
-
-        try
-        {
-            if (_delegate != null)
-            {
-                _delegate.onCompleted(uuHttpClientResponse);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.e(getClass().getName(), "Error notifying callback", ex);
-        }
     }
 }
