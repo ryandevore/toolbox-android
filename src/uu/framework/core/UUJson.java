@@ -29,7 +29,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.getString(key);
             }
@@ -54,7 +54,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.getLong(key);
             }
@@ -79,7 +79,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.getInt(key);
             }
@@ -104,7 +104,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.getBoolean(key);
             }
@@ -129,7 +129,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.getDouble(key);
             }
@@ -154,7 +154,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key))
+            if (json.has(key) && !json.isNull(key))
             {
                 val = json.get(key);
             }
