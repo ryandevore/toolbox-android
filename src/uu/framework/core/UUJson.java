@@ -95,7 +95,7 @@ public final class UUJson
 
     public static final boolean safeGetBool(final JSONObject json, final String key)
     {
-        return safeGetBool(json, key);
+        return safeGetBool(json, key, false);
     }
 
     public static final boolean safeGetBool(final JSONObject json, final String key, final boolean defaultValue)
@@ -120,7 +120,7 @@ public final class UUJson
 
     public static final double safeGetDouble(final JSONObject json, final String key)
     {
-        return safeGetDouble(json, key);
+        return safeGetDouble(json, key, 0);
     }
 
     public static final double safeGetDouble(final JSONObject json, final String key, final double defaultValue)
