@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -252,8 +253,9 @@ public final class UUHttpClient
                 contentType.startsWith(UUHttpConstants.MimeType.TEXT_JSON))
             {
                 String str = new String(rawResponse);
-                Log.d(LOG_TAG, "Raw JSON: " + str);
-                JSONObject obj = new JSONObject(str);
+		Log.d(LOG_TAG, "Raw JSON: " + str);
+                JSONTokener tokenizer = new JSONTokener(str);
+                Object obj = tokenizer.nextValue();
                 return obj;
             }
         }
