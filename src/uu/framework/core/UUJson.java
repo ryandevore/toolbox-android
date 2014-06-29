@@ -1,12 +1,11 @@
 package uu.framework.core;
 
-import android.util.Log;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Set;
+import android.util.Log;
 
 /**
  * UUContext
@@ -20,7 +19,7 @@ public final class UUJson
 
     public static final String safeGetString(final JSONObject json, final String key)
     {
-        return safeGetString(json, key, "");
+        return safeGetString(json, key, null);
     }
 
     public static final String safeGetString(final JSONObject json, final String key, final String defaultValue)
@@ -169,23 +168,16 @@ public final class UUJson
     }
 
 
-    public static final JSONObject toJson(final HashMap<String, String> map)
+    public static final JSONObject toJson(final Map<String, Object> map)
     {
         try
         {
-            JSONObject obj = new JSONObject();
-
-            Set<String> keys = map.keySet();
-            for (String key : keys)
-            {
-                String val = map.get(key);
-                obj.put(key, val);
-            }
-
+            JSONObject obj = new JSONObject(map);
             return obj;
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
+        	Log.v(LOG_TAG, "Error Creating JSON object", ex);
             return null;
         }
     }

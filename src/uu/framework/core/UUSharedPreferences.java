@@ -36,7 +36,7 @@ public final class UUSharedPreferences
 	
 	public static final String stringForKey(final String key)
 	{
-		return stringForKey(key, "");
+		return stringForKey(key, null);
 	}
 	
 	public static final String stringForKey(final String key, final int defaultValueId)
