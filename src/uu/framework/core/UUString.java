@@ -12,7 +12,7 @@ public class UUString
      * @param data byte array to convert
      * @return Hex String representation of the data
      */
-    public static final String byteToHex(final byte[] data)
+    public static String byteToHex(final byte[] data)
     {
         if (data == null)
             return "";
@@ -26,9 +26,9 @@ public class UUString
      * @param data byte array to convert
      * @return Hex String representation of the data
      */
-    public static final String byteToHex(final byte[] data, final int offset, final int count)
+    public static String byteToHex(final byte[] data, final int offset, final int count)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String tmp;
 
         if (data != null)
