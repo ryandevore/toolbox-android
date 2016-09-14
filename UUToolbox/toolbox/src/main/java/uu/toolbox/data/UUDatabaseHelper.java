@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import uu.toolbox.logging.UULog;
 
@@ -28,13 +28,11 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 	{
 		try
 		{
-			Vector<UUTableDefinition> tableDefs = databaseDefinition.getTableDefinitions();
-			int count = tableDefs.size();
-			
-			for (int i = 0; i < count; i++)
+			ArrayList<UUDataModel> tableDefs = databaseDefinition.getDataModels();
+
+			for (UUDataModel dataModel : tableDefs)
 			{
-				UUTableDefinition tableDef = tableDefs.elementAt(i);
-				String sql = UUSql.buildCreateSql(tableDef);
+				String sql = UUSql.buildCreateSql(dataModel);
 				logSql(sql);
 				db.execSQL(sql);
 			}

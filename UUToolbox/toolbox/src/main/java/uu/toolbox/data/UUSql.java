@@ -4,51 +4,22 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public final class UUSql
 {
-    public static String buildCreateSql(final UUTableDefinition tableDef)
+    public static final String TEXT_COLUMN_TYPE = "TEXT";
+    public static final String INT8_COLUMN_TYPE = "INTEGER(1)";
+    public static final String INT16_COLUMN_TYPE = "INTEGER(2)";
+    public static final String INT32_COLUMN_TYPE = "INTEGER(4)";
+    public static final String INT64_COLUMN_TYPE = "INTEGER(8)";
+    public static final String INTEGER_COLUMN_TYPE = "INTEGER";
+    public static final String REAL_COLUMN_TYPE = "REAL";
+    public static final String BLOB_COLUMN_TYPE = "BLOB";
+    public static final String INTEGER_PRIMARY_KEY_AUTO_INCREMENT_TYPE = "INTEGER PRIMARY KEY AUTOINCREMENT";
+
+    public static String buildCreateSql(final UUDataModel dataModel)
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("CREATE TABLE ");
-        sb.append(tableDef.getTableName());
-        sb.append(" (");
-
-        String[] columns = tableDef.getColumnNames();
-        String[] dataTypes = tableDef.getColumnDataTypes();
-
-        if (columns.length == dataTypes.length)
-        {
-            int count = columns.length;
-
-            for (int i = 0; i < count; i++)
-            {
-                sb.append(columns[i]);
-                sb.append(" ");
-                sb.append(dataTypes[i]);
-
-                if (i < (count - 1))
-                {
-                    sb.append(", ");
-                }
-            }
-
-            String primaryKey = tableDef.getPrimaryKeyColumnName();
-            if (primaryKey != null)
-            {
-                sb.append(", PRIMARY KEY(");
-                sb.append(primaryKey);
-                sb.append(")");
-            }
-        }
-        else
-        {
-            throw new RuntimeException("Column Names and Datatypes do not match!");
-        }
-
-        sb.append(");");
-
-        return sb.toString();
+        return buildCreateSql(dataModel.getTableName(), dataModel.getColumnMap(), dataModel.getPrimaryKeyColumnName());
     }
 
     public static String buildCreateSql(final String tableName, final Map<String, String> columnDefs, final String primaryKey)
@@ -82,13 +53,13 @@ public final class UUSql
         return sb.toString();
     }
 
-    public static void appendDowngradeTableSql(final ArrayList<String> list, final UUTableDefinition destTableDef)
+    public static void appendDowngradeTableSql(final ArrayList<String> list, final UUDataModel dataModel)
     {
-        String tableName = destTableDef.getTableName();
+        String tableName = dataModel.getTableName();
         String tmpTable = tableName + "_old";
         list.add(UUSql.buildRenameTableSql(tableName, tmpTable));
-        list.add(UUSql.buildCreateSql(destTableDef));
-        list.add(UUSql.buildSelectIntoTableCopy(tmpTable, tableName, destTableDef.getColumnNames()));
+        list.add(UUSql.buildCreateSql(dataModel));
+        list.add(UUSql.buildSelectIntoTableCopy(tmpTable, tableName, getColumnNames(dataModel)));
         list.add(UUSql.buildDropTableSql(tmpTable));
     }
 
@@ -137,5 +108,10 @@ public final class UUSql
     public static String buildDropIndexSql(final String indexName)
     {
         return String.format(Locale.getDefault(), "DROP INDEX IF EXISTS %s;", indexName);
+    }
+
+    public static String[] getColumnNames(final UUDataModel dataModel)
+    {
+        return dataModel.getColumnMap().keySet().toArray(new String[dataModel.getColumnMap().size()]);
     }
 }

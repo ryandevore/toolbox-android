@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
-import java.util.Vector;
 
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
@@ -130,7 +129,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param limit limit clause
      * @return a List of 
      */
-    public synchronized <T extends UUTableDefinition> ArrayList<T> queryMultipleObjects(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy, final String limit)
+    public synchronized <T extends UUDataModel> ArrayList<T> queryMultipleObjects(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy, final String limit)
     {
     	ArrayList<T> results = new ArrayList<>();
     	
@@ -141,9 +140,9 @@ abstract class UUDatabase implements UUDatabaseDefinition
     	{
 		    db = getReadOnlyDatabase();
 		   
-		    T tableDef = type.newInstance();
-		    
-		    c = db.query(tableDef.getTableName(), tableDef.getColumnNames(), selection, selectionArgs, null, null, orderBy, limit);
+		    T dataModel = type.newInstance();
+
+		    c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel), selection, selectionArgs, null, null, orderBy, limit);
 		    
 		    while (c.moveToNext())
 		    {
@@ -172,7 +171,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param selectionArgs bound where arguments
      * @return a List of objects of type T
      */
-    public synchronized <T extends UUTableDefinition> ArrayList<T> rawQueryMultipleObjects(final Class<T> type, final String rawSqlQuery, final String[] selectionArgs)
+    public synchronized <T extends UUDataModel> ArrayList<T> rawQueryMultipleObjects(final Class<T> type, final String rawSqlQuery, final String[] selectionArgs)
     {
     	ArrayList<T> results = new ArrayList<>();
     	
@@ -212,7 +211,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param orderBy order by clause
      * @return a List of 
      */
-    public synchronized <T extends UUTableDefinition> T querySingleObject(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy)
+    public synchronized <T extends UUDataModel> T querySingleObject(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy)
     {
     	ArrayList<T> list = queryMultipleObjects(type, selection, selectionArgs, orderBy, "1");
     	if (list != null && list.size() == 1)
@@ -415,7 +414,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param object the object to update
      * @return an object of type T
      */
-    public synchronized <T extends UUTableDefinition> T addObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> T addObject(final Class<T> type, T object)
     {
     	long rowid = insertRow(object.getTableName(), object.getContentValues());
     	return querySingleObject(type, "ROWID = ?", new String[] { String.valueOf(rowid) }, null);
@@ -428,10 +427,10 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param object the object to update
      * @return an object of type T
      */
-    public synchronized <T extends UUTableDefinition> T updateObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> T updateObject(final Class<T> type, T object)
     {
     	String whereClause = object.getPrimaryKeyWhereClause();
-    	String[] whereArgs = object.getPrimaryKeyArgs();
+    	String[] whereArgs = new String[] { object.getPrimaryKey() };
 
         T lookup = querySingleObject(type, whereClause, whereArgs, null);
         if (lookup == null)
@@ -452,10 +451,10 @@ abstract class UUDatabase implements UUDatabaseDefinition
      * @param object the object to update
      *
      */
-    public synchronized <T extends UUTableDefinition> void deleteObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> void deleteObject(final Class<T> type, T object)
     {
         String whereClause = object.getPrimaryKeyWhereClause();
-        String[] whereArgs = object.getPrimaryKeyArgs();
+        String[] whereArgs = new String[] { object.getPrimaryKey() };
         delete(object.getTableName(), whereClause, whereArgs);
     }
     
@@ -466,13 +465,11 @@ abstract class UUDatabase implements UUDatabaseDefinition
     {
     	try
         {
-    		Vector<UUTableDefinition> tableDefs = getTableDefinitions();
-			int count = tableDefs.size();
+    		ArrayList<UUDataModel> models = getDataModels();
 			
-			for (int i = 0; i < count; i++)
+			for (UUDataModel model : models)
 			{
-				UUTableDefinition tableDef = tableDefs.elementAt(i);
-				truncateTable(tableDef.getTableName());
+				truncateTable(model.getTableName());
 			}
         }
         catch (Exception ex)
@@ -494,7 +491,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
         }
     }
 
-    public synchronized <T extends UUTableDefinition> void bulkInsert(final Class<T> type, ArrayList<T> list)
+    public synchronized <T extends UUDataModel> void bulkInsert(final Class<T> type, ArrayList<T> list)
     {
         SQLiteDatabase db = null;
 
@@ -875,7 +872,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
         return sb.toString();
     }
 
-    protected <T extends UUTableDefinition> void logTable(final Class<T> type)
+    protected <T extends UUDataModel> void logTable(final Class<T> type)
     {
         SQLiteDatabase db;
         Cursor c = null;
@@ -884,8 +881,8 @@ abstract class UUDatabase implements UUDatabaseDefinition
         {
             db = getReadOnlyDatabase();
 
-            UUTableDefinition tableDef = type.newInstance();
-            c = db.query(tableDef.getTableName(), tableDef.getColumnNames(), null, null, null, null, null, null);
+            UUDataModel dataModel = type.newInstance();
+            c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel), null, null, null, null, null, null);
 
             boolean first = true;
             while (c.moveToNext())

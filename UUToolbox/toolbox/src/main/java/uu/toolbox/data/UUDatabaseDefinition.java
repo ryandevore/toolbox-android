@@ -2,7 +2,7 @@ package uu.toolbox.data;
 
 import android.database.sqlite.SQLiteDatabase;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  *
@@ -13,7 +13,7 @@ public interface UUDatabaseDefinition
 	String getDatabaseName();
 	int getVersion();
 
-	Vector<UUTableDefinition> getTableDefinitions();
+	ArrayList<UUDataModel> getDataModels();
 
 	void handlePostOpen(SQLiteDatabase db);
 	void handlePostCreate(SQLiteDatabase db);
