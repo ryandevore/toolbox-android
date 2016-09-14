@@ -284,22 +284,22 @@ public class WeatherSummary implements UUJsonConvertible
         try
         {
             return String.format(Locale.getDefault(), "city: %s, sunrise: %s, sunset: %s, temp: %f, minTemp: %f, maxTemp: %f, clouds: %f%%, pressure: %d, humidity: %d, visibility: %d, main: %s, description: %s, icon: %s, lat: %f, lng: %f, timestamp: %s",
-                    city,
-                    UUDate.formatExtendedDate(new Date(sunrise)),
-                    UUDate.formatExtendedDate(new Date(sunset)),
-                    temperature,
-                    minTemperature,
-                    maxTemperature,
-                    cloudPercent,
-                    pressure,
-                    humidity,
-                    visibility,
-                    weatherMain,
-                    weatherDescription,
-                    weatherIcon,
-                    latitude,
-                    longitude,
-                    UUDate.formatExtendedDate(new Date(timestamp)));
+                    getCity(),
+                    UUDate.formatExtendedDate(new Date(getSunrise())),
+                    UUDate.formatExtendedDate(new Date(getSunset())),
+                    getTemperature(),
+                    getMinTemperature(),
+                    getMaxTemperature(),
+                    getCloudPercent(),
+                    getPressure(),
+                    getHumidity(),
+                    getVisibility(),
+                    getWeatherMain(),
+                    getWeatherDescription(),
+                    getWeatherIcon(),
+                    getLatitude(),
+                    getLongitude(),
+                    UUDate.formatExtendedDate(new Date(getTimestamp())));
         }
         catch (Exception ex)
         {
