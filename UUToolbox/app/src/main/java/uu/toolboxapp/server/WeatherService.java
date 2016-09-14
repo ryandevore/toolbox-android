@@ -13,6 +13,7 @@ import uu.toolbox.http.UUHttpRequest;
 import uu.toolbox.http.UUHttpResponse;
 import uu.toolbox.http.UUMimeType;
 import uu.toolbox.logging.UULog;
+import uu.toolboxapp.data.models.WeatherSummary;
 
 /**
  * Simple interface to Open Weather Map API.  Used to illustrate UUHttp usage.
@@ -67,14 +68,11 @@ public class WeatherService
             request.setContentType(UUMimeType.ApplicationJson.stringVal());
             request.setTimeout(30000); // 30 seconds
 
-            final long opStart = System.currentTimeMillis();
-
             UUHttp.execute(request, new UUHttpDelegate()
             {
                 @Override
                 public void onCompleted(final UUHttpResponse response)
                 {
-                    final long opNetworkEndTime = System.currentTimeMillis();
                     final int httpResponseCode = response.getHttpResponseCode();
                     UULog.debug(getClass(), "fetchWeather.onComplete", "httpResponseCode: " + httpResponseCode);
 
@@ -82,14 +80,25 @@ public class WeatherService
                     {
                         if (response.isSuccessResponse())
                         {
+                            JSONObject parsedResponse = response.getResponseAsJson();
+                            if (parsedResponse != null)
+                            {
+                                WeatherSummary summary = new WeatherSummary();
+                                summary.fillFromJson(context, parsedResponse);
+                                UULog.debug(getClass(), "fetchWeather.onComplete", "Weather Summary: " + summary.toString());
+
+                            }
+                            else
+                            {
+                                UULog.debug(getClass(), "fetchWeather.onComplete", "Expected a JSON response");
+                            }
                         }
                         else
                         {
                             if (response.getException() != null)
                             {
                                 Exception ex = response.getException();
-
-
+                                UULog.debug(getClass(), "fetchWeather.onComplete", ex);
                             }
                             else
                             {
@@ -99,7 +108,7 @@ public class WeatherService
                                 }
                                 else
                                 {
-                                    UULog.debug(getClass(), "fetchWeather.onComplete", "Expected a JSON response");
+                                    UULog.debug(getClass(), "fetchWeather.onComplete", "Expected a JSON Error response");
                                 }
                             }
                         }
