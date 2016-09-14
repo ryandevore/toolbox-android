@@ -33,7 +33,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.getString(key);
             }
@@ -58,7 +58,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.getLong(key);
             }
@@ -83,7 +83,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.getInt(key);
             }
@@ -108,7 +108,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.getBoolean(key);
             }
@@ -116,6 +116,31 @@ public final class UUJson
         catch (JSONException ex)
         {
             UULog.error(UUJson.class, "safeGetBool", ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
+    public static float safeGetFloat(final JSONObject json, final String key)
+    {
+        return safeGetFloat(json, key, 0.0f);
+    }
+
+    public static float safeGetFloat(final JSONObject json, final String key, final float defaultValue)
+    {
+        float val = defaultValue;
+
+        try
+        {
+            if (json != null && json.has(key) && !json.isNull(key))
+            {
+                val = (float)json.getDouble(key);
+            }
+        }
+        catch (JSONException ex)
+        {
+            UULog.error(UUJson.class, "safeGetFloat", ex);
             val = defaultValue;
         }
 
@@ -133,7 +158,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.getDouble(key);
             }
@@ -206,7 +231,7 @@ public final class UUJson
 
         try
         {
-            if (json.has(key) && !json.isNull(key))
+            if (json != null && json.has(key) && !json.isNull(key))
             {
                 val = json.get(key);
             }
@@ -228,6 +253,26 @@ public final class UUJson
     public static JSONArray safeGetJsonArray(final JSONObject json, final String key)
     {
         return safeGetObject(JSONArray.class, json, key);
+    }
+
+    public static Object safeGetJsonObject(final JSONArray json, final int index)
+    {
+        Object obj = null;
+
+        try
+        {
+            if (json != null && json.length() > index)
+            {
+                obj = json.get(index);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetJsonObject", ex);
+            obj = null;
+        }
+
+        return obj;
     }
 
     public static <T extends Object> T safeGetObject(final Class<T> type, final JSONObject json, final String key)
