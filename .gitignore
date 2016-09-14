@@ -7,3 +7,4 @@ build
 .gradle
 .idea/libraries
 UUToolbox/.idea/workspace.xml
+UUToolbox/.gradle
