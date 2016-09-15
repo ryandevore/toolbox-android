@@ -28,7 +28,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
 	protected static UUDatabase theSharedDatabase;
     protected SQLiteDatabase database;
 
-	public static void init(final Context context, final Class<? extends UUDatabase> dbClass, final String databasePassword)
+	public static void init(final Context context, final Class<? extends UUDatabase> dbClass)
 	{
         try
         {
