@@ -124,6 +124,21 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
+    public static void putIfNotNull(final ContentValues cv, final String key, final Float value)
+    {
+        if (cv != null && key != null && value != null)
+        {
+            cv.put(key, value);
+        }
+    }
+
+    /**
+     * Sets a value if both the key and value are not null
+     *
+     * @param cv destination content values
+     * @param key the key
+     * @param value the value
+     */
     public static void putIfNotNull(final ContentValues cv, final String key, final Double value)
     {
         if (cv != null && key != null && value != null)
