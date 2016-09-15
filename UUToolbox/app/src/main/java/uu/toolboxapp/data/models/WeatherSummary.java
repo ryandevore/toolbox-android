@@ -54,36 +54,36 @@ public class WeatherSummary
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Data elements
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    private long id;
+    private Long id;
     private String city;
-    private long sunrise;
-    private long sunset;
-    private double latitude;
-    private double longitude;
+    private Long sunrise;
+    private Long sunset;
+    private Double latitude;
+    private Double longitude;
     private String weatherMain;
     private String weatherDescription;
     private String weatherIcon;
-    private float temperature;
-    private int pressure;
-    private int humidity;
-    private float minTemperature;
-    private float maxTemperature;
-    private float windSpeed;
-    private float windDirection;
-    private int visibility;
-    private long timestamp;
-    private float cloudPercent;
+    private Float temperature;
+    private Integer pressure;
+    private Integer humidity;
+    private Float minTemperature;
+    private Float maxTemperature;
+    private Float windSpeed;
+    private Float windDirection;
+    private Integer visibility;
+    private Long timestamp;
+    private Float cloudPercent;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public Accessors
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
 
-    public void setId(long id)
+    public void setId(Long id)
     {
         this.id = id;
     }
@@ -98,42 +98,42 @@ public class WeatherSummary
         this.city = city;
     }
 
-    public long getSunrise()
+    public Long getSunrise()
     {
         return sunrise;
     }
 
-    public void setSunrise(long sunrise)
+    public void setSunrise(Long sunrise)
     {
         this.sunrise = sunrise;
     }
 
-    public long getSunset()
+    public Long getSunset()
     {
         return sunset;
     }
 
-    public void setSunset(long sunset)
+    public void setSunset(Long sunset)
     {
         this.sunset = sunset;
     }
 
-    public double getLatitude()
+    public Double getLatitude()
     {
         return latitude;
     }
 
-    public void setLatitude(double latitude)
+    public void setLatitude(Double latitude)
     {
         this.latitude = latitude;
     }
 
-    public double getLongitude()
+    public Double getLongitude()
     {
         return longitude;
     }
 
-    public void setLongitude(double longitude)
+    public void setLongitude(Double longitude)
     {
         this.longitude = longitude;
     }
@@ -168,102 +168,102 @@ public class WeatherSummary
         this.weatherIcon = weatherIcon;
     }
 
-    public float getTemperature()
+    public Float getTemperature()
     {
         return temperature;
     }
 
-    public void setTemperature(float temperature)
+    public void setTemperature(Float temperature)
     {
         this.temperature = temperature;
     }
 
-    public int getPressure()
+    public Integer getPressure()
     {
         return pressure;
     }
 
-    public void setPressure(int pressure)
+    public void setPressure(Integer pressure)
     {
         this.pressure = pressure;
     }
 
-    public int getHumidity()
+    public Integer getHumidity()
     {
         return humidity;
     }
 
-    public void setHumidity(int humidity)
+    public void setHumidity(Integer humidity)
     {
         this.humidity = humidity;
     }
 
-    public float getMinTemperature()
+    public Float getMinTemperature()
     {
         return minTemperature;
     }
 
-    public void setMinTemperature(float minTemperature)
+    public void setMinTemperature(Float minTemperature)
     {
         this.minTemperature = minTemperature;
     }
 
-    public float getMaxTemperature()
+    public Float getMaxTemperature()
     {
         return maxTemperature;
     }
 
-    public void setMaxTemperature(float maxTemperature)
+    public void setMaxTemperature(Float maxTemperature)
     {
         this.maxTemperature = maxTemperature;
     }
 
-    public float getWindSpeed()
+    public Float getWindSpeed()
     {
         return windSpeed;
     }
 
-    public void setWindSpeed(float windSpeed)
+    public void setWindSpeed(Float windSpeed)
     {
         this.windSpeed = windSpeed;
     }
 
-    public float getWindDirection()
+    public Float getWindDirection()
     {
         return windDirection;
     }
 
-    public void setWindDirection(float windDirection)
+    public void setWindDirection(Float windDirection)
     {
         this.windDirection = windDirection;
     }
 
-    public int getVisibility()
+    public Integer getVisibility()
     {
         return visibility;
     }
 
-    public void setVisibility(int visibility)
+    public void setVisibility(Integer visibility)
     {
         this.visibility = visibility;
     }
 
-    public long getTimestamp()
+    public Long getTimestamp()
     {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp)
+    public void setTimestamp(Long timestamp)
     {
         this.timestamp = timestamp;
     }
 
-    public float getCloudPercent()
+    public Float getCloudPercent()
     {
         return cloudPercent;
     }
 
-    public void setCloudPercent(float cloudPercent)
+    public void setCloudPercent(Float cloudPercent)
     {
         this.cloudPercent = cloudPercent;
     }
@@ -275,7 +275,7 @@ public class WeatherSummary
     @Override
     public void fillFromJson(final Context context, final JSONObject json)
     {
-        setId(0);
+        setId(null);
 
         JSONObject coord = UUJson.safeGetJsonObject(json, "coord");
         setLatitude(UUJson.safeGetDouble(coord, "lat"));
@@ -307,12 +307,12 @@ public class WeatherSummary
 
         JSONObject wind = UUJson.safeGetJsonObject(json, "wind");
         setWindSpeed(UUJson.safeGetFloat(wind, "speed"));
-        setWindDirection(UUJson.safeGetInt(wind, "deg"));
+        setWindDirection(UUJson.safeGetFloat(wind, "deg"));
 
         JSONObject cloud = UUJson.safeGetJsonObject(json, "cloud");
         setCloudPercent(UUJson.safeGetFloat(cloud, "all"));
 
-        setTimestamp(UUJson.safeGetInt(json, "dt") * 1000);
+        setTimestamp(UUJson.safeGetLong(json, "dt") * 1000);
         setCity(UUJson.safeGetString(json, "name"));
 
         JSONObject sys = UUJson.safeGetJsonObject(json, "sys");
