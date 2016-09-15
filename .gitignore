@@ -8,3 +8,4 @@ build
 .idea/libraries
 UUToolbox/.idea/workspace.xml
 UUToolbox/.gradle
+UUToolbox/toolbox/toolbox.iml
