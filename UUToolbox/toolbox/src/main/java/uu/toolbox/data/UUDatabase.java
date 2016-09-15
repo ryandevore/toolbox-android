@@ -18,7 +18,7 @@ import uu.toolbox.logging.UULog;
  *  
  */
 @SuppressWarnings("unused")
-abstract class UUDatabase implements UUDatabaseDefinition
+public abstract class UUDatabase implements UUDatabaseDefinition
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Member Variables 
@@ -419,7 +419,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
     	long rowid = insertRow(object.getTableName(), object.getContentValues());
     	return querySingleObject(type, "ROWID = ?", new String[] { String.valueOf(rowid) }, null);
     }
-    
+
     /**
      * Inserts or Updates an object
      * 
@@ -872,7 +872,7 @@ abstract class UUDatabase implements UUDatabaseDefinition
         return sb.toString();
     }
 
-    protected <T extends UUDataModel> void logTable(final Class<T> type)
+    public <T extends UUDataModel> void logTable(final Class<T> type)
     {
         SQLiteDatabase db;
         Cursor c = null;
