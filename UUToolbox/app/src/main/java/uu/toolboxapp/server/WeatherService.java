@@ -13,6 +13,7 @@ import uu.toolbox.http.UUHttpRequest;
 import uu.toolbox.http.UUHttpResponse;
 import uu.toolbox.http.UUMimeType;
 import uu.toolbox.logging.UULog;
+import uu.toolboxapp.data.AppDatabase;
 import uu.toolboxapp.data.models.WeatherSummary;
 
 /**
@@ -87,6 +88,9 @@ public class WeatherService
                                 summary.fillFromJson(context, parsedResponse);
                                 UULog.debug(getClass(), "fetchWeather.onComplete", "Weather Summary: " + summary.toString());
 
+                                AppDatabase.sharedInstance().logTable(WeatherSummary.class);
+                                AppDatabase.sharedInstance().addWeatherSummary(summary);
+                                AppDatabase.sharedInstance().logTable(WeatherSummary.class);
                             }
                             else
                             {
