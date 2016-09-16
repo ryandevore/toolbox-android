@@ -455,9 +455,9 @@ public class WeatherSummary
         setSunset(UUCursor.safeGetLong(cursor, SUNSET_COLUMN));
         setLatitude(UUCursor.safeGetDouble(cursor, LATITUDE_COLUMN));
         setLongitude(UUCursor.safeGetDouble(cursor, LONGITUDE_COLUMN));
-        setCity(UUCursor.safeGetString(cursor, WEATHER_MAIN_COLUMN));
-        setCity(UUCursor.safeGetString(cursor, WEATHER_DESCRIPTION_COLUMN));
-        setCity(UUCursor.safeGetString(cursor, WEATHER_ICON_COLUMN));
+        setWeatherMain(UUCursor.safeGetString(cursor, WEATHER_MAIN_COLUMN));
+        setWeatherDescription(UUCursor.safeGetString(cursor, WEATHER_DESCRIPTION_COLUMN));
+        setWeatherIcon(UUCursor.safeGetString(cursor, WEATHER_ICON_COLUMN));
         setTemperature(UUCursor.safeGetFloat(cursor, TEMPERATURE_COLUMN));
         setPressure(UUCursor.safeGetInt(cursor, PRESSURE_COLUMN));
         setHumidity(UUCursor.safeGetInt(cursor, HUMIDITY_COLUMN));
