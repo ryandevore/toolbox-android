@@ -430,7 +430,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     public synchronized <T extends UUDataModel> T updateObject(final Class<T> type, T object)
     {
     	String whereClause = object.getPrimaryKeyWhereClause();
-    	String[] whereArgs = new String[] { object.getPrimaryKey() };
+    	String[] whereArgs = object.getPrimaryKeyWhereArgs();
 
         T lookup = querySingleObject(type, whereClause, whereArgs, null);
         if (lookup == null)
@@ -454,7 +454,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     public synchronized <T extends UUDataModel> void deleteObject(final Class<T> type, T object)
     {
         String whereClause = object.getPrimaryKeyWhereClause();
-        String[] whereArgs = new String[] { object.getPrimaryKey() };
+        String[] whereArgs = object.getPrimaryKeyWhereArgs();
         delete(object.getTableName(), whereClause, whereArgs);
     }
     

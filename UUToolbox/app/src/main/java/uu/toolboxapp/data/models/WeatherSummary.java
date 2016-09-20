@@ -415,9 +415,9 @@ public class WeatherSummary
     }
 
     @NonNull
-    public String getPrimaryKey()
+    public String[] getPrimaryKeyWhereArgs()
     {
-        return String.valueOf(id);
+        return new String[] { String.valueOf(id) };
     }
 
     public ContentValues getContentValues()

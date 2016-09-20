@@ -47,12 +47,12 @@ public interface UUDataModel
     String getPrimaryKeyWhereClause();
 
     /**
-     * Returns a string representation of the primary key for this object that can be used in SQL WHERE clauses
+     * Returns a string array of the primary key for this object that can be used in SQL WHERE clauses
      *
      * @return A formatted string that will be passed to selection args for Android SQLite methods.
      */
     @NonNull
-    String getPrimaryKey();
+    String[] getPrimaryKeyWhereArgs();
 
 
 
