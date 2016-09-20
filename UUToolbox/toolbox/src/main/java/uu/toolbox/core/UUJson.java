@@ -489,6 +489,32 @@ public final class UUJson
         return parsedResults;
     }
 
+    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Context context, final Class<T> type, final JSONArray list)
+    {
+        ArrayList<T> parsedResults = new ArrayList<>();
+
+        try
+        {
+            if (type != null && list != null)
+            {
+                for (int i = 0; i < list.length(); i++)
+                {
+                    JSONObject json = list.getJSONObject(i);
+                    T obj = type.newInstance();
+                    obj.fillFromJson(context, json);
+                    parsedResults.add(obj);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "parseJsonArray", ex);
+            parsedResults = null;
+        }
+
+        return parsedResults;
+    }
+
     public static <T extends UUJsonConvertible> T parseJsonObject(final Context context, final Class<T> type, final JSONObject jsonObj)
     {
         T parsedResult = null;
