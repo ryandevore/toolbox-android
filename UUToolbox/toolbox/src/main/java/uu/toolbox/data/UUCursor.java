@@ -71,6 +71,27 @@ public final class UUCursor
         return result;
     }
 
+    public static Boolean safeGetBoolean(final Cursor cursor, final String column)
+    {
+        return safeGetBoolean(cursor, column, null);
+    }
+
+    public static Boolean safeGetBoolean(final Cursor cursor, final String column, final Boolean defaultValue)
+    {
+        Boolean result = defaultValue;
+
+        if (cursor != null && column != null)
+        {
+            int index = cursor.getColumnIndex(column);
+            if (index >= 0 && !cursor.isNull(index))
+            {
+                result = (cursor.getInt(index) == 1);
+            }
+        }
+
+        return result;
+    }
+
     public static Float safeGetFloat(final Cursor cursor, final String column)
     {
         return safeGetFloat(cursor, column, null);
