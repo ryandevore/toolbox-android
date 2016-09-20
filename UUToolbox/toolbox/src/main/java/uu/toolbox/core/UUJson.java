@@ -464,7 +464,7 @@ public final class UUJson
         return list;
     }
 
-    public static <T extends UUJsonConvertible> ArrayList<T> parseJson(final Context context, final Class<T> type, final ArrayList<JSONObject> list)
+    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Context context, final Class<T> type, final ArrayList<JSONObject> list)
     {
         ArrayList<T> parsedResults = new ArrayList<>();
 
@@ -482,11 +482,32 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            UULog.error(UUJson.class, "parseJson", ex);
+            UULog.error(UUJson.class, "parseJsonArray", ex);
             parsedResults = null;
         }
 
         return parsedResults;
+    }
+
+    public static <T extends UUJsonConvertible> T parseJsonObject(final Context context, final Class<T> type, final JSONObject jsonObj)
+    {
+        T parsedResult = null;
+
+        try
+        {
+            if (type != null && jsonObj != null)
+            {
+                parsedResult = type.newInstance();
+                parsedResult.fillFromJson(context, jsonObj);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "parseJsonObject", ex);
+            parsedResult = null;
+        }
+
+        return parsedResult;
     }
 
     public static byte[] safeSerializeJson(final JSONObject jsonObj, final String contentEncoding)
@@ -495,6 +516,20 @@ public final class UUJson
         {
             String str = jsonObj.toString();
             return str.getBytes(contentEncoding);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUJson.class, "safeSerializeJson", ex);
+            return null;
+        }
+    }
+
+    public static byte[] safeSerializeJson(final UUJsonConvertible jsonObj, final String contentEncoding)
+    {
+        try
+        {
+            JSONObject obj = jsonObj.toJsonObject();
+            return safeSerializeJson(obj, contentEncoding);
         }
         catch (Exception ex)
         {
@@ -523,7 +558,11 @@ public final class UUJson
 
         if (obj != null)
         {
-            if (obj instanceof JSONObject)
+            if (obj instanceof UUJsonConvertible)
+            {
+                json = safeSerializeJson((UUJsonConvertible)obj, contentEncoding);
+            }
+            else if (obj instanceof JSONObject)
             {
                 json = safeSerializeJson((JSONObject)obj, contentEncoding);
             }
@@ -534,14 +573,21 @@ public final class UUJson
                 ArrayList list = (ArrayList)obj;
                 for (Object listNode : list)
                 {
+                    JSONObject jsonObj = null;
+
                     if (listNode instanceof UUJsonConvertible)
                     {
                         UUJsonConvertible jsonConvertible = (UUJsonConvertible)listNode;
-                        JSONObject jsonObj = jsonConvertible.toJsonObject();
-                        if (jsonObj != null)
-                        {
-                            jsonArray.put(jsonObj);
-                        }
+                        jsonObj = jsonConvertible.toJsonObject();
+                    }
+                    else if (listNode instanceof JSONObject)
+                    {
+                        jsonObj = (JSONObject)listNode;
+                    }
+
+                    if (jsonObj != null)
+                    {
+                        jsonArray.put(jsonObj);
                     }
                 }
 
