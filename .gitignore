@@ -14,3 +14,5 @@ UUToolbox/.gradle/2.14.1/tasks/_toolbox_compileDebugJavaWithJavac/localClassSetA
 UUToolbox/.gradle/2.14.1/tasks/_toolbox_compileDebugJavaWithJavac/localClassSetAnalysis/localClassSetAnalysis.lock
 UUToolbox/.gradle/2.14.1/tasks/_toolbox_compileDebugJavaWithJavac/localJarClasspathSnapshot/localJarClasspathSnapshot.lock
 UUToolbox/.idea/*
+UUToolbox/.idea/libraries
+UUToolbox/.idea/libraries/*
