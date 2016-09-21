@@ -515,6 +515,12 @@ public final class UUJson
         return parsedResults;
     }
 
+    public static <T extends UUJsonConvertible> ArrayList<T> safeGetArrayOfObjects(
+            final Context context, final Class<T> type, final JSONObject json, final String key)
+    {
+        return parseJsonArray(context, type, safeGetJsonArray(json, key));
+    }
+
     public static <T extends UUJsonConvertible> T parseJsonObject(final Context context, final Class<T> type, final JSONObject jsonObj)
     {
         T parsedResult = null;

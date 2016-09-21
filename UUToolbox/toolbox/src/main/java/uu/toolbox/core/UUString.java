@@ -88,4 +88,14 @@ public class UUString
 
         return sb.toString();
     }
+
+    public static boolean isEmpty(final String s)
+    {
+        return (s == null || s.length() == 0);
+    }
+
+    public static boolean isNotEmpty(final String s)
+    {
+        return (s != null && s.length() > 0);
+    }
 }
