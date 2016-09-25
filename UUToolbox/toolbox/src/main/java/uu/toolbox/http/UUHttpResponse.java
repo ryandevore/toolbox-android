@@ -1,5 +1,6 @@
 package uu.toolbox.http;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -144,5 +145,20 @@ public class UUHttpResponse
         }
 
         return obj;
+    }
+
+    public JSONArray getResponseAsJsonArray()
+    {
+        JSONArray arr = null;
+
+        if (_parsedResponse != null)
+        {
+            if (_parsedResponse instanceof JSONArray)
+            {
+                arr = (JSONArray) _parsedResponse;
+            }
+        }
+
+        return arr;
     }
 }
