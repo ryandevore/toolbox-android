@@ -147,7 +147,7 @@ public class UUHttpRequest
         req.setHttpMethod(UUHttpMethod.POST);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
-        req.setContentType(UUMimeType.ApplicationJson.toString());
+        req.setContentType(UUMimeType.ApplicationJson.stringVal());
         return req;
     }
 
@@ -158,7 +158,7 @@ public class UUHttpRequest
         req.setHttpMethod(UUHttpMethod.PUT);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
-        req.setContentType(UUMimeType.ApplicationJson.toString());
+        req.setContentType(UUMimeType.ApplicationJson.stringVal());
         return req;
     }
 }
