@@ -6,8 +6,6 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Map;
 
-import uu.toolbox.core.UUJson;
-
 /**
  * UUHttpResponse
  *
@@ -137,10 +135,6 @@ public class UUHttpResponse
             if (_parsedResponse instanceof JSONObject)
             {
                 obj = (JSONObject) _parsedResponse;
-            }
-            else if (_parsedResponse instanceof String)
-            {
-                obj = UUJson.toJson((String)_parsedResponse);
             }
         }
 

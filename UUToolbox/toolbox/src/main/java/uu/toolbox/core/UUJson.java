@@ -345,7 +345,18 @@ public final class UUJson
         }
     }
 
-    public static JSONObject toJson(final String jsonString)
+    public static Object toJson(final String jsonString)
+    {
+        Object obj = toJsonObject(jsonString);
+        if (obj == null)
+        {
+            obj = toJsonArray(jsonString);
+        }
+
+        return obj;
+    }
+
+    public static JSONObject toJsonObject(final String jsonString)
     {
         try
         {
