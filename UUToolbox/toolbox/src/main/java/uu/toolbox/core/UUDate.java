@@ -221,7 +221,9 @@ public class UUDate
 	public static final String VERBOSE_DATE_FORMAT = "MMMM dd, yyyy";
 	public static final String MONTH_DAY_FORMAT = "MMMM dd";
 	public static final String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm a";
-	
+	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
+	public static final String RFC_3999_DATE_TIME_ALTERNATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
 	public static String formatDate(final Long javaDate, final String formatter, final TimeZone timeZone)
 	{
 		if (javaDate != null)
