@@ -601,7 +601,7 @@ public final class UUActivity
             {
             	int maxHeaderWidth = tv.getWidth() - tv.getPaddingLeft() - tv.getPaddingRight();
             	float adjustedFontSize = UUActivity.deriveSingleLineFontSize(tv, startingTextSize, maxHeaderWidth);
-    	        tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, adjustedFontSize);
+    	        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, adjustedFontSize);
     	        
     	        tv.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     	        //tv.getViewTreeObserver().removeGlobalOnLayoutListener(this);
