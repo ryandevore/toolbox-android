@@ -20,7 +20,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-import uu.framework.core.UUString;
+import uu.toolbox.core.UUString;
 
 public class UUBluetoothSession
 {
