@@ -403,6 +403,30 @@ public final class UUJson
         return jsonStr;
     }
 
+    public static String toJsonString(final UUJsonConvertible jsonConvertible)
+    {
+        String jsonStr = null;
+
+        try
+        {
+            if (jsonConvertible != null)
+            {
+                JSONObject jsonObject = jsonConvertible.toJsonObject();
+                if (jsonObject != null)
+                {
+                    jsonStr = jsonObject.toString();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "toJsonString", ex);
+            jsonStr = null;
+        }
+
+        return jsonStr;
+    }
+
     public static String toJsonStringFromStringMap(final Map<String, String> map)
     {
         String jsonStr = "";
@@ -640,8 +664,6 @@ public final class UUJson
 
         return json;
     }
-
-
 
     public static void closeJsonReader(final JsonReader reader)
     {
