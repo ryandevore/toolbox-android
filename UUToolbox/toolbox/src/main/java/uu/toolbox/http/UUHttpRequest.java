@@ -1,5 +1,6 @@
 package uu.toolbox.http;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.Proxy;
@@ -156,6 +157,17 @@ public class UUHttpRequest
         UUHttpRequest req = new UUHttpRequest();
         req.setURL(url);
         req.setHttpMethod(UUHttpMethod.PUT);
+        req.setQueryArguments(queryArguments);
+        req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
+        req.setContentType(UUMimeType.ApplicationJson.stringVal());
+        return req;
+    }
+
+    public static UUHttpRequest jsonPost(final String url, final HashMap<String, String> queryArguments, final JSONArray body)
+    {
+        UUHttpRequest req = new UUHttpRequest();
+        req.setURL(url);
+        req.setHttpMethod(UUHttpMethod.POST);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
         req.setContentType(UUMimeType.ApplicationJson.stringVal());
