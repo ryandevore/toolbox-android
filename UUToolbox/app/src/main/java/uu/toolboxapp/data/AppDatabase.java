@@ -20,7 +20,7 @@ public class AppDatabase extends UUDatabase
 
     public static AppDatabase sharedInstance()
     {
-        return (AppDatabase) theSharedDatabase;
+        return (AppDatabase) UUDatabase.sharedDatabase();
     }
 
     public void addWeatherSummary(final WeatherSummary summary)
