@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 
@@ -23,16 +22,14 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Member Variables 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	protected static Context theContext;
-	protected static SQLiteOpenHelper theDatabaseHelper;
-	protected static UUDatabase theSharedDatabase;
-    protected SQLiteDatabase database;
+	private static UUDatabaseHelper theDatabaseHelper;
+	private static UUDatabase theSharedDatabase;
+    private SQLiteDatabase database;
 
 	public static void init(final Context context, final Class<? extends UUDatabase> dbClass)
 	{
         try
         {
-            theContext = context;
             theSharedDatabase = dbClass.newInstance();
             theDatabaseHelper = new UUDatabaseHelper(context, theSharedDatabase);
             theSharedDatabase.database = theDatabaseHelper.getWritableDatabase();
@@ -41,7 +38,6 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             UULog.error(UUDatabase.class, "init", ex);
 
-            theContext = null;
             theSharedDatabase = null;
             theDatabaseHelper = null;
         }
@@ -62,7 +58,6 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
         finally
         {
-            theContext = null;
             theSharedDatabase = null;
             theDatabaseHelper = null;
         }
@@ -82,6 +77,11 @@ public abstract class UUDatabase implements UUDatabaseDefinition
             UULog.error(UUDatabase.class, "safeCloseSharedDatabase", ex);
         }
     }
+
+    public static UUDatabase sharedDatabase()
+    {
+        return theSharedDatabase;
+    }
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Construction 
@@ -94,11 +94,6 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     // Public Methods 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	protected Context getContext()
-	{
-		return theContext;
-	}
-	
 	/**
 	 * Returns a read only copy of the database
 	 * 
