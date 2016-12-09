@@ -7,6 +7,7 @@ import java.util.Collections;
  * Useful set of methods for manipulating Strings
  *
  */
+@SuppressWarnings("unused")
 public class UUString 
 {
     /**
@@ -67,6 +68,13 @@ public class UUString
         return componentsJoinedByString(list, separator);
     }
 
+    /**
+     * Joins a list of strings into a single string
+     *
+     * @param list the source list
+     * @param separator the separator
+     * @return a string
+     */
     public static String componentsJoinedByString(final ArrayList<String> list, final String separator)
     {
         StringBuilder sb = new StringBuilder();
@@ -89,13 +97,44 @@ public class UUString
         return sb.toString();
     }
 
+    /**
+     * Checks a string for null and length
+     *
+     * @param s the string to check
+     * @return true if the string null or the length is zero
+     */
     public static boolean isEmpty(final String s)
     {
         return (s == null || s.length() == 0);
     }
 
+    /**
+     * Checks a string for null and length
+     *
+     * @param s the string to check
+     * @return true if the string is not null and has a length greater than zero
+     */
     public static boolean isNotEmpty(final String s)
     {
         return (s != null && s.length() > 0);
+    }
+
+    /**
+     * Capitalizes the first letter of a string
+     *
+     * @param s the string
+     * @return A string with the first letter capitalized, or the string itself if the length is
+     * less than zero or null.
+     */
+    public static String firstLetterCapital(final String s)
+    {
+        if (isNotEmpty(s) && s.length() > 1)
+        {
+            return s.substring(0, 1).toUpperCase() + s.substring(1);
+        }
+        else
+        {
+            return s;
+        }
     }
 }
