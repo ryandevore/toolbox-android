@@ -12,8 +12,8 @@ import uu.toolbox.logging.UULog;
 public class UUDatabaseHelper extends SQLiteOpenHelper
 {
 	private UUDatabaseDefinition databaseDefinition;
-	
-	public UUDatabaseHelper(final Context context, final UUDatabaseDefinition definition)
+
+    public UUDatabaseHelper(final Context context, final UUDatabaseDefinition definition)
 	{
 	    super(context, definition.getDatabaseName(), null, definition.getVersion());
 	    databaseDefinition = definition;
