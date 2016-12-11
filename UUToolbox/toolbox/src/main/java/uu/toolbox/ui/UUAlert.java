@@ -56,10 +56,10 @@ public final class UUAlert
 
     public static void showMessageBox(
             final Activity activity,
-            final String title,
-            final String message,
-            final String positiveButtonText,
-            final String negativeButtonText,
+            final CharSequence title,
+            final CharSequence message,
+            final CharSequence positiveButtonText,
+            final CharSequence negativeButtonText,
             final AlertCallback callback)
     {
         try
