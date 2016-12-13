@@ -326,6 +326,26 @@ public class UUDate
 	{
 		return formatDate(date, EXTENDED_DATE_FORMAT, TimeZone.getDefault());
 	}
+
+	public static String formatRfc3999JavaDate(final Long javaDate)
+	{
+		return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, TimeZone.getDefault());
+	}
+
+	public static String formatRfc3999Date(final Date date)
+	{
+		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, TimeZone.getDefault());
+	}
+
+    public static String formatRfc3999JavaDate(final Long javaDate, final TimeZone tz)
+    {
+        return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, tz);
+    }
+
+    public static String formatRfc3999Date(final Date date, final TimeZone tz)
+    {
+        return formatDate(date, RFC_3999_DATE_TIME_FORMAT, tz);
+    }
 	
 	public static String currentUtcTime()
 	{

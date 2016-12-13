@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import uu.toolbox.logging.UULog;
 
@@ -198,19 +199,29 @@ public final class UUJson
         return val;
     }
 
-    public static long safeGetDate(final JSONObject json, final String key, final String[] formatters)
+    public static long safeGetDate(
+            final JSONObject json,
+            final String key,
+            final String[] formatters,
+            final TimeZone timeZone)
     {
-        return safeGetDate(json, key, 0, formatters);
+        return safeGetDate(json, key, 0, formatters, timeZone);
     }
 
-    public static long safeGetDate(final JSONObject json, final String key, final long defaultValue, final String[] formatters)
+    public static long safeGetDate(
+            final JSONObject json,
+            final String key,
+            final long defaultValue,
+            final String[] formatters,
+            final TimeZone timeZone)
     {
         long result = defaultValue;
         String str = safeGetString(json, key, null);
 
         if (str != null)
         {
-            Date dt = UUDate.parseDate(str, formatters);
+            Date dt = UUDate.parseDate(str, timeZone, formatters);
+
             if (dt != null)
             {
                 result = dt.getTime();
