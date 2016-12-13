@@ -1,4 +1,4 @@
-package uu.framework.bluetooth;
+package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
