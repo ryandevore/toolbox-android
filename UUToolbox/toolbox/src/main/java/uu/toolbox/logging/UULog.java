@@ -38,7 +38,7 @@ public class UULog
         if (LOGGING_ENABLED)
         {
             String tag = callingClass.getName();
-            writeToLog(Log.ERROR, tag, method + ": " + message);
+            writeToLog(Log.ERROR, tag, method + ": " + message, exception);
         }
     }
 
