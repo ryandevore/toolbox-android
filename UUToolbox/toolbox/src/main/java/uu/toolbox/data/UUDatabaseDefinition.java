@@ -13,7 +13,8 @@ public interface UUDatabaseDefinition
 	String getDatabaseName();
 	int getVersion();
 
-	ArrayList<UUDataModel> getDataModels();
+	ArrayList<UUDataModel> getDataModels(int version);
+	ArrayList<String> getSqlCreateLines(int version);
 
 	void handlePostOpen(SQLiteDatabase db);
 	void handlePostCreate(SQLiteDatabase db);

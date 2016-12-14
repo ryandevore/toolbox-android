@@ -460,7 +460,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     {
     	try
         {
-    		ArrayList<UUDataModel> models = getDataModels();
+    		ArrayList<UUDataModel> models = getDataModels(getVersion());
 			
 			for (UUDataModel model : models)
 			{
@@ -505,6 +505,42 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         catch (Exception ex)
         {
             logException("bulkInsert", ex);
+        }
+        finally
+        {
+            safeEndTransaction(db);
+        }
+    }
+
+    /**
+     * Truncates a table and replaces it with the contents of the list passed in
+     *
+     * @param type the data model type.
+     * @param list the list of new data rows to insert.
+     * @param <T> the data model type, a class that implements the UUDataModel interface.
+     */
+    public synchronized <T extends UUDataModel> void bulkReplace(final Class<T> type, ArrayList<T> list)
+    {
+        SQLiteDatabase db = null;
+
+        try
+        {
+            db = getReadWriteDatabase();
+            db.beginTransaction();
+
+            UUDataModel dataModel = type.newInstance();
+            db.delete(dataModel.getTableName(), null, null);
+
+            for (T row : list)
+            {
+                db.insert(row.getTableName(), null, row.getContentValues());
+            }
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
+        {
+            logException("bulkReplace", ex);
         }
         finally
         {
@@ -770,6 +806,37 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         	logException("execSql", ex);
         }
     }
+
+    /**
+     * Executes some raw SQL lines
+     *
+     * @param lines the sql statements
+     */
+    protected void execSqlLines(final ArrayList<String> lines)
+    {
+        SQLiteDatabase db = null;
+
+        try
+        {
+            db = getReadWriteDatabase();
+            db.beginTransaction();
+
+            for (String sql : lines)
+            {
+                execSql(sql);
+            }
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
+        {
+            logException("execSql", ex);
+        }
+        finally
+        {
+            safeEndTransaction(db);
+        }
+    }
     
     /**
      * Deletes a table row
@@ -869,6 +936,21 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
     public <T extends UUDataModel> void logTable(final Class<T> type)
     {
+        if (type != null)
+        {
+            try
+            {
+                logTable(type.newInstance().getTableName());
+            }
+            catch (Exception ex)
+            {
+                logException("logTable", ex);
+            }
+        }
+    }
+
+    public void logTable(final String tableName)
+    {
         SQLiteDatabase db;
         Cursor c = null;
 
@@ -876,8 +958,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             db = getReadOnlyDatabase();
 
-            UUDataModel dataModel = type.newInstance();
-            c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel), null, null, null, null, null, null);
+            c = db.query(tableName, null, null, null, null, null, null, null);
 
             boolean first = true;
             while (c.moveToNext())
@@ -942,7 +1023,9 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
                         default:
                         {
-                            sb.append("? (" + colType + ") ");
+                            sb.append("? (");
+                            sb.append(colType);
+                            sb.append(") ");
                             break;
                         }
                     }

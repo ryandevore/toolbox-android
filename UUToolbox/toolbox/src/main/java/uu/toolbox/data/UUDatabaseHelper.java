@@ -28,14 +28,18 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 	{
 		try
 		{
-			ArrayList<UUDataModel> tableDefs = databaseDefinition.getDataModels();
+            int version = databaseDefinition.getVersion();
+            ArrayList<String> lines = buildCreateLines(version);
 
-			for (UUDataModel dataModel : tableDefs)
-			{
-				String sql = UUSql.buildCreateSql(dataModel);
-				logSql(sql);
-				db.execSQL(sql);
-			}
+            db.beginTransaction();
+
+            for (String line : lines)
+            {
+                logSql(line);
+                db.execSQL(line);
+            }
+
+            db.setTransactionSuccessful();
 
             databaseDefinition.handlePostCreate(db);
 		}
@@ -43,7 +47,11 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 		{
 			logException("onCreate", ex);
 		}
-	}
+        finally
+        {
+            safeEndTransaction(db);
+        }
+    }
 	
 	@Override
 	public void onOpen(SQLiteDatabase db)
@@ -85,5 +93,42 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 	private void logException(final String message, final Throwable throwable)
     {
     	UULog.error(getClass(), "logException", message, throwable);
+    }
+
+    protected void safeEndTransaction(final SQLiteDatabase db)
+    {
+        try
+        {
+            if (db != null)
+            {
+                db.endTransaction();
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("safeEndTransaction", ex);
+        }
+    }
+
+    private ArrayList<String> buildCreateLines(final int version)
+    {
+        ArrayList<String> list = new ArrayList<>();
+
+        ArrayList<UUDataModel> tableDefs = databaseDefinition.getDataModels(version);
+        if (tableDefs != null)
+        {
+            for (UUDataModel dataModel : tableDefs)
+            {
+                list.add(UUSql.buildCreateSql(dataModel));
+            }
+        }
+
+        ArrayList<String> rawLines = databaseDefinition.getSqlCreateLines(version);
+        if (rawLines != null)
+        {
+            list.addAll(rawLines);
+        }
+
+        return list;
     }
 }
