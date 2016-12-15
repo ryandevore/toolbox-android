@@ -41,7 +41,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetString", ex);
+            UULog.error(UUJson.class, "safeGetString", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -66,7 +66,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetLong", ex);
+            UULog.error(UUJson.class, "safeGetLong", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -91,7 +91,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetInt", ex);
+            UULog.error(UUJson.class, "safeGetInt", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -116,7 +116,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetBool", ex);
+            UULog.error(UUJson.class, "safeGetBool", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -141,7 +141,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetFloat", ex);
+            UULog.error(UUJson.class, "safeGetFloat", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -166,7 +166,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGetDouble", ex);
+            UULog.error(UUJson.class, "safeGetDouble", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -192,7 +192,7 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            UULog.error(UUJson.class, "safeGetDataFromBase64String", ex);
+            UULog.error(UUJson.class, "safeGetDataFromBase64String", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -249,7 +249,7 @@ public final class UUJson
         }
         catch (JSONException ex)
         {
-            UULog.error(UUJson.class, "safeGet", ex);
+            UULog.error(UUJson.class, "safeGet", "key: " + key, ex);
             val = defaultValue;
         }
 
@@ -326,7 +326,7 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            UULog.error(UUJson.class, "safePut", ex);
+            UULog.error(UUJson.class, "safePut", "key: " + key, ex);
         }
     }
 
