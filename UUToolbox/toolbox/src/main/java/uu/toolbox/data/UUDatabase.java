@@ -401,6 +401,45 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
         return result;
     }
+
+    /**
+     * Runs a query expecting a single column of strings
+     *
+     * @param sql the sql to run
+     * @return a result
+     */
+    public synchronized ArrayList<String> listSingleStringColumn(final String sql)
+    {
+        SQLiteDatabase db;
+        Cursor c = null;
+        ArrayList<String> results = null;
+
+        try
+        {
+            db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, null);
+
+            results = new ArrayList<>();
+
+            while (c.moveToNext())
+            {
+                String val = c.getString(0);
+                results.add(val);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("listSingleStringColumn", ex);
+        }
+        finally
+        {
+            closeCursor(c);
+        }
+
+        return results;
+    }
     
     /**
      * Inserts an object
@@ -460,11 +499,16 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     {
     	try
         {
-    		ArrayList<UUDataModel> models = getDataModels(getVersion());
-			
-			for (UUDataModel model : models)
+            ArrayList<String> tables = listTableNames();
+			for (String table : tables)
 			{
-				truncateTable(model.getTableName());
+                // This is a special android table that we will leave alone.
+                if ("android_metadata".equalsIgnoreCase(table))
+                {
+                    continue;
+                }
+
+				truncateTable(table);
 			}
         }
         catch (Exception ex)
@@ -486,6 +530,13 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
     }
 
+    /**
+     * Inserts a list of records
+     *
+     * @param type model type to insert
+     * @param list records to insert
+     * @param <T> model type
+     */
     public synchronized <T extends UUDataModel> void bulkInsert(final Class<T> type, ArrayList<T> list)
     {
         SQLiteDatabase db = null;
@@ -546,6 +597,12 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             safeEndTransaction(db);
         }
+    }
+
+    public ArrayList<String> listTableNames()
+    {
+        String sql = "SELECT name FROM sqlite_master WHERE type='table';";
+        return listSingleStringColumn(sql);
     }
     
 	///////////////////////////////////////////////////////////////////////////////////////////////
