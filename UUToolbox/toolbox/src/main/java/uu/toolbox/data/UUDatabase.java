@@ -951,6 +951,11 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
     public void logTable(final String tableName)
     {
+        logTable(tableName, null, null, null);
+    }
+
+    public void logTable(final String tableName, final String[] columns, final String where, final String[] whereArgs)
+    {
         SQLiteDatabase db;
         Cursor c = null;
 
@@ -958,7 +963,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             db = getReadOnlyDatabase();
 
-            c = db.query(tableName, null, null, null, null, null, null, null);
+            c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
 
             boolean first = true;
             while (c.moveToNext())
