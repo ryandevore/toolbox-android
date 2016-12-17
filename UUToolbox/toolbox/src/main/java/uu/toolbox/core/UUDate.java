@@ -15,12 +15,33 @@ import java.util.TimeZone;
  */
 public class UUDate 
 {
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// Constants
-	///////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// Private Constants
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	private static final String LOG_TAG = UUDate.class.getName();
 
-	
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// Public Constants
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	public static final long MILLIS_IN_ONE_DAY = 24 * 60 * 60 * 1000;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// Date Formats
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	public static final String EXTENDED_FILE_NAME_FORMAT = "yyyy_MM_dd_HH_mm_ss";
+	public static final String EXTENDED_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	public static final String MONTH_DAY_YEAR_FORMAT = "MMM dd yyyy";
+	public static final String TIME_FORMAT = "hh:mm a";
+	public static final String TIME_FORMAT_NO_ZERO = "h:mm a";
+	public static final String TIME_FORMAT_NO_AM_PM = "hh:mm";
+	public static final String VERBOSE_DATE_FORMAT = "MMMM dd, yyyy";
+	public static final String TIME_FORMAT_STAMP = "hh:mm:ss";
+	public static final String MONTH_DAY_FORMAT = "MMMM dd";
+	public static final String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm a";
+	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
+	public static final String RFC_3999_DATE_TIME_ALTERNATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+	public static final String YEAR_MONTH_DAY_FORMAT = "yyyy-MM-dd";
+
 	/**
 	 * Create's a Date object filled with only an hour and minute
 	 * 
@@ -182,47 +203,46 @@ public class UUDate
 
 	public static Date parseDate(final String string, final TimeZone timeZone, final String formatter)
 	{
-		try
-		{
-			SimpleDateFormat df = new SimpleDateFormat(formatter);
-			df.setTimeZone(timeZone);
-			return df.parse(string);
-		}
-		catch (Exception ex)
-		{
-			Log.e(LOG_TAG, "parseDate", ex);
-		}
-
-		return null;
+        return parseDate(string, timeZone, formatter, null);
 	}
+
+    public static Date parseDate(final String string, final TimeZone timeZone, final String formatter, final Date defaultVal)
+    {
+        try
+        {
+            SimpleDateFormat df = new SimpleDateFormat(formatter);
+            df.setTimeZone(timeZone);
+            return df.parse(string);
+        }
+        catch (Exception ex)
+        {
+            Log.e(LOG_TAG, "parseDate", ex);
+        }
+
+        return defaultVal;
+    }
 
 	public static Date parseDate(final String string, final TimeZone timeZone, final String[] formatters)
 	{
-		if (formatters != null)
-		{
-			for (String formatter : formatters)
-			{
-				Date val = parseDate(string, timeZone, formatter);
-				if (val != null)
-				{
-					return val;
-				}
-			}
-		}
-
-		return null;
+        return parseDate(string, timeZone, formatters, null);
 	}
-	
-	public static final String EXTENDED_FILE_NAME_FORMAT = "yyyy_MM_dd_HH_mm_ss";
-	public static final String EXTENDED_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-	public static final String MONTH_DAY_YEAR_FORMAT = "MMM dd yyyy";
-	public static final String TIME_FORMAT = "hh:mm a";
-	public static final String TIME_FORMAT_NO_AM_PM = "hh:mm";
-	public static final String VERBOSE_DATE_FORMAT = "MMMM dd, yyyy";
-	public static final String MONTH_DAY_FORMAT = "MMMM dd";
-	public static final String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm a";
-	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
-	public static final String RFC_3999_DATE_TIME_ALTERNATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    public static Date parseDate(final String string, final TimeZone timeZone, final String[] formatters, final Date defaultVal)
+    {
+        if (formatters != null)
+        {
+            for (String formatter : formatters)
+            {
+                Date val = parseDate(string, timeZone, formatter, null);
+                if (val != null)
+                {
+                    return val;
+                }
+            }
+        }
+
+        return defaultVal;
+    }
 
 	public static String formatDate(final Long javaDate, final String formatter, final TimeZone timeZone)
 	{
@@ -301,7 +321,18 @@ public class UUDate
 	{
 		return formatDate(date, TIME_FORMAT, TimeZone.getDefault());
 	}
-	
+
+	public static String formatTimeNoZero(final Date date)
+	{
+		return formatDate(date, TIME_FORMAT, TimeZone.getDefault());
+	}
+
+	public static String formatTimeStamp(final Date date)
+	{
+		return formatDate(date, TIME_FORMAT_STAMP, TimeZone.getDefault());
+	}
+
+
 	public static String formatTimeNoAmPm(final Date date)
 	{
 		return formatDate(date, TIME_FORMAT_NO_AM_PM, TimeZone.getDefault());
@@ -335,6 +366,16 @@ public class UUDate
 	public static String formatRfc3999Date(final Date date)
 	{
 		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, TimeZone.getDefault());
+	}
+
+	public static String formatUtcRfc3999JavaDate(final Long javaDate)
+	{
+		return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, utcTimeZone());
+	}
+
+	public static String formatUtcRfc3999Date(final Date date)
+	{
+		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, utcTimeZone());
 	}
 
     public static String formatRfc3999JavaDate(final Long javaDate, final TimeZone tz)
