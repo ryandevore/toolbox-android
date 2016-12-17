@@ -137,4 +137,20 @@ public class UUString
             return s;
         }
     }
+
+    public static boolean areEqual(final String lhs, final String rhs)
+    {
+        if (lhs == null && rhs == null)
+        {
+            return true;
+        }
+        else if (lhs == null || rhs == null)
+        {
+            return false;
+        }
+        else
+        {
+            return lhs.equals(rhs);
+        }
+    }
 }
