@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -320,13 +321,47 @@ public final class UUJson
             {
                 if (val != null)
                 {
-                    json.put(key, val);
+                    if (val instanceof UUJsonConvertible)
+                    {
+                        json.put(key, ((UUJsonConvertible)val).toJsonObject());
+                    }
+                    else
+                    {
+                        json.put(key, val);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
             UULog.error(UUJson.class, "safePut", "key: " + key, ex);
+        }
+    }
+
+    public static void safePutArray(final JSONObject json, final String key, final List val)
+    {
+        try
+        {
+            if (json != null && key != null)
+            {
+                if (val != null)
+                {
+                    JSONArray arr = new JSONArray();
+                    for (Object o : val)
+                    {
+                        if (o instanceof UUJsonConvertible)
+                        {
+                            arr.put(((UUJsonConvertible)o).toJsonObject());
+                        }
+                    }
+
+                    json.put(key, arr);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safePutArray", "key: " + key, ex);
         }
     }
 
