@@ -25,7 +25,15 @@ public class UUDate
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Public Constants
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	public static final long MILLIS_IN_ONE_DAY = 24 * 60 * 60 * 1000;
+    public static final long SECONDS_IN_ONE_MINUTE  = 60;
+    public static final long MINUTES_IN_ONE_HOUR    = 60;
+    public static final long HOURS_IN_ONE_DAY       = 24;
+    public static final long DAYS_IN_ONE_WEEK       = 7;
+    public static final long MILLIS_IN_ONE_SECOND   = 1000;
+    public static final long MILLIS_IN_ONE_MINUTE   = SECONDS_IN_ONE_MINUTE * MILLIS_IN_ONE_SECOND;
+    public static final long MILLIS_IN_ONE_HOUR     = MINUTES_IN_ONE_HOUR * MILLIS_IN_ONE_MINUTE;
+    public static final long MILLIS_IN_ONE_DAY      = HOURS_IN_ONE_DAY * MILLIS_IN_ONE_HOUR;
+    public static final long MILLIS_IN_ONE_WEEK     = DAYS_IN_ONE_WEEK * MILLIS_IN_ONE_DAY;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Date Formats
@@ -98,17 +106,28 @@ public class UUDate
 	/**
 	 * Create's a Date object with the time set to midnight and the day, month, year set from another date object
 	 * @param date the other date object to pull the day, month, year from
+     * @param tz the timezone
 	 * @return a valid date object
 	 */
-	public static Date dateWithMidnight(final Date date)
+	public static Date dateWithMidnight(final Date date, final TimeZone tz)
 	{
-		Calendar c = Calendar.getInstance(utcTimeZone());
+		Calendar c = Calendar.getInstance(tz);
 		c.setTime(date);
 		c.set(Calendar.HOUR_OF_DAY, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		return c.getTime();
 	}
+
+    /**
+     * Create's a Date object with the time set to midnight and the day, month, year set from another date object
+     * @param date the other date object to pull the day, month, year from
+     * @return a valid date object
+     */
+    public static Date utcDateWithMidnight(final Date date)
+    {
+        return dateWithMidnight(date, utcTimeZone());
+    }
 	
 	/**
 	 * Returns the current date
