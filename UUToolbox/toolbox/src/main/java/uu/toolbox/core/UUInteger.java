@@ -6,6 +6,7 @@ import uu.toolbox.logging.UULog;
  * Useful set of methods for manipulating Integers
  *
  */
+@SuppressWarnings("unused")
 public class UUInteger
 {
     public static int safeParse(final String s, final int defaultVal)
@@ -30,6 +31,32 @@ public class UUInteger
         catch (Exception ex)
         {
             UULog.debug(UUInteger.class, "safeParse", ex);
+            return defaultVal;
+        }
+    }
+
+    public static Integer safeParseAsInteger(final String s, final Integer defaultVal)
+    {
+        try
+        {
+            return Integer.parseInt(s);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUInteger.class, "safeParseAsInteger", ex);
+            return defaultVal;
+        }
+    }
+
+    public static Integer safeParseAsInteger(final String s, final int radix, final Integer defaultVal)
+    {
+        try
+        {
+            return Integer.parseInt(s, radix);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUInteger.class, "safeParseAsInteger", ex);
             return defaultVal;
         }
     }

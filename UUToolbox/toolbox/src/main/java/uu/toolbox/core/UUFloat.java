@@ -6,9 +6,10 @@ import uu.toolbox.logging.UULog;
  * Useful set of methods for manipulating Floats
  *
  */
+@SuppressWarnings("unused")
 public class UUFloat
 {
-    public static float safeParse(final String s, final long defaultVal)
+    public static float safeParse(final String s, final float defaultVal)
     {
         try
         {
@@ -19,6 +20,23 @@ public class UUFloat
             UULog.debug(UUFloat.class, "safeParse", ex);
             return defaultVal;
         }
+    }
+
+    public static Float safeParseAsFloat(final String s, final Float defaultVal)
+    {
+        try
+        {
+            if (UUString.isNotEmpty(s))
+            {
+                return Float.parseFloat(s);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUFloat.class, "safeParseAsFloat", ex);
+        }
+
+        return defaultVal;
     }
 
     public static boolean areEqual(final Float lhs, final Float rhs)

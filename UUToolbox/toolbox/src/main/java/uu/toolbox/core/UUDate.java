@@ -5,6 +5,7 @@ import android.util.Log;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -13,6 +14,7 @@ import java.util.TimeZone;
  * Useful Utilities - A set of extension methods for Date
  *  
  */
+@SuppressWarnings("unused")
 public class UUDate 
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +212,7 @@ public class UUDate
     {
         try
         {
-            SimpleDateFormat df = new SimpleDateFormat(formatter);
+            SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.getDefault());
             df.setTimeZone(timeZone);
             return df.parse(string);
         }
@@ -248,7 +250,7 @@ public class UUDate
 	{
 		if (javaDate != null)
 		{
-			Date d = new Date(javaDate.longValue());
+			Date d = new Date(javaDate);
 			return formatDate(d, formatter, timeZone);
 		}
 		
@@ -279,7 +281,7 @@ public class UUDate
 	{
 		if (date != null)
 		{
-			SimpleDateFormat df = new SimpleDateFormat(formatter);
+			SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.getDefault());
 			df.setTimeZone(timeZone);
 			return df.format(date);
 		}
@@ -400,7 +402,7 @@ public class UUDate
 	
 	public static String currentTimeInFileNameFormat()
 	{
-		SimpleDateFormat df = new SimpleDateFormat(EXTENDED_FILE_NAME_FORMAT);
+		SimpleDateFormat df = new SimpleDateFormat(EXTENDED_FILE_NAME_FORMAT, Locale.getDefault());
 		Date d = new Date();
 		return df.format(d);
 	}
