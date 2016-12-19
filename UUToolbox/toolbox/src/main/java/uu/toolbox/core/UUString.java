@@ -54,6 +54,43 @@ public class UUString
     }
 
     /**
+     * Converts a hex string to a byte array
+     *
+     * @param data the string to convert
+     *
+     * @return a byte array or null if the string has invalid hex characters
+     */
+    public static byte[] hexToByte(final String data)
+    {
+        byte[] buffer = null;
+
+        try
+        {
+            if (data != null)
+            {
+                String workingData = data;
+                if ((data.length() % 2 != 0))
+                {
+                    workingData = "0" + data;
+                }
+
+                int bufferLength = workingData.length() / 2;
+                buffer = new byte[bufferLength];
+                for (int i = 0; i < bufferLength; i++)
+                {
+                    buffer[i] = (byte) (Integer.parseInt(workingData.substring((i * 2), (i * 2) + 2), 16));
+                }
+            }
+        }
+        catch (NumberFormatException ex)
+        {
+            buffer = null;
+        }
+
+        return buffer;
+    }
+
+    /**
      * Safely creates a string from a byte array
      *
      * @param data the byte array
