@@ -3,6 +3,8 @@ package uu.toolbox.core;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import uu.toolbox.logging.UULog;
+
 /**
  * Useful set of methods for manipulating Strings
  *
@@ -10,6 +12,8 @@ import java.util.Collections;
 @SuppressWarnings("unused")
 public class UUString 
 {
+    public static final String CHARSET_UTF8 = "UTF-8";
+
     /**
      * Converts a byte array into a Hex String
      *
@@ -46,12 +50,38 @@ public class UUString
             }
         }
 
-        // Convert to upper case
-        tmp = sb.toString();
-        if (tmp != null)
-            tmp = tmp.toUpperCase();
+        return sb.toString().toUpperCase();
+    }
 
-        return tmp;
+    /**
+     * Safely creates a string from a byte array
+     *
+     * @param data the byte array
+     * @param encoding the encoding to use
+     * @return a string or "" if an exception is caught
+     */
+    public static String byteToString(final byte[] data, final String encoding)
+    {
+        try
+        {
+            return new String(data, encoding);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUString.class, "byteToString", ex);
+            return "";
+        }
+    }
+
+    /**
+     * Safely creates a UTF8 string
+     *
+     * @param data the byte array
+     * @return a string or "" if an exception is caught
+     */
+    public static String byteToUtf8String(final byte[] data)
+    {
+        return byteToString(data, CHARSET_UTF8);
     }
 
     /**
