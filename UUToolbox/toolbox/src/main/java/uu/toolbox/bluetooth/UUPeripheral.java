@@ -29,7 +29,7 @@ public class UUPeripheral
     private final ArrayList<String> serviceUuids = new ArrayList<>();
     private long timestamp;
 
-    public UUPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @NonNull byte[] scanRecord)
+    public UUPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @Nullable byte[] scanRecord)
     {
         this.device = device;
         this.rssi = rssi;
@@ -38,7 +38,7 @@ public class UUPeripheral
         parseScanRecord();
     }
 
-    public @NonNull byte[] getScanRecord()
+    public @Nullable byte[] getScanRecord()
     {
         return scanRecord;
     }
@@ -89,53 +89,56 @@ public class UUPeripheral
 
     private void parseScanRecord()
     {
-        int index = 0;
-
-        while (index < scanRecord.length)
+        if (scanRecord != null)
         {
-            byte length = scanRecord[index];
-            if (length == 0)
-                break;
+            int index = 0;
 
-            byte dataType = scanRecord[index + 1];
-
-            byte[] data = new byte[length - 1];
-            System.arraycopy(scanRecord, index + 2, data, 0, data.length);
-
-            switch (dataType)
+            while (index < scanRecord.length)
             {
-                case DATA_TYPE_MANUFACTURING_DATA:
-                {
-                    manufacturingData = data;
+                byte length = scanRecord[index];
+                if (length == 0)
+                    break;
 
-                    if (UUData.isNotEmpty(manufacturingData))
+                byte dataType = scanRecord[index + 1];
+
+                byte[] data = new byte[length - 1];
+                System.arraycopy(scanRecord, index + 2, data, 0, data.length);
+
+                switch (dataType)
+                {
+                    case DATA_TYPE_MANUFACTURING_DATA:
                     {
-                        parseManufacturingData(manufacturingData);
+                        manufacturingData = data;
+
+                        if (UUData.isNotEmpty(manufacturingData))
+                        {
+                            parseManufacturingData(manufacturingData);
+                        }
+
+                        break;
                     }
 
-                    break;
+                    case DATA_TYPE_COMPLETE_LOCAL_NAME:
+                    {
+                        localName = UUString.byteToUtf8String(data);
+                        break;
+                    }
+
+                    case DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS:
+                    {
+                        parseServiceUuid(data, 2);
+                        break;
+                    }
+
+                    case DATA_TYPE_COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS:
+                    {
+                        parseServiceUuid(data, 16);
+                        break;
+                    }
                 }
 
-                case DATA_TYPE_COMPLETE_LOCAL_NAME:
-                {
-                    localName = UUString.byteToUtf8String(data);
-                    break;
-                }
-
-                case DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS:
-                {
-                    parseServiceUuid(data, 2);
-                    break;
-                }
-
-                case DATA_TYPE_COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS:
-                {
-                    parseServiceUuid(data, 16);
-                    break;
-                }
+                index += (1 + length);
             }
-
-            index += (1 + length);
         }
     }
 
