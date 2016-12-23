@@ -183,14 +183,15 @@ public class UUDate
 	 * 
 	 * @param d1 the first date to check
 	 * @param d2 the second date to check
+	 * @param tz timezone to use
 	 * @return boolean if they are on the same day or not
 	 */
-	public static boolean areSameDay(final Date d1, final Date d2)
+	public static boolean areSameDay(final Date d1, final Date d2, final TimeZone tz)
 	{
-		Calendar c1 = Calendar.getInstance();//utcTimeZone());
+		Calendar c1 = Calendar.getInstance(tz);
 		c1.setTime(d1);
 		
-		Calendar c2 = Calendar.getInstance();//utcTimeZone());
+		Calendar c2 = Calendar.getInstance(tz);
 		c2.setTime(d2);
 		
 		int y1 = c1.get(Calendar.YEAR);
@@ -201,6 +202,36 @@ public class UUDate
 		
 		return (y1 == y2 && day1 == day2);
 	}
+
+	/**
+	 * Checks two java long dates to see if they are on the same day of the year
+	 *
+	 * @param time1 the first date to check
+	 * @param time2 the second date to check
+     * @param tz timezone to use
+	 * @return boolean if they are on the same day or not
+	 */
+	public static boolean areSameDay(final long time1, final long time2, final TimeZone tz)
+	{
+		Calendar c1 = Calendar.getInstance(tz);
+		c1.setTimeInMillis(time1);
+
+		Calendar c2 = Calendar.getInstance(tz);
+		c2.setTimeInMillis(time2);
+
+		int y1 = c1.get(Calendar.YEAR);
+		int day1 = c1.get(Calendar.DAY_OF_YEAR);
+
+		int y2 = c2.get(Calendar.YEAR);
+		int day2 = c2.get(Calendar.DAY_OF_YEAR);
+
+		return (y1 == y2 && day1 == day2);
+	}
+
+    public static boolean isToday(final long time, final TimeZone tz)
+    {
+        return areSameDay(time, System.currentTimeMillis(), tz);
+    }
 	
 	public static Date parseDate(final String string, final String formatter)
 	{
@@ -394,6 +425,7 @@ public class UUDate
 		return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, utcTimeZone());
 	}
 
+
 	public static String formatUtcRfc3999Date(final Date date)
 	{
 		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, utcTimeZone());
@@ -408,6 +440,7 @@ public class UUDate
     {
         return formatDate(date, RFC_3999_DATE_TIME_FORMAT, tz);
     }
+
 	
 	public static String currentUtcTime()
 	{
