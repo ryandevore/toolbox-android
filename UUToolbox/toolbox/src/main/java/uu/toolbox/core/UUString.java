@@ -132,7 +132,7 @@ public class UUString
     {
         ArrayList<String> arrayList = new ArrayList<>();
         Collections.addAll(arrayList, list);
-        return componentsJoinedByString(list, separator);
+        return componentsJoinedByString(arrayList, separator);
     }
 
     /**
