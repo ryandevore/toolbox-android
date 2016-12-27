@@ -34,11 +34,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import uu.toolbox.logging.UULog;
+
 /**
  * UUTools - a handy bag o' useful methods
  * 
  */
-public final class UUTools 
+public final class UUTools
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Constants
@@ -708,7 +710,7 @@ public final class UUTools
 	 * 
 	 * @param filePath the file to delete
 	 */
-	public static final void deleteFile(final String filePath)
+	public static void deleteFile(final String filePath)
 	{
 		try
 		{
@@ -725,6 +727,50 @@ public final class UUTools
 		{
 			Log.d(LOG_TAG, "deleteFile", ex);
 		}
+	}
+
+	public static void copyFile(final String source, final String dest)
+    {
+        UULog.debug(UUTools.class, "copyFile", "source: " + source + ", dest: " + dest);
+
+		InputStream in = null;
+		OutputStream out = null;
+
+		try
+        {
+            File srcFile = new File(source);
+
+            String fileName = srcFile.getName();
+
+            File destFile = new File(dest);
+			File destFolder = new File (destFile.getParent());
+
+			if (!destFolder.exists())
+			{
+				destFolder.mkdirs();
+			}
+
+			in = new FileInputStream(srcFile);
+			out = new FileOutputStream(destFile);
+
+			byte[] buffer = new byte[1024];
+			int read = 0;
+
+			while (read != -1)
+            {
+                read = in.read(buffer);
+				out.write(buffer, 0, read);
+			}
+		}
+		catch (Exception ex)
+        {
+            UULog.debug(UUTools.class, "copyFile", ex);
+		}
+        finally
+        {
+            closeStream(in);
+            closeStream(out);
+        }
 	}
 	
 	public static final byte[] convertToJpeg(final File file)
