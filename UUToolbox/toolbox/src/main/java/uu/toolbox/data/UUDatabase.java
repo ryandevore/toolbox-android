@@ -408,7 +408,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      * @param sql the sql to run
      * @return a result
      */
-    public synchronized ArrayList<String> listSingleStringColumn(final String sql)
+    public synchronized ArrayList<String> listSingleStringColumn(final String sql, final String[] args)
     {
         SQLiteDatabase db;
         Cursor c = null;
@@ -419,7 +419,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
             db = getReadOnlyDatabase();
 
             logSql(sql);
-            c = db.rawQuery(sql, null);
+            c = db.rawQuery(sql, args);
 
             results = new ArrayList<>();
 
@@ -602,7 +602,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     public ArrayList<String> listTableNames()
     {
         String sql = "SELECT name FROM sqlite_master WHERE type='table';";
-        return listSingleStringColumn(sql);
+        return listSingleStringColumn(sql, null);
     }
     
 	///////////////////////////////////////////////////////////////////////////////////////////////
