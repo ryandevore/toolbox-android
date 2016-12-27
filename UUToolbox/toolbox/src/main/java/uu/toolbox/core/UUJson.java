@@ -386,7 +386,6 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            //AppLog.error(UUJson.class, "toJson", ex);
             return null;
         }
     }
@@ -410,7 +409,6 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            //AppLog.error(UUJson.class, "toJson", ex);
             return null;
         }
     }
@@ -423,7 +421,25 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            //AppLog.error(UUJson.class, "toJson", ex);
+            return null;
+        }
+    }
+
+    public static JSONArray toJsonArray(final Iterable list)
+    {
+        try
+        {
+            JSONArray arr = new JSONArray();
+
+            for (Object o : list)
+            {
+                arr.put(o);
+            }
+
+            return arr;
+        }
+        catch (Exception ex)
+        {
             return null;
         }
     }
@@ -462,6 +478,26 @@ public final class UUJson
                 {
                     jsonStr = jsonObject.toString();
                 }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "toJsonString", ex);
+            jsonStr = null;
+        }
+
+        return jsonStr;
+    }
+
+    public static String toJsonString(final JSONArray jsonArray)
+    {
+        String jsonStr = null;
+
+        try
+        {
+            if (jsonArray != null)
+            {
+                jsonStr = jsonArray.toString();
             }
         }
         catch (Exception ex)
