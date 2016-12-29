@@ -21,7 +21,7 @@ public final class UUAlert
         void onComplete(final ButtonType which);
     }
 
-    private static void invokeAlertCallback(final AlertCallback callback, final ButtonType which)
+    public static void invokeAlertCallback(final AlertCallback callback, final ButtonType which)
     {
         try
         {
