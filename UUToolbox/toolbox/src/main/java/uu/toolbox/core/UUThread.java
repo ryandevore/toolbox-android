@@ -1,5 +1,6 @@
 package uu.toolbox.core;
 
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -49,6 +50,40 @@ public class UUThread
         catch (Exception ex)
         {
             UULog.debug(UUThread.class, "runOnMainThread", ex);
+        }
+    }
+
+    /**
+     * Safely runs a block of code on a background thread.
+     *
+     * @param r the runnable.
+     */
+    public static void runOnBackgroundThread(final @Nullable Runnable r)
+    {
+        try
+        {
+            if (isMainThread())
+            {
+                safeInvokeRunnable(r);
+            }
+            else
+            {
+                AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>()
+                {
+                    @Override
+                    protected Void doInBackground(Void... params)
+                    {
+                        safeInvokeRunnable(r);
+                        return null;
+                    }
+                };
+
+                task.execute();
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUThread.class, "runOnBackgroundThread", ex);
         }
     }
 
