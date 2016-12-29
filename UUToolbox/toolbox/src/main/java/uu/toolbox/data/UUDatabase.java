@@ -865,6 +865,26 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     }
 
     /**
+     * Executes some raw SQL
+     *
+     * @param sql the sql statement
+     */
+    protected void execSql(final String sql, final Object[] bindArgs)
+    {
+        SQLiteDatabase db;
+
+        try
+        {
+            db = getReadWriteDatabase();
+            db.execSQL(sql, bindArgs);
+        }
+        catch (Exception ex)
+        {
+            logException("execSql", ex);
+        }
+    }
+
+    /**
      * Executes some raw SQL lines
      *
      * @param lines the sql statements
