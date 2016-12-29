@@ -51,6 +51,8 @@ public class UUDate
 	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
 	public static final String RFC_3999_DATE_TIME_ALTERNATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 	public static final String YEAR_MONTH_DAY_FORMAT = "yyyy-MM-dd";
+	public static final String DAY_OF_WEEK_FULL_FORMAT = "EEEE";
+	public static final String DAY_OF_WEEK_SHORT_FORMAT = "E";
 
 	/**
 	 * Create's a Date object filled with only an hour and minute
@@ -441,7 +443,36 @@ public class UUDate
         return formatDate(date, RFC_3999_DATE_TIME_FORMAT, tz);
     }
 
-	
+	public static String formatFullDayOfWeek(final Long javaDate, final TimeZone tz)
+	{
+		return formatDate(javaDate, DAY_OF_WEEK_FULL_FORMAT, tz);
+	}
+
+	public static String formatShortDayOfWeek(final Long javaDate, final TimeZone tz)
+	{
+		return formatDate(javaDate, DAY_OF_WEEK_SHORT_FORMAT, tz);
+	}
+
+	public static String formatFullDayOfWeek(final Long javaDate)
+	{
+		return formatShortDayOfWeek(javaDate, TimeZone.getDefault());
+	}
+
+	public static String formatShortDayOfWeek(final Long javaDate)
+	{
+		return formatShortDayOfWeek(javaDate, TimeZone.getDefault());
+	}
+
+	public static String formatFullDayOfWeekUtc(final Long javaDate)
+	{
+		return formatShortDayOfWeek(javaDate, utcTimeZone());
+	}
+
+	public static String formatShortDayOfWeekUTc(final Long javaDate)
+	{
+		return formatShortDayOfWeek(javaDate, utcTimeZone());
+	}
+
 	public static String currentUtcTime()
 	{
 		return formatDate(new Date(), EXTENDED_DATE_FORMAT, utcTimeZone());
