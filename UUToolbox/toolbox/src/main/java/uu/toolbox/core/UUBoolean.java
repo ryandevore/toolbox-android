@@ -4,12 +4,13 @@ package uu.toolbox.core;
  * Useful set of methods for manipulating Booleans
  *
  */
+@SuppressWarnings("unused")
 public class UUBoolean
 {
     /**
-     * Safely unboxes a Boolean object for its raw boolean value.
+     * Safely unboxes a Boolean object for its raw value.
      *
-     * @param obj the Boolean object to check
+     * @param obj the object to check
      * @param defaultValue the default value to return if the
      * @return if obj is null returns default value, otherwise returns the value of obj.boolValue()
      */
@@ -45,5 +46,50 @@ public class UUBoolean
     public static boolean isFalse(final Boolean bool)
     {
         return !safeGetValue(bool, true);
+    }
+
+    /**
+     * Safely checks two booleans for equality
+     *
+     * @param lhs the left hand side to check
+     * @param rhs the right hand side to check
+     * @return true if they are equal, false if not
+     */
+    public static boolean areEqual(final Boolean lhs, final Boolean rhs)
+    {
+        if (lhs == null && rhs == null)
+        {
+            return true;
+        }
+        else if (lhs == null || rhs == null)
+        {
+            return false;
+        }
+        else
+        {
+            return (lhs.booleanValue() == rhs.booleanValue());
+        }
+    }
+
+    /**
+     * Safely compares two Boolean's
+     *
+     * @param lhs the left hand side to check
+     * @param rhs the right hand side to check
+     * @return comparison result, -1, 0, or 1
+     */
+    public static int compare(final Boolean lhs, final Boolean rhs)
+    {
+        boolean left = lhs;
+        boolean right = rhs;
+
+        if (left == right)
+        {
+            return 0;
+        }
+        else
+        {
+            return left ? -1 : 1;
+        }
     }
 }
