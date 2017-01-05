@@ -238,9 +238,12 @@ public final class UUActivity
         try
         {
             View v = activity.findViewById(id);
-            if (v != null && v.getClass().isAssignableFrom(type))
+			if (v != null)
             {
-                return type.cast(v);
+				if (type.isAssignableFrom(v.getClass()))
+				{
+					return type.cast(v);
+				}
             }
         }
         catch (Exception ex)
