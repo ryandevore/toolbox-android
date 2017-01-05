@@ -1,8 +1,5 @@
 package uu.toolbox.ui;
 
-import java.io.File;
-
-import uu.toolbox.core.UUTools;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,6 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -35,12 +34,18 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+
+import uu.toolbox.core.UUTools;
+import uu.toolbox.logging.UULog;
+
 /**
  * UUActivity
  * 
  * Useful Utilities - A set of extension methods for the Activity class.
  *  
  */
+@SuppressWarnings("unused")
 public final class UUActivity 
 {
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -56,10 +61,10 @@ public final class UUActivity
 	 * Finds an TextView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an TextView
+	 * @param id resource id to fetch
+	 * @return a TextView
 	 */
-	public static final TextView findTextViewById(final Activity activity, final int id)
+	public static @Nullable TextView findTextViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, TextView.class);
     }
@@ -68,10 +73,10 @@ public final class UUActivity
 	 * Finds an Button by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an Button
+	 * @param id resource id to fetch
+	 * @return a Button
 	 */
-	public static final Button findButtonById(final Activity activity, final int id)
+	public static @Nullable Button findButtonById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, Button.class);
     }
@@ -80,10 +85,10 @@ public final class UUActivity
 	 * Finds an ImageButton by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
+	 * @param id resource id to fetch
 	 * @return an ImageButton
 	 */
-	public static final ImageButton findImageButtonById(final Activity activity, final int id)
+	public static @Nullable ImageButton findImageButtonById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, ImageButton.class);
     }
@@ -92,10 +97,10 @@ public final class UUActivity
 	 * Finds an EditText by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
+	 * @param id resource id to fetch
 	 * @return an EditText
 	 */
-	public static final EditText findEditTextById(final Activity activity, final int id)
+	public static @Nullable EditText findEditTextById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, EditText.class);
     }
@@ -104,10 +109,10 @@ public final class UUActivity
 	 * Finds an ImageView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an ImageView
+	 * @param id resource id to fetch
+	 * @return a ImageView
 	 */
-	public static final ImageView findImageViewById(final Activity activity, final int id)
+	public static @Nullable ImageView findImageViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, ImageView.class);
     }
@@ -116,10 +121,10 @@ public final class UUActivity
 	 * Finds an LinearLayout by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an LinearLayout
+	 * @param id resource id to fetch
+	 * @return a LinearLayout
 	 */
-	public static final LinearLayout findLinearLayoutById(final Activity activity, final int id)
+	public static @Nullable LinearLayout findLinearLayoutById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, LinearLayout.class);
     }
@@ -128,10 +133,10 @@ public final class UUActivity
 	 * Finds an RelativeLayout by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an RelativeLayout
+	 * @param id resource id to fetch
+	 * @return a RelativeLayout
 	 */
-	public static final RelativeLayout findRelativeLayoutById(final Activity activity, final int id)
+	public static @Nullable RelativeLayout findRelativeLayoutById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, RelativeLayout.class);
     }
@@ -140,10 +145,10 @@ public final class UUActivity
 	 * Finds an GridView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an GridView
+	 * @param id resource id to fetch
+	 * @return a GridView
 	 */
-	public static final GridView findGridViewById(final Activity activity, final int id)
+	public static @Nullable GridView findGridViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, GridView.class);
     }
@@ -152,10 +157,10 @@ public final class UUActivity
 	 * Finds an ListView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an ListView
+	 * @param id resource id to fetch
+	 * @return a ListView
 	 */
-	public static final ListView findListViewById(final Activity activity, final int id)
+	public static @Nullable ListView findListViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, ListView.class);
     }
@@ -164,10 +169,10 @@ public final class UUActivity
 	 * Finds an ExpandableListView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an ListView
+	 * @param id resource id to fetch
+	 * @return a ListView
 	 */
-	public static final ExpandableListView findExpandableListViewById(final Activity activity, final int id)
+	public static @Nullable ExpandableListView findExpandableListViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, ExpandableListView.class);
     }
@@ -176,10 +181,10 @@ public final class UUActivity
 	 * Finds an ScrollView by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an ScrollView
+	 * @param id resource id to fetch
+	 * @return a ScrollView
 	 */
-	public static final ScrollView findScrollViewById(final Activity activity, final int id)
+	public static @Nullable ScrollView findScrollViewById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, ScrollView.class);
     }
@@ -188,10 +193,10 @@ public final class UUActivity
 	 * Finds an CheckBox by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an CheckBox
+	 * @param id resource id to fetch
+	 * @return a CheckBox
 	 */
-	public static final CheckBox findCheckBoxById(final Activity activity, final int id)
+	public static @Nullable CheckBox findCheckBoxById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, CheckBox.class);
     }
@@ -200,10 +205,10 @@ public final class UUActivity
 	 * Finds an RadioButton by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an RadioButton
+	 * @param id resource id to fetch
+	 * @return a RadioButton
 	 */
-	public static final RadioButton findRadioButtonById(final Activity activity, final int id)
+	public static @Nullable RadioButton findRadioButtonById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, RadioButton.class);
     }
@@ -212,10 +217,10 @@ public final class UUActivity
 	 * Finds an SeekBar by a resource id
 	 * 
 	 * @param activity calling activity
-	 * @param id
-	 * @return an SeekBar
+	 * @param id resource id to fetch
+	 * @return a SeekBar
 	 */
-	public static final SeekBar findSeekBarById(final Activity activity, final int id)
+	public static @Nullable SeekBar findSeekBarById(final @NonNull Activity activity, final int id)
     {
 		return findViewById(activity, id, SeekBar.class);
     }
@@ -228,16 +233,20 @@ public final class UUActivity
 	 * @param type expected class type of the resource
 	 * @return a view object that has been cast to the correct type.  Null if the view id is not found or the cast is invalid.
 	 */
-	public static final <T extends View> T findViewById(final Activity activity, final int id, final Class<T> type)
+	public static @Nullable <T extends View> T findViewById(final @NonNull Activity activity, final int id, final @NonNull Class<T> type)
     {
-		if (activity != null)
-		{
-	    	View v = activity.findViewById(id);
-	        if (v != null && v.getClass().isAssignableFrom(type))
-	        {
-	        	return type.cast(v);
-	        }
-		}
+        try
+        {
+            View v = activity.findViewById(id);
+            if (v != null && v.getClass().isAssignableFrom(type))
+            {
+                return type.cast(v);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("findViewById", ex);
+        }
         
         return null;    	
     }
@@ -249,7 +258,7 @@ public final class UUActivity
 	 * @param textResourceId resource of string id to show
 	 * @param length length of toast.  Either Toast.LENGTH_SHORT or Toast.LENGTH_LONG
 	 */
-	public static final void showToast(final Activity activity, final int textResourceId, final int length)
+	public static void showToast(final Activity activity, final int textResourceId, final int length)
 	{
 		String text = null;
 		if (activity != null)
@@ -266,7 +275,7 @@ public final class UUActivity
 	 * @param text message to show
 	 * @param length length of toast.  Either Toast.LENGTH_SHORT or Toast.LENGTH_LONG
 	 */
-	public static final void showToast(final Activity activity, final String text, final int length)
+	public static void showToast(final Activity activity, final String text, final int length)
 	{
 		if (activity != null)
 		{
@@ -298,12 +307,11 @@ public final class UUActivity
 	 * @param resultCode The activity callback result code
 	 * @return true if the camera activity was launched, false otherwise
 	 */
-	public static final boolean launchCamera(final Activity activity, final File extraOutputPath, final int resultCode)
+	public static boolean launchCamera(final Activity activity, final File extraOutputPath, final int resultCode)
     {
-		Uri uri = null;
     	if (extraOutputPath != null)
     	{
-    		uri = Uri.fromFile(extraOutputPath);
+    		Uri uri = Uri.fromFile(extraOutputPath);
     		return launchCamera(activity, uri, resultCode);
     	}
     	
@@ -320,7 +328,7 @@ public final class UUActivity
 	 * @param resultCode The activity callback result code
 	 * @return true if the camera activity was launched, false otherwise
 	 */
-	public static final boolean launchCamera(final Activity activity, final Uri extraOutputPath, final int resultCode)
+	public static boolean launchCamera(final Activity activity, final Uri extraOutputPath, final int resultCode)
     {
 		try
 		{
@@ -355,7 +363,7 @@ public final class UUActivity
 	 * @param viewIdList a list of R.id values
 	 * @param visibility the visibility value to assign to these views.
 	 */
-	public static final void setGroupVisibility(final Activity activity, final int[] viewIdList, int visibility)
+	public static void setGroupVisibility(final Activity activity, final int[] viewIdList, int visibility)
     {
     	for (int id : viewIdList)
 		{
@@ -371,10 +379,10 @@ public final class UUActivity
 	 * Convenience method to set the visibility of a single view id
 	 * 
 	 * @param activity the activity that owns these view ids
-	 * @param viewIdList a list of R.id values
+	 * @param viewId a resource id
 	 * @param visibility the visibility value to assign to these views.
 	 */
-	public static final void setVisibility(final Activity activity, final int viewId, int visibility)
+	public static void setVisibility(final Activity activity, final int viewId, int visibility)
     {
     	if (activity != null)
 		{
@@ -393,7 +401,7 @@ public final class UUActivity
 	 * @param viewIdList a list of R.id values
 	 * @param parentId the parent container view
 	 */
-	public static final void removeViewsFromParent(final Activity activity, final int parentId, final int[] viewIdList)
+	public static void removeViewsFromParent(final Activity activity, final int parentId, final int[] viewIdList)
     {
     	for (int id : viewIdList)
 		{
@@ -413,7 +421,7 @@ public final class UUActivity
 	 * @param viewIdList a list of R.id values
 	 * @param parentId the parent container view
 	 */
-	public static final void addViewsFromParent(final Activity activity, final int parentId, final int[] viewIdList)
+	public static void addViewsFromParent(final Activity activity, final int parentId, final int[] viewIdList)
     {
     	for (int id : viewIdList)
 		{
@@ -427,7 +435,7 @@ public final class UUActivity
     }
 	
 	// Experimental....need investigation of various params
-	public static final boolean launchPhotoCrop(
+	public static boolean launchPhotoCrop(
 			final Activity activity, 
 			final Uri sourceUri, 
 			final Uri destUri, 
@@ -483,27 +491,27 @@ public final class UUActivity
 		return true;
 	}
 	
-	public static final Animation fadeInView(final Activity activity, int viewId, final int duration) 
+	public static Animation fadeInView(final Activity activity, int viewId, final int duration)
 	{
 		return doFadeAnimation(activity, viewId, android.R.anim.fade_in, duration, View.VISIBLE);
 	}
 	
-	public static final Animation fadeOutView(final Activity activity, int viewId, final int duration) 
+	public static Animation fadeOutView(final Activity activity, int viewId, final int duration)
 	{
 		return doFadeAnimation(activity, viewId, android.R.anim.fade_out, duration, View.INVISIBLE);
 	}
 	
-	public static final Animation fadeInView(final Activity activity, int viewId) 
+	public static Animation fadeInView(final Activity activity, int viewId)
 	{
 		return doFadeAnimation(activity, viewId, android.R.anim.fade_in, -1, View.VISIBLE);
 	}
 	
-	public static final Animation fadeOutView(final Activity activity, int viewId) 
+	public static Animation fadeOutView(final Activity activity, int viewId)
 	{
 		return doFadeAnimation(activity, viewId, android.R.anim.fade_out, -1, View.INVISIBLE);
 	}
 	
-	public static final Animation doFadeAnimation(final Activity activity, int viewId, final int animationId, final int duration, final int postAnimVisibility) 
+	public static Animation doFadeAnimation(final Activity activity, int viewId, final int animationId, final int duration, final int postAnimVisibility)
 	{
 		Animation animation  = AnimationUtils.loadAnimation(activity, animationId);
 		if(animation == null)
@@ -556,7 +564,7 @@ public final class UUActivity
 	 * @param maxWidth
 	 * @return
 	 */
-	public static final float deriveSingleLineFontSize(final TextView tv, final float startingTextSize, final int maxWidth)
+	public static float deriveSingleLineFontSize(final TextView tv, final float startingTextSize, final int maxWidth)
     {
 		Paint paint = new Paint();
 		Rect bounds = new Rect();
@@ -591,7 +599,7 @@ public final class UUActivity
 	 * 
 	 * @param tv the text view in question
 	 */
-	public static final void adjustFontForSingleLine(final TextView tv, final float startingTextSize)
+	public static void adjustFontForSingleLine(final TextView tv, final float startingTextSize)
 	{
     	final ViewTreeObserver observer = tv.getViewTreeObserver();
         observer.addOnGlobalLayoutListener(new OnGlobalLayoutListener() 
@@ -604,9 +612,18 @@ public final class UUActivity
     	        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, adjustedFontSize);
     	        
     	        tv.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-    	        //tv.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
 	}
+
+    private static void debugLog(final String method, final String message)
+    {
+        UULog.debug(UUActivity.class, method, message);
+    }
+
+    private static void logException(final String method, final Exception ex)
+    {
+        UULog.error(UUActivity.class, method, ex);
+    }
 
 }
