@@ -12,8 +12,6 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelUuid;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import uu.toolbox.core.UUThread;
 import uu.toolbox.core.UUWorkerThread;
 import uu.toolbox.logging.UULog;
 
@@ -55,36 +54,29 @@ public class UUBluetoothScanner
             final @Nullable ArrayList<UUPeripheralFilter> filters,
             final @NonNull Listener delegate)
     {
-        if (isMainThread())
+        UUThread.runOnMainThread(new Runnable()
         {
-            scanFilters = filters;
-            peripheralFactory = factory;
+            @Override
+            public void run()
+            {
+                scanFilters = filters;
+                peripheralFactory = factory;
 
-            if (peripheralFactory == null)
-            {
-                peripheralFactory = new DefaultPeripheralFactory();
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            {
-                startScan(serviceUuidList, delegate);
-            }
-            else
-            {
-                startLegacyScan(serviceUuidList, delegate);
-            }
-        }
-        else
-        {
-            runOnMainThread(new Runnable()
-            {
-                @Override
-                public void run()
+                if (peripheralFactory == null)
                 {
-                    startScanning(factory, serviceUuidList, filters, delegate);
+                    peripheralFactory = new DefaultPeripheralFactory();
                 }
-            });
-        }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                {
+                    startScan(serviceUuidList, delegate);
+                }
+                else
+                {
+                    startLegacyScan(serviceUuidList, delegate);
+                }
+            }
+        });
     }
 
     public boolean isScanning()
@@ -94,28 +86,21 @@ public class UUBluetoothScanner
 
     public void stopScanning()
     {
-        if (isMainThread())
+        UUThread.runOnMainThread(new Runnable()
         {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            @Override
+            public void run()
             {
-                stopScan();
-            }
-            else
-            {
-                stopLegacyScan();
-            }
-        }
-        else
-        {
-            runOnMainThread(new Runnable()
-            {
-                @Override
-                public void run()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 {
-                    stopScanning();
+                    stopScan();
                 }
-            });
-        }
+                else
+                {
+                    stopLegacyScan();
+                }
+            }
+        });
     }
 
     @SuppressWarnings("deprecation")
@@ -342,41 +327,6 @@ public class UUBluetoothScanner
         else
         {
             return true;
-        }
-    }
-
-
-    private boolean isMainThread()
-    {
-        return (Looper.myLooper() == Looper.getMainLooper());
-    }
-
-    private void runOnMainThread(final @Nullable Runnable r)
-    {
-        try
-        {
-            if (r != null)
-            {
-                new Handler(Looper.getMainLooper()).post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        try
-                        {
-                            r.run();
-                        }
-                        catch (Exception ex)
-                        {
-                            UULog.debug(getClass(), "runOnMainThread.run", ex);
-                        }
-                    }
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.debug(getClass(), "runOnMainThread", ex);
         }
     }
 
