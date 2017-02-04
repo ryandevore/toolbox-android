@@ -135,4 +135,16 @@ public class UULong
             return (left < right) ? -1 : 1;
         }
     }
+
+    /**
+     * Evaluates two values to determine if one contains bits from the other
+     *
+     * @param value the source value to check
+     * @param mask the mask of bits to check
+     * @return true if the bits are found in the value, false otherwise
+     */
+    public static boolean isBitSet(final long value, final long mask)
+    {
+        return ((value & mask) == mask);
+    }
 }
