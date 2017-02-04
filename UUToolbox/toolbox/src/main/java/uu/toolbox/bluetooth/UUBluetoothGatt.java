@@ -366,6 +366,11 @@ class UUBluetoothGatt
         }
     }
 
+    BluetoothGatt getBluetoothGatt()
+    {
+        return bluetoothGatt;
+    }
+
     private void notifyDisconnected(final @Nullable UUBluetoothError error)
     {
         closeGatt();

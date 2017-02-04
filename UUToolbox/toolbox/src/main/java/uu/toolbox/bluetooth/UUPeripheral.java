@@ -175,6 +175,8 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     public @NonNull List<BluetoothGattService> discoveredServices()
     {
+        acquireExistingGatt();
+
         List<BluetoothGattService> list = new ArrayList<>();
 
         if (bluetoothGatt != null)
@@ -361,5 +363,14 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         String jsonStr = in.readString();
         JSONObject json = UUJson.toJsonObject(jsonStr);
         fillFromJson(null, json);
+    }
+
+    private void acquireExistingGatt()
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            setBluetoothGatt(gatt.getBluetoothGatt());
+        }
     }
 }
