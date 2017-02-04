@@ -7,11 +7,13 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
 import uu.toolbox.core.UUData;
+import uu.toolbox.core.UUInteger;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
@@ -186,6 +188,58 @@ public class UUBluetooth
         return "Unknown";
     }
 
+    /**
+     * Formats a string with human friendly of BluetoothGattCharacteristics
+     *
+     * @param properties properties bitmask
+     * @return a string
+     */
+    public static @NonNull String characteristicPropertiesToString(final int properties)
+    {
+        ArrayList<String> parts = new ArrayList<>();
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_BROADCAST))
+        {
+            parts.add("Broadcast");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_READ))
+        {
+            parts.add("Read");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE))
+        {
+            parts.add("WriteWithoutResponse");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_WRITE))
+        {
+            parts.add("Write");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_NOTIFY))
+        {
+            parts.add("Notify");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_INDICATE))
+        {
+            parts.add("Indicate");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE))
+        {
+            parts.add("SignedWrite");
+        }
+
+        if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS))
+        {
+            parts.add("ExtendedProperties");
+        }
+
+        return UUString.componentsJoinedByString(parts, ", ");
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Shared Bluetooth Gatt management
