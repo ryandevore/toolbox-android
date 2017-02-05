@@ -4,6 +4,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.Locale;
+
+import uu.toolbox.core.UUString;
 
 /**
  * Container class for UUBluetooth errors
@@ -28,6 +31,27 @@ public class UUBluetoothError
     public UUBluetoothError(final @NonNull UUBluetoothErrorCode errorCode)
     {
         this.errorCode = errorCode;
+    }
+
+    /**
+     * To string override
+     *
+     * @return string
+     */
+    @Override
+    public String toString()
+    {
+        try
+        {
+            return String.format(Locale.US, "code: %s, details: %s, ex: %s",
+                    UUString.safeToString(errorCode),
+                    UUString.safeToString(errorDetails),
+                    UUString.safeToString(caughtException));
+        }
+        catch (Exception ex)
+        {
+            return super.toString();
+        }
     }
 
     /**
@@ -67,7 +91,17 @@ public class UUBluetoothError
      */
     public static @NonNull UUBluetoothError notConnectedError()
     {
-        return new UUBluetoothError(UUBluetoothErrorCode.UUCoreBluetoothErrorCodeNotConnected);
+        return new UUBluetoothError(UUBluetoothErrorCode.NotConnected);
+    }
+
+    /**
+     * Wrapper method to return a timeout error
+     *
+     * @return a UUBluetoothError object
+     */
+    public static @NonNull UUBluetoothError timeoutError()
+    {
+        return new UUBluetoothError(UUBluetoothErrorCode.Timeout);
     }
 
     /**
@@ -78,7 +112,7 @@ public class UUBluetoothError
      */
     public static @NonNull UUBluetoothError operationFailedError(final String method)
     {
-        UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.UUCoreBluetoothErrorCodeOperationFailed);
+        UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
         err.errorDetails.put(DETAIL_KEY_METHOD_NAME, method);
         return err;
     }
