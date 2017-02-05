@@ -34,19 +34,6 @@ public class UUTimer
         void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo);
     }
 
-    /**
-     * Delegate callback for a watchdog timer
-     */
-    public interface WatchdogTimerDelegate
-    {
-        /**
-         * Delegate method invoked when a watchdog timer fires
-         *
-         * @param userInfo user info if supplied when starting timer
-         */
-        void onTimer(@Nullable Object userInfo);
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Data Members
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,21 +298,13 @@ public class UUTimer
         final @NonNull String timerId,
         final long timeoutMilliseconds,
         final @Nullable Object userInfo,
-        final @NonNull WatchdogTimerDelegate delegate)
+        final @NonNull TimerDelegate delegate)
     {
         cancelActiveTimer(timerId);
 
         if (timeoutMilliseconds > 0)
         {
-            UUTimer t = new UUTimer(timerId, timeoutMilliseconds, false, userInfo, new TimerDelegate()
-            {
-                @Override
-                public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
-                {
-                    delegate.onTimer(userInfo);
-                }
-            });
-
+            UUTimer t = new UUTimer(timerId, timeoutMilliseconds, false, userInfo, delegate);
             t.start();
         }
     }
