@@ -202,16 +202,17 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         return list;
     }
 
-    public void toggleNotifyState(
+    public void setNotifyState(
         final @NonNull BluetoothGattCharacteristic characteristic,
         final boolean notifyState,
         final long timeout,
+        final @Nullable UUCharacteristicDelegate notifyDelegate,
         final @NonNull UUCharacteristicDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
         {
-            gatt.toggleNotifyState(characteristic, notifyState, timeout, delegate);
+            gatt.setNotifyState(characteristic, notifyState, timeout, notifyDelegate, delegate);
         }
     }
 

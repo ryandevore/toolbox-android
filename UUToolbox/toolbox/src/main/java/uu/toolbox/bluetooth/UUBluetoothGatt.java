@@ -8,7 +8,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.UUID;
 
 import uu.toolbox.core.UUString;
 import uu.toolbox.core.UUThread;
@@ -29,9 +31,11 @@ class UUBluetoothGatt
     private UUPeripheralDelegate serviceDiscoveryDelegate;
     private UUDescriptorDelegate writeDescriptorDelegate;
     private UUDescriptorDelegate readDescriptorDelegate;
-    private UUCharacteristicDelegate toggleNotifyDelegate;
+    private UUCharacteristicDelegate setNotifyDelegate;
     private UUCharacteristicDelegate writeCharacteristicDelegate;
     private UUCharacteristicDelegate readCharacteristicDelegate;
+
+    private HashMap<String, UUCharacteristicDelegate> characteristicChangedDelegates = new HashMap<>();
 
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
     {
@@ -211,13 +215,14 @@ class UUBluetoothGatt
         });
     }
 
-    void toggleNotifyState(
+    void setNotifyState(
             final @NonNull BluetoothGattCharacteristic characteristic,
-            final boolean notifyState,
+            final boolean enabled,
             final long timeout,
+            final @Nullable UUCharacteristicDelegate notifyDelegate,
             final @NonNull UUCharacteristicDelegate delegate)
     {
-        toggleNotifyDelegate = delegate;
+        setNotifyDelegate = delegate;
 
         final long start = System.currentTimeMillis();
 
@@ -233,8 +238,17 @@ class UUBluetoothGatt
                     return;
                 }
 
+                if (enabled && notifyDelegate != null)
+                {
+                    registerCharacteristicChangedDelegate(characteristic, notifyDelegate);
+                }
+                else
+                {
+                    removeCharacteristicChangedDelegate(characteristic);
+                }
+
                 debugLog("toggleNotifyState", "Setting characteristic notify for " + characteristic.getUuid().toString());
-                boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, notifyState);
+                boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
                 debugLog("toggleNotifyState", "setCharacteristicNotification returned " + success);
 
                 if (!success)
@@ -250,7 +264,7 @@ class UUBluetoothGatt
                     return;
                 }
 
-                byte[] data = notifyState ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+                byte[] data = enabled ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
                 long timeoutLeft = timeout - (System.currentTimeMillis() - start);
 
                 writeDescriptor(descriptor, data, timeoutLeft, new UUDescriptorDelegate()
@@ -463,8 +477,8 @@ class UUBluetoothGatt
 
     private void notifyCharacteristicNotifyStateChanged(final @NonNull BluetoothGattCharacteristic characteristic, final @Nullable UUBluetoothError error)
     {
-        UUCharacteristicDelegate delegate = toggleNotifyDelegate;
-        toggleNotifyDelegate = null;
+        UUCharacteristicDelegate delegate = setNotifyDelegate;
+        setNotifyDelegate = null;
         notifyCharacteristicDelegate(delegate, characteristic, error);
     }
 
@@ -482,12 +496,56 @@ class UUBluetoothGatt
         notifyCharacteristicDelegate(delegate, characteristic, error);
     }
 
+    private void notifyCharacteristicChanged(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        UUCharacteristicDelegate delegate = getCharacteristicChangedDelegate(characteristic);
+        notifyCharacteristicDelegate(delegate, characteristic, null);
+    }
+
     private void notifyDescriptorRead(final @NonNull BluetoothGattDescriptor descriptor, final @Nullable UUBluetoothError error)
     {
         UUDescriptorDelegate delegate = readDescriptorDelegate;
         readDescriptorDelegate = null;
         notifyDescriptorDelegate(delegate, descriptor, error);
     }
+
+    private void registerCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic, final @NonNull UUCharacteristicDelegate delegate)
+    {
+        characteristicChangedDelegates.put(safeUuidString(characteristic), delegate);
+    }
+
+    private void removeCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        characteristicChangedDelegates.remove(safeUuidString(characteristic));
+    }
+
+    private @Nullable UUCharacteristicDelegate getCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return characteristicChangedDelegates.get(safeUuidString(characteristic));
+    }
+
+    private @NonNull String safeUuidString(final @Nullable BluetoothGattCharacteristic characteristic)
+    {
+        String result = null;
+
+        if (characteristic != null)
+        {
+            UUID uuid = characteristic.getUuid();
+            if (uuid != null)
+            {
+                result = uuid.toString();
+            }
+        }
+
+        if (result == null)
+        {
+            result = "";
+        }
+
+        result = result.toLowerCase();
+        return result;
+    }
+
 
     private void disconnectGatt()
     {
@@ -620,6 +678,8 @@ class UUBluetoothGatt
             debugLog("onCharacteristicChanged",
                     "characteristic: " + characteristic +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
+
+            notifyCharacteristicChanged(characteristic);
         }
 
         @Override
@@ -629,6 +689,9 @@ class UUBluetoothGatt
                     "descriptor: " + descriptor +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(descriptor.getValue()));
+
+            // TODO: Handle errors
+            notifyDescriptorRead(descriptor, null);
         }
 
         @Override
