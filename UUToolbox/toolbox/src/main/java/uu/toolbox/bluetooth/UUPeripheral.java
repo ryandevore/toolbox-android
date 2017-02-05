@@ -2,6 +2,8 @@ package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -23,6 +25,8 @@ import uu.toolbox.core.UUJsonConvertible;
 import uu.toolbox.core.UUParcel;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
+
+import static uu.toolbox.bluetooth.UUBluetooth.gattForPeripheral;
 
 /**
  * Wrapper class around a BTLE scanning result.
@@ -150,7 +154,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         int state = bluetoothManager.getConnectionState(device, BluetoothProfile.GATT);
         if (state == BluetoothProfile.STATE_CONNECTED)
         {
-            UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+            UUBluetoothGatt gatt = gattForPeripheral(this);
             if (gatt == null)
             {
                 UULog.debug(getClass(), "getConnectionState", getAddress() + ", Profile is connected but UUBluetoothGatt is null! This should not happen!");
@@ -173,6 +177,17 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         bluetoothGatt = gatt;
     }
 
+    public void discoverServices(
+            final long timeout,
+            final @NonNull UUPeripheralDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.discoverServices(timeout, delegate);
+        }
+    }
+
     public @NonNull List<BluetoothGattService> discoveredServices()
     {
         acquireExistingGatt();
@@ -185,6 +200,69 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         }
 
         return list;
+    }
+
+    public void toggleNotifyState(
+        final @NonNull BluetoothGattCharacteristic characteristic,
+        final boolean notifyState,
+        final long timeout,
+        final @NonNull UUCharacteristicDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.toggleNotifyState(characteristic, notifyState, timeout, delegate);
+        }
+    }
+
+    public void readCharacteristic(
+            final @NonNull BluetoothGattCharacteristic characteristic,
+            final long timeout,
+            final @NonNull UUCharacteristicDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.readCharacteristic(characteristic, timeout, delegate);
+        }
+    }
+
+    public void readDescriptor(
+            final @NonNull BluetoothGattDescriptor descriptor,
+            final long timeout,
+            final @NonNull UUDescriptorDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.readDescriptor(descriptor, timeout, delegate);
+        }
+    }
+
+    public void writeCharacteristic(
+            final @NonNull BluetoothGattCharacteristic characteristic,
+            final @NonNull byte[] data,
+            final long timeout,
+            final @NonNull UUCharacteristicDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.writeCharacteristic(characteristic, data, timeout, delegate);
+        }
+    }
+
+    public void writeCharacteristicWithoutResponse(
+            final @NonNull BluetoothGattCharacteristic characteristic,
+            final @NonNull byte[] data,
+            final long timeout,
+            final @NonNull UUCharacteristicDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.writeCharacteristicWithoutResponse(characteristic, data, timeout, delegate);
+        }
     }
 
     public long getTimeSinceLastUpdate()

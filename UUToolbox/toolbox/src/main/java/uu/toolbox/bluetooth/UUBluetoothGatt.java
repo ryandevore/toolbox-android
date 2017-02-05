@@ -28,9 +28,10 @@ class UUBluetoothGatt
     private UUConnectionDelegate connectionDelegate;
     private UUPeripheralDelegate serviceDiscoveryDelegate;
     private UUDescriptorDelegate writeDescriptorDelegate;
+    private UUDescriptorDelegate readDescriptorDelegate;
     private UUCharacteristicDelegate toggleNotifyDelegate;
     private UUCharacteristicDelegate writeCharacteristicDelegate;
-    private UUCharacteristicDelegate writeWithoutResponseCharacteristicDelegate;
+    private UUCharacteristicDelegate readCharacteristicDelegate;
 
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
     {
@@ -75,8 +76,6 @@ class UUBluetoothGatt
         });
     }
 
-
-
     void discoverServices(
             final long timeout,
             final @NonNull UUPeripheralDelegate delegate)
@@ -106,6 +105,72 @@ class UUBluetoothGatt
                 // else
                 //
                 // wait for delegate or timeout
+            }
+        });
+    }
+
+    void readCharacteristic(
+            final @NonNull BluetoothGattCharacteristic characteristic,
+            final long timeout,
+            final @NonNull UUCharacteristicDelegate delegate)
+    {
+        readCharacteristicDelegate = delegate;
+
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (bluetoothGatt == null)
+                {
+                    debugLog("readCharacteristic", "bluetoothGatt is null!");
+                    notifyCharacteristicRead(characteristic, UUBluetoothError.notConnectedError());
+                    return;
+                }
+
+                debugLog("readCharacteristic", "characteristic: " + characteristic.getUuid());
+
+                boolean success = bluetoothGatt.readCharacteristic(characteristic);
+
+                debugLog("readCharacteristic", "writeCharacteristic returned " + success);
+
+                if (!success)
+                {
+                    notifyCharacteristicRead(characteristic, UUBluetoothError.operationFailedError("readCharacteristic"));
+                }
+            }
+        });
+    }
+
+    void readDescriptor(
+            final @NonNull BluetoothGattDescriptor descriptor,
+            final long timeout,
+            final @NonNull UUDescriptorDelegate delegate)
+    {
+        readDescriptorDelegate = delegate;
+
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (bluetoothGatt == null)
+                {
+                    debugLog("readDescriptor", "bluetoothGatt is null!");
+                    notifyDescriptorRead(descriptor, UUBluetoothError.notConnectedError());
+                    return;
+                }
+
+                debugLog("readDescriptor", "descriptor: " + descriptor.getUuid());
+
+                boolean success = bluetoothGatt.readDescriptor(descriptor);
+
+                debugLog("readCharacteristic", "readDescriptor returned " + success);
+
+                if (!success)
+                {
+                    notifyDescriptorRead(descriptor, UUBluetoothError.operationFailedError("readDescriptor"));
+                }
             }
         });
     }
@@ -410,6 +475,20 @@ class UUBluetoothGatt
         notifyCharacteristicDelegate(delegate, characteristic, error);
     }
 
+    private void notifyCharacteristicRead(final @NonNull BluetoothGattCharacteristic characteristic, final @Nullable UUBluetoothError error)
+    {
+        UUCharacteristicDelegate delegate = readCharacteristicDelegate;
+        readCharacteristicDelegate = null;
+        notifyCharacteristicDelegate(delegate, characteristic, error);
+    }
+
+    private void notifyDescriptorRead(final @NonNull BluetoothGattDescriptor descriptor, final @Nullable UUBluetoothError error)
+    {
+        UUDescriptorDelegate delegate = readDescriptorDelegate;
+        readDescriptorDelegate = null;
+        notifyDescriptorDelegate(delegate, descriptor, error);
+    }
+
     private void disconnectGatt()
     {
         try
@@ -518,6 +597,9 @@ class UUBluetoothGatt
                     "characteristic: " + characteristic +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
+
+            // TODO: Handle errors
+            notifyCharacteristicRead(characteristic, null);
         }
 
         @Override

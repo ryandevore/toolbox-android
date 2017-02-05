@@ -2,12 +2,14 @@ package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
@@ -241,6 +243,117 @@ public class UUBluetooth
         return UUString.componentsJoinedByString(parts, ", ");
     }
 
+    /**
+     * Returns a flag indicating if a characteristic is configured for notifications
+     *
+     * @param characteristic the characteristic to check
+     *
+     * @return true or false
+     */
+    public static boolean isNotifying(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUBluetoothConstants.Descriptors.CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
+        if (descriptor != null)
+        {
+            byte[] data = descriptor.getValue();
+            if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, data))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns a flag indicating if a characteristic is configured for indications
+     *
+     * @param characteristic the characteristic to check
+     *
+     * @return true or false
+     */
+    public static boolean isIndicating(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUBluetoothConstants.Descriptors.CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
+        if (descriptor != null)
+        {
+            byte[] data = descriptor.getValue();
+            if (Arrays.equals(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE, data))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks a characteristic property to see if the specified bit is set
+     *
+     * @param characteristic the characteristic to check
+     * @param property the property to check
+     * @return true or false
+     */
+    private static boolean isCharacteristicPropertySet(final @NonNull BluetoothGattCharacteristic characteristic, final int property)
+    {
+        return UUInteger.isBitSet(characteristic.getProperties(), property);
+    }
+
+    /**
+     * Checks a characteristic to see if it supports the notify property
+     *
+     * @param characteristic the characteristic to check
+     * @return true or false
+     */
+    public static boolean canToggleNotify(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return isCharacteristicPropertySet(characteristic, BluetoothGattCharacteristic.PROPERTY_NOTIFY);
+    }
+
+    /**
+     * Checks a characteristic to see if it supports the indicate property
+     *
+     * @param characteristic the characteristic to check
+     * @return true or false
+     */
+    public static boolean canToggleIndicate(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return isCharacteristicPropertySet(characteristic, BluetoothGattCharacteristic.PROPERTY_INDICATE);
+    }
+
+    /**
+     * Checks a characteristic to see if it supports the read data property
+     *
+     * @param characteristic the characteristic to check
+     * @return true or false
+     */
+    public static boolean canReadData(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return isCharacteristicPropertySet(characteristic, BluetoothGattCharacteristic.PROPERTY_READ);
+    }
+
+    /**
+     * Checks a characteristic to see if it supports the write data property
+     *
+     * @param characteristic the characteristic to check
+     * @return true or false
+     */
+    public static boolean canWriteData(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return isCharacteristicPropertySet(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE);
+    }
+
+    /**
+     * Checks a characteristic to see if it supports the write data without response property
+     *
+     * @param characteristic the characteristic to check
+     * @return true or false
+     */
+    public static boolean canWriteWithoutResponse(final @NonNull BluetoothGattCharacteristic characteristic)
+    {
+        return isCharacteristicPropertySet(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Shared Bluetooth Gatt management
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,57 +401,6 @@ public class UUBluetooth
         if (gatt != null)
         {
             gatt.disconnect();
-        }
-    }
-
-    public static void discoverServices(final @NonNull UUPeripheral peripheral, final long timeout, final @NonNull UUPeripheralDelegate delegate)
-    {
-        UUBluetoothGatt gatt = gattForPeripheral(peripheral);
-        if (gatt != null)
-        {
-            gatt.discoverServices(timeout, delegate);
-        }
-    }
-
-    public static void toggleNotifyState(
-        final @NonNull UUPeripheral peripheral,
-        final @NonNull BluetoothGattCharacteristic characteristic,
-        final boolean notifyState,
-        final long timeout,
-        final @NonNull UUCharacteristicDelegate delegate)
-    {
-        UUBluetoothGatt gatt = gattForPeripheral(peripheral);
-        if (gatt != null)
-        {
-            gatt.toggleNotifyState(characteristic, notifyState, timeout, delegate);
-        }
-    }
-
-    public static void writeCharacteristic(
-            final @NonNull UUPeripheral peripheral,
-            final @NonNull BluetoothGattCharacteristic characteristic,
-            final @NonNull byte[] data,
-            final long timeout,
-            final @NonNull UUCharacteristicDelegate delegate)
-    {
-        UUBluetoothGatt gatt = gattForPeripheral(peripheral);
-        if (gatt != null)
-        {
-            gatt.writeCharacteristic(characteristic, data, timeout, delegate);
-        }
-    }
-
-    public static void writeCharacteristicWithoutResponse(
-            final @NonNull UUPeripheral peripheral,
-            final @NonNull BluetoothGattCharacteristic characteristic,
-            final @NonNull byte[] data,
-            final long timeout,
-            final @NonNull UUCharacteristicDelegate delegate)
-    {
-        UUBluetoothGatt gatt = gattForPeripheral(peripheral);
-        if (gatt != null)
-        {
-            gatt.writeCharacteristicWithoutResponse(characteristic, data, timeout, delegate);
         }
     }
 }
