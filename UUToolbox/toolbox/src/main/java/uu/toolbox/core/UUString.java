@@ -1,5 +1,8 @@
 package uu.toolbox.core;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -12,6 +15,9 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public class UUString 
 {
+    /**
+     * "UTF-8" as a constant string
+     */
     public static final String CHARSET_UTF8 = "UTF-8";
 
     /**
@@ -205,6 +211,13 @@ public class UUString
         }
     }
 
+    /**
+     * Safely compares two strings
+     *
+     * @param lhs left side
+     * @param rhs right side
+     * @return boolean
+     */
     public static boolean areEqual(final String lhs, final String rhs)
     {
         if (lhs == null && rhs == null)
@@ -219,5 +232,29 @@ public class UUString
         {
             return lhs.equals(rhs);
         }
+    }
+
+    /**
+     * Wrapper to return an Object's toString() result or null.
+     *
+     * @param object the object
+     *
+     * @return a non null string
+     */
+    public static @NonNull String safeToString(final @Nullable Object object)
+    {
+        String result = null;
+
+        if (object != null)
+        {
+            result = object.toString();
+        }
+
+        if (result == null)
+        {
+            result = "";
+        }
+
+        return result;
     }
 }
