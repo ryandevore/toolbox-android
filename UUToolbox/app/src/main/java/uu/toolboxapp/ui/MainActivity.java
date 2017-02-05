@@ -1,13 +1,14 @@
-package uu.toolboxapp;
+package uu.toolboxapp.ui;
 
-import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
+import uu.toolboxapp.R;
 import uu.toolboxapp.server.WeatherService;
 
-public class MainActivity extends Activity
+public class MainActivity extends AppCompatActivity
 {
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -24,5 +25,15 @@ public class MainActivity extends Activity
 
             }
         });
+
+
+        Intent intent = new Intent(this, BtleScanActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
     }
 }

@@ -44,9 +44,9 @@ public class AppDatabase extends UUDatabase
         return DB_VERSION;
     }
 
-    public ArrayList<UUDataModel> getDataModels()
+    public ArrayList<UUDataModel> getDataModels(int version)
     {
-        switch (getVersion())
+        switch (version)
         {
             case DB_VERSION_ONE:
             {
@@ -58,6 +58,12 @@ public class AppDatabase extends UUDatabase
                 return null;
             }
         }
+    }
+
+    @Override
+    public ArrayList<String> getSqlCreateLines(int version)
+    {
+        return null;
     }
 
     public void handlePostOpen(SQLiteDatabase db)
