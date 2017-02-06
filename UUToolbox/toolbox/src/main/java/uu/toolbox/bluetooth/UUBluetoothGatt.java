@@ -24,13 +24,15 @@ import uu.toolbox.logging.UULog;
 class UUBluetoothGatt
 {
     // Internal Constants
-    private static final String CONNECT_WATCHDOG_BUCKET = "UUCoreBluetoothConnectWatchdogBucket";
-    private static final String SERVICE_DISCOVERY_WATCHDOG_BUCKET = "UUCoreBluetoothServiceDiscoveryWatchdogBucket";
-    private static final String CHARACTERISTIC_NOTIFY_STATE_WATCHDOG_BUCKET = "UUCoreBluetoothCharacteristicNotifyStateWatchdogBucket";
-    private static final String READ_CHARACTERISTIC_WATCHDOG_BUCKET = "UUCoreBluetoothReadCharacteristicValueWatchdogBucket";
-    private static final String WRITE_CHARACTERISTIC_WATCHDOG_BUCKET = "UUCoreBluetoothWriteCharacteristicValueWatchdogBucket";
-    private static final String READ_RSSI_WATCHDOG_BUCKET = "UUCoreBluetoothReadRssiWatchdogBucket";
-    private static final String POLL_RSSI_BUCKET = "UUCoreBluetoothPollRssiBucket";
+    private static final String CONNECT_WATCHDOG_BUCKET = "UUBluetoothConnectWatchdogBucket";
+    private static final String SERVICE_DISCOVERY_WATCHDOG_BUCKET = "UUBluetoothServiceDiscoveryWatchdogBucket";
+    private static final String CHARACTERISTIC_NOTIFY_STATE_WATCHDOG_BUCKET = "UUBluetoothCharacteristicNotifyStateWatchdogBucket";
+    private static final String READ_CHARACTERISTIC_WATCHDOG_BUCKET = "UUBluetoothReadCharacteristicValueWatchdogBucket";
+    private static final String WRITE_CHARACTERISTIC_WATCHDOG_BUCKET = "UUBluetoothWriteCharacteristicValueWatchdogBucket";
+    private static final String READ_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothReadDescriptorValueWatchdogBucket";
+    private static final String WRITE_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothWriteDescriptorValueWatchdogBucket";
+    private static final String READ_RSSI_WATCHDOG_BUCKET = "UUBluetoothReadRssiWatchdogBucket";
+    private static final String POLL_RSSI_BUCKET = "UUBluetoothPollRssiBucket";
 
     private static final boolean DEBUG_LOGGING_ENABLED = true;
 
@@ -41,12 +43,13 @@ class UUBluetoothGatt
     private UUConnectionDelegate connectionDelegate;
     private UUPeripheralDelegate serviceDiscoveryDelegate;
     private UUDescriptorDelegate writeDescriptorDelegate;
-    private UUDescriptorDelegate readDescriptorDelegate;
+
     private UUCharacteristicDelegate setNotifyDelegate;
     private UUCharacteristicDelegate writeCharacteristicDelegate;
 
     private final HashMap<String, UUCharacteristicDelegate> readCharacteristicDataDelegates = new HashMap<>();
     private final HashMap<String, UUCharacteristicDelegate> characteristicChangedDelegates = new HashMap<>();
+    private final HashMap<String, UUDescriptorDelegate> readDescriptorDataDelegates = new HashMap<>();
 
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
     {
@@ -93,13 +96,8 @@ class UUBluetoothGatt
             {
                 debugLog("connect", "Connect timeout: " + peripheral);
 
-                connectionDelegate = null;
-
                 disconnect();
-
-                UUBluetoothError err = UUBluetoothError.timeoutError();
-                UUTimer.cancelActiveTimer(timerId);
-                delegate.onDisconnected(peripheral, err);
+                notifyDisconnected(UUBluetoothError.timeoutError());
             }
         });
 
@@ -151,13 +149,8 @@ class UUBluetoothGatt
             {
                 debugLog("discoverServices", "Service Discovery timeout: " + peripheral);
 
-                serviceDiscoveryDelegate = null;
-
                 disconnect();
-
-                UUBluetoothError err = UUBluetoothError.timeoutError();
-                UUTimer.cancelActiveTimer(timerId);
-                delegate.onComplete(peripheral, err);
+                notifyServicesDiscovered(UUBluetoothError.timeoutError());
             }
         });
 
@@ -193,7 +186,7 @@ class UUBluetoothGatt
             final long timeout,
             final @NonNull UUCharacteristicDelegate delegate)
     {
-        final String timerId = readDataWatchdogTimerId(characteristic);
+        final String timerId = readCharacteristicDataWatchdogTimerId(characteristic);
 
         UUCharacteristicDelegate readCharacteristicDelegate = new UUCharacteristicDelegate()
         {
@@ -201,13 +194,25 @@ class UUBluetoothGatt
             public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
             {
                 debugLog("readCharacteristic", "Read characteristic complete: " + peripheral + ", error: " + error + ", data: " + UUString.byteToHex(characteristic.getValue()));
-                removeReadCharacteristicDelegate(characteristic);
                 UUTimer.cancelActiveTimer(timerId);
+                removeReadCharacteristicDelegate(characteristic);
                 delegate.onComplete(peripheral, characteristic, error);
             }
         };
 
         registerReadCharacteristicDelegate(characteristic, readCharacteristicDelegate);
+
+        UUTimer.startTimer(timerId, timeout, peripheral, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("readCharacteristic", "Read characteristic timeout: " + peripheral);
+
+                disconnect();
+                notifyCharacteristicRead(characteristic, UUBluetoothError.timeoutError());
+            }
+        });
 
         UUThread.runOnMainThread(new Runnable()
         {
@@ -240,7 +245,33 @@ class UUBluetoothGatt
             final long timeout,
             final @NonNull UUDescriptorDelegate delegate)
     {
-        readDescriptorDelegate = delegate;
+        final String timerId = readDescritporDataWatchdogTimerId(descriptor);
+
+        UUDescriptorDelegate readDescriptorDelegate = new UUDescriptorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattDescriptor descriptor, @Nullable UUBluetoothError error)
+            {
+                debugLog("readDescriptor", "Read descriptor complete: " + peripheral + ", error: " + error + ", data: " + UUString.byteToHex(descriptor.getValue()));
+                removeReadDescriptorDelegate(descriptor);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(peripheral, descriptor, error);
+            }
+        };
+
+        registerReadDescriptorDelegate(descriptor, readDescriptorDelegate);
+
+        UUTimer.startTimer(timerId, timeout, peripheral, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("readDescriptor", "Read descriptor timeout: " + peripheral);
+
+                disconnect();
+                notifyDescriptorRead(descriptor, UUBluetoothError.timeoutError());
+            }
+        });
 
         UUThread.runOnMainThread(new Runnable()
         {
@@ -258,7 +289,7 @@ class UUBluetoothGatt
 
                 boolean success = bluetoothGatt.readDescriptor(descriptor);
 
-                debugLog("readCharacteristic", "readDescriptor returned " + success);
+                debugLog("readDescriptor", "readDescriptor returned " + success);
 
                 if (!success)
                 {
@@ -593,8 +624,8 @@ class UUBluetoothGatt
 
     private void notifyDescriptorRead(final @NonNull BluetoothGattDescriptor descriptor, final @Nullable UUBluetoothError error)
     {
-        UUDescriptorDelegate delegate = readDescriptorDelegate;
-        readDescriptorDelegate = null;
+        UUDescriptorDelegate delegate = getReadDescriptorDelegate(descriptor);
+        removeReadDescriptorDelegate(descriptor);
         notifyDescriptorDelegate(delegate, descriptor, error);
     }
 
@@ -628,22 +659,43 @@ class UUBluetoothGatt
         return readCharacteristicDataDelegates.get(safeUuidString(characteristic));
     }
 
+    private void registerReadDescriptorDelegate(final @NonNull BluetoothGattDescriptor descriptor, final @NonNull UUDescriptorDelegate delegate)
+    {
+        readDescriptorDataDelegates.put(safeUuidString(descriptor), delegate);
+    }
+
+    private void removeReadDescriptorDelegate(final @NonNull BluetoothGattDescriptor descriptor)
+    {
+        readDescriptorDataDelegates.remove(safeUuidString(descriptor));
+    }
+
+    private @Nullable UUDescriptorDelegate getReadDescriptorDelegate(final @NonNull BluetoothGattDescriptor descriptor)
+    {
+        return readDescriptorDataDelegates.get(safeUuidString(descriptor));
+    }
+
     private @NonNull String safeUuidString(final @Nullable BluetoothGattCharacteristic characteristic)
     {
-        String result = null;
-
         if (characteristic != null)
         {
-            result = safeUuidString(characteristic.getUuid());
+            return safeUuidString(characteristic.getUuid());
         }
-
-        if (result == null)
+        else
         {
-            result = "";
+            return "";
         }
+    }
 
-        result = result.toLowerCase();
-        return result;
+    private @NonNull String safeUuidString(final @Nullable BluetoothGattDescriptor descriptor)
+    {
+        if (descriptor != null)
+        {
+            return safeUuidString(descriptor.getUuid());
+        }
+        else
+        {
+            return "";
+        }
     }
 
     private @NonNull String safeUuidString(final @Nullable UUID uuid)
@@ -736,7 +788,12 @@ class UUBluetoothGatt
 
     private @NonNull String formatCharacteristicTimerId(final @NonNull BluetoothGattCharacteristic characteristic, final @NonNull String bucket)
     {
-        return String.format(Locale.US, "%s__%s__%s", peripheral.getAddress(), safeUuidString(characteristic), bucket);
+        return String.format(Locale.US, "%s__ch_%s__%s", peripheral.getAddress(), safeUuidString(characteristic), bucket);
+    }
+
+    private @NonNull String formatDescriptorTimerId(final @NonNull BluetoothGattDescriptor descriptor, final @NonNull String bucket)
+    {
+        return String.format(Locale.US, "%s__de_%s__%s", peripheral.getAddress(), safeUuidString(descriptor), bucket);
     }
 
     private @NonNull String connectWatchdogTimerId()
@@ -754,9 +811,14 @@ class UUBluetoothGatt
         return formatCharacteristicTimerId(characteristic, CHARACTERISTIC_NOTIFY_STATE_WATCHDOG_BUCKET);
     }
 
-    private @NonNull String readDataWatchdogTimerId(final @NonNull BluetoothGattCharacteristic characteristic)
+    private @NonNull String readCharacteristicDataWatchdogTimerId(final @NonNull BluetoothGattCharacteristic characteristic)
     {
         return formatCharacteristicTimerId(characteristic, READ_CHARACTERISTIC_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String readDescritporDataWatchdogTimerId(final @NonNull BluetoothGattDescriptor descriptor)
+    {
+        return formatDescriptorTimerId(descriptor, READ_DESCRIPTOR_WATCHDOG_BUCKET);
     }
 
     private @NonNull String writeDataWatchdogTimerId(final @NonNull BluetoothGattCharacteristic characteristic)
