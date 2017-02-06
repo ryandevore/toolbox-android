@@ -171,12 +171,33 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onPollRssiClicked(View view)
     {
+        /*
+        final UUTimer t = new UUTimer("RssiPoller", 500, true, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                UULog.debug(getClass(), "RssiPoller.onTimer", "tick, userInfo: " + userInfo + ", isMainThread: " + UUThread.isMainThread());
+            }
+        });
+
+        t.start();
+
+        UUTimer.startTimer("CancelPoller", 0, null, new UUTimer.WatchdogTimerDelegate()
+        {
+            @Override
+            public void onTimer(@Nullable Object userInfo)
+            {
+                UULog.debug(getClass(), "CancelPoller.onTimer", "Cancelling repeat timer");
+                t.cancel();
+            }
+        });*/
 
     }
 
     public void onDiscoverServicesClicked(View view)
     {
-        peripheral.discoverServices(30000, new UUPeripheralDelegate()
+        peripheral.discoverServices(10000, new UUPeripheralDelegate()
         {
             @Override
             public void onComplete(final @NonNull UUPeripheral peripheral, final @Nullable UUBluetoothError error)
@@ -200,7 +221,7 @@ public class PeripheralDetailActivity extends AppCompatActivity
     private void connect()
     {
         UULog.debug(getClass(), "connect", "Connecting to : " + peripheral);
-        UUBluetooth.connectPeripheral(this, peripheral, false, 30000, new UUConnectionDelegate()
+        UUBluetooth.connectPeripheral(this, peripheral, false, 10000, new UUConnectionDelegate()
         {
             @Override
             public void onConnected(@NonNull UUPeripheral peripheral)

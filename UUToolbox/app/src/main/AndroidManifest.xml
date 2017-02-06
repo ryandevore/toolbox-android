@@ -20,6 +20,7 @@
         <activity android:name=".ui.BtleScanActivity" android:screenOrientation="portrait" />
         <activity android:name=".ui.PeripheralDetailActivity" android:screenOrientation="portrait" />
         <activity android:name=".ui.ServiceDetailActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.CharacteristicDetailActivity" android:screenOrientation="portrait" />
 
     </application>
 

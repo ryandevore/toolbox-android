@@ -1,6 +1,7 @@
 package uu.toolboxapp.ui;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +25,7 @@ import java.util.UUID;
 
 import uu.toolbox.bluetooth.UUBluetooth;
 import uu.toolbox.bluetooth.UUBluetoothError;
-import uu.toolbox.bluetooth.UUCharacteristicDelegate;
+import uu.toolbox.bluetooth.UUDescriptorDelegate;
 import uu.toolbox.bluetooth.UUPeripheral;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
@@ -32,25 +33,24 @@ import uu.toolbox.ui.UUActivity;
 import uu.toolbox.ui.UUListView;
 import uu.toolboxapp.R;
 
-import static uu.toolbox.bluetooth.UUBluetooth.isNotifying;
-
 /**
  * Created by ryandevore on 12/29/16.
  */
 
-public class ServiceDetailActivity extends AppCompatActivity
+public class CharacteristicDetailActivity extends AppCompatActivity
 {
     private UUPeripheral peripheral;
     private BluetoothGattService service;
-    private final ArrayList<BluetoothGattCharacteristic> tableData = new ArrayList<>();
+    private BluetoothGattCharacteristic characteristic;
+    private final ArrayList<BluetoothGattDescriptor> tableData = new ArrayList<>();
     private ListView listView;
-    private ServiceDetailActivity.BtleCharacteristicAdapter tableAdapter;
+    private CharacteristicDetailActivity.BtleDescriptorAdapter tableAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_service_detail);
+        setContentView(R.layout.activity_characteristic_detail);
 
         Intent intent = getIntent();
         if (intent != null)
@@ -79,6 +79,29 @@ public class ServiceDetailActivity extends AppCompatActivity
                     }
                 }
             }
+
+            if (service != null)
+            {
+                if (intent.hasExtra("characteristicUuid"))
+                {
+                    String characteristicUuidString = intent.getStringExtra("characteristicUuid");
+                    if (UUString.isNotEmpty(characteristicUuidString))
+                    {
+                        UUID characteristicUuid = UUID.fromString(characteristicUuidString);
+                        if (characteristicUuid != null && peripheral != null)
+                        {
+                            for (BluetoothGattCharacteristic charTmp : service.getCharacteristics())
+                            {
+                                if (characteristicUuid.toString().compareToIgnoreCase(charTmp.getUuid().toString()) == 0)
+                                {
+                                    characteristic = charTmp;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (peripheral == null)
@@ -95,10 +118,17 @@ public class ServiceDetailActivity extends AppCompatActivity
             return;
         }
 
+        if (characteristic == null)
+        {
+            UUActivity.showToast(this, getClass().getName() + " requires a characteristic be passed with launch intent", Toast.LENGTH_SHORT);
+            finish();
+            return;
+        }
+
         setTitle(peripheral.getName());
 
-        tableAdapter = new ServiceDetailActivity.BtleCharacteristicAdapter(this, tableData);
-        listView = UUActivity.findListViewById (this, R.id.characteristics_list_view);
+        tableAdapter = new CharacteristicDetailActivity.BtleDescriptorAdapter(this, tableData);
+        listView = UUActivity.findListViewById (this, R.id.descriptor_list_view);
         if (listView != null)
         {
             listView.setAdapter(tableAdapter);
@@ -107,7 +137,7 @@ public class ServiceDetailActivity extends AppCompatActivity
         updateHeader();
         //updateButtons();
 
-        tableData.addAll(service.getCharacteristics());
+        tableData.addAll(characteristic.getDescriptors());
         tableAdapter.notifyDataSetChanged();
     }
 
@@ -118,91 +148,37 @@ public class ServiceDetailActivity extends AppCompatActivity
         header.update(service);
     }
 
-    private void setNotify(final @NonNull BluetoothGattCharacteristic characteristic, final int position)
+    private void readData(final @NonNull BluetoothGattDescriptor descriptor, final int position)
     {
-        boolean isNotifying = UUBluetooth.isNotifying(characteristic);
-
-        peripheral.setNotifyState(characteristic, !isNotifying, 30000, new UUCharacteristicDelegate()
+        peripheral.readDescriptor(descriptor, 30000, new UUDescriptorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
-            {
-                UULog.debug(getClass(), "setNotify.characteristicChanged",
-                    "Characteristic changed, characteristic: " + characteristic.getUuid() +
-                    ", data: " + UUString.byteToHex(characteristic.getValue()) +
-                    ", error: " + error);
-            }
-        },
-        new UUCharacteristicDelegate()
-        {
-            @Override
-            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
-            {
-                UULog.debug(getClass(), "setNotify.onComplete",
-                    "Set Notify complete, characteristic: " + characteristic.getUuid() +
-                    ", error: " + error);
-
-                UUListView.reloadRow(listView, position);
-            }
-        });
-    }
-
-    private void readData(final @NonNull BluetoothGattCharacteristic characteristic, final int position)
-    {
-        peripheral.readCharacteristic(characteristic, 30000, new UUCharacteristicDelegate()
-        {
-            @Override
-            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattDescriptor descriptor, @Nullable UUBluetoothError error)
             {
                 UULog.debug(getClass(), "readData.onComplete",
-                    "Read Data complete, characteristic: " + characteristic.getUuid() +
+                    "Read Data complete, descriptor: " + descriptor.getUuid() +
                     ", error: " + error +
-                    ", data: " + UUString.byteToHex(characteristic.getValue()));
+                    ", data: " + UUString.byteToHex(descriptor.getValue()));
 
                 UUListView.reloadRow(listView, position);
             }
         });
     }
 
-    private void writeData(final @NonNull BluetoothGattCharacteristic characteristic, final byte[] data, final int position)
+    private void writeData(final @NonNull BluetoothGattDescriptor descriptor, final byte[] data, final int position)
     {
-        peripheral.writeCharacteristic(characteristic, data, 30000, new UUCharacteristicDelegate()
+        peripheral.writeDescriptor(descriptor, data, 30000, new UUDescriptorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattDescriptor characteristic, @Nullable UUBluetoothError error)
             {
                 UULog.debug(getClass(), "writeData.onComplete",
-                        "Write Data complete, characteristic: " + characteristic.getUuid() +
-                                ", error: " + error);
+                    "Write Data complete, descriptor: " + characteristic.getUuid() +
+                    ", error: " + error);
 
                 UUListView.reloadRow(listView, position);
             }
         });
-    }
-
-    private void writeDataWithoutResponse(final @NonNull BluetoothGattCharacteristic characteristic, final byte[] data, final int position)
-    {
-        peripheral.writeCharacteristicWithoutResponse(characteristic, data, 30000, new UUCharacteristicDelegate()
-        {
-            @Override
-            public void onComplete(@NonNull UUPeripheral peripheral, @NonNull BluetoothGattCharacteristic characteristic, @Nullable UUBluetoothError error)
-            {
-                UULog.debug(getClass(), "writeDataWithoutResponse.onComplete",
-                        "Write Data Without Response complete, characteristic: " + characteristic.getUuid() +
-                                ", error: " + error);
-
-                UUListView.reloadRow(listView, position);
-            }
-        });
-    }
-
-    private void onCharacteristicClicked(final @NonNull BluetoothGattCharacteristic characteristic)
-    {
-        Intent intent = new Intent(this, CharacteristicDetailActivity.class);
-        intent.putExtra("peripheral", peripheral);
-        intent.putExtra("serviceUuid", service.getUuid().toString());
-        intent.putExtra("characteristicUuid", characteristic.getUuid().toString());
-        startActivity(intent);
     }
 
     private void dismissKeyboard(final @NonNull EditText editText)
@@ -211,11 +187,11 @@ public class ServiceDetailActivity extends AppCompatActivity
         imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
 
-    class BtleCharacteristicAdapter extends ArrayAdapter<BluetoothGattCharacteristic>
+    class BtleDescriptorAdapter extends ArrayAdapter<BluetoothGattDescriptor>
     {
-        public BtleCharacteristicAdapter(Context context, ArrayList<BluetoothGattCharacteristic> data)
+        public BtleDescriptorAdapter(Context context, ArrayList<BluetoothGattDescriptor> data)
         {
-            super(context, R.layout.characteristic_list_row, data);
+            super(context, R.layout.descriptor_list_row, data);
         }
 
         @Override
@@ -225,7 +201,7 @@ public class ServiceDetailActivity extends AppCompatActivity
             View view = convertView;
             if (view == null)
             {
-                view = inflater.inflate(R.layout.characteristic_list_row, parent, false);
+                view = inflater.inflate(R.layout.descriptor_list_row, parent, false);
             }
 
             final TextView idLabel = (TextView)view.findViewById(R.id.id_label);
@@ -238,7 +214,7 @@ public class ServiceDetailActivity extends AppCompatActivity
             final Button writeDataLink = (Button) view.findViewById(R.id.write_data_button);
             final Button writeDataWithoutResponseLink = (Button) view.findViewById(R.id.write_data_without_response_button);
 
-            final BluetoothGattCharacteristic rowData = getItem(position);
+            final BluetoothGattDescriptor rowData = getItem(position);
             if (rowData != null)
             {
                 UUID uuid = rowData.getUuid();
@@ -253,7 +229,9 @@ public class ServiceDetailActivity extends AppCompatActivity
 
                 nameLabel.setText(UUBluetooth.bluetoothSpecName(uuid));
 
+                /*
                 propertiesLabel.setText(UUBluetooth.characteristicPropertiesToString(rowData.getProperties()));
+
 
                 if (isNotifying(rowData))
                 {
@@ -264,11 +242,11 @@ public class ServiceDetailActivity extends AppCompatActivity
                 {
                     isNotifyingLabel.setText(R.string.no);
                     toggleNotifyLink.setText(R.string.turn_notify_on);
-                }
+                }*/
 
                 dataEditBox.setText(UUString.byteToHex(rowData.getValue()));
 
-
+/*
                 boolean canToggleNotify = UUBluetooth.canToggleNotify(rowData);
                 boolean canReadData = UUBluetooth.canReadData(rowData);
                 boolean canWriteData = UUBluetooth.canWriteData(rowData);
@@ -284,7 +262,8 @@ public class ServiceDetailActivity extends AppCompatActivity
                 readDataLink.setEnabled(canReadData);
                 writeDataLink.setEnabled(canWriteData);
                 writeDataWithoutResponseLink.setEnabled(canWriteDataWithoutResponse);
-
+*/
+                /*
                 toggleNotifyLink.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -292,7 +271,7 @@ public class ServiceDetailActivity extends AppCompatActivity
                     {
                         setNotify(rowData, position);
                     }
-                });
+                });*/
 
                 readDataLink.setOnClickListener(new View.OnClickListener()
                 {
@@ -313,6 +292,7 @@ public class ServiceDetailActivity extends AppCompatActivity
                     }
                 });
 
+                /*
                 writeDataWithoutResponseLink.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -321,16 +301,7 @@ public class ServiceDetailActivity extends AppCompatActivity
                         dismissKeyboard(dataEditBox);
                         writeDataWithoutResponse(rowData, UUString.hexToByte(dataEditBox.getText().toString()), position);
                     }
-                });
-
-                view.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        onCharacteristicClicked(rowData);
-                    }
-                });
+                });*/
             }
 
             return view;
