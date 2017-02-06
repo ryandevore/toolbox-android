@@ -138,6 +138,23 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         return list;
     }
 
+
+    public boolean hasServiceUuid(final @Nullable String uuidToCheck)
+    {
+        if (serviceUuids != null && uuidToCheck != null)
+        {
+            for (String uuid : serviceUuids)
+            {
+                if (uuid.equalsIgnoreCase(uuidToCheck))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public int getRssi()
     {
         return rssi;
@@ -306,12 +323,6 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
                     case DATA_TYPE_MANUFACTURING_DATA:
                     {
                         manufacturingData = data;
-
-                        if (UUData.isNotEmpty(manufacturingData))
-                        {
-                            parseManufacturingData(manufacturingData);
-                        }
-
                         break;
                     }
 
@@ -335,6 +346,11 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
                 }
 
                 index += (1 + length);
+            }
+
+            if (UUData.isNotEmpty(manufacturingData))
+            {
+                parseManufacturingData(manufacturingData);
             }
         }
     }
