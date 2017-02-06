@@ -104,7 +104,7 @@ public class UUBluetoothScanner
     }
 
     @SuppressWarnings("deprecation")
-    private void startLegacyScan(final UUID[] serviceUuidList, final Listener delegate)
+    private void startLegacyScan(final @Nullable UUID[] serviceUuidList, final @NonNull Listener delegate)
     {
         try
         {
@@ -128,17 +128,20 @@ public class UUBluetoothScanner
     }
 
     @TargetApi(21)
-    private void startScan(final UUID[] serviceUuidList, final Listener delegate)
+    private void startScan(final @Nullable UUID[] serviceUuidList, final @NonNull Listener delegate)
     {
         try
         {
             ArrayList<ScanFilter> filters = new ArrayList<>();
 
-            for (UUID uuid : serviceUuidList)
+            if (serviceUuidList != null)
             {
-                ScanFilter.Builder fb = new ScanFilter.Builder();
-                fb.setServiceUuid(new ParcelUuid(uuid));
-                filters.add(fb.build());
+                for (UUID uuid : serviceUuidList)
+                {
+                    ScanFilter.Builder fb = new ScanFilter.Builder();
+                    fb.setServiceUuid(new ParcelUuid(uuid));
+                    filters.add(fb.build());
+                }
             }
 
             ScanSettings.Builder builder = new ScanSettings.Builder();
