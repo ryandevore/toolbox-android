@@ -286,13 +286,12 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     public void writeCharacteristicWithoutResponse(
             final @NonNull BluetoothGattCharacteristic characteristic,
             final @NonNull byte[] data,
-            final long timeout,
             final @NonNull UUCharacteristicDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
         {
-            gatt.writeCharacteristicWithoutResponse(characteristic, data, timeout, delegate);
+            gatt.writeCharacteristicWithoutResponse(characteristic, data, delegate);
         }
     }
 

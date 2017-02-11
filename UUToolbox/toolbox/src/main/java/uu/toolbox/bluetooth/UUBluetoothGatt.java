@@ -438,7 +438,6 @@ class UUBluetoothGatt
     void writeCharacteristicWithoutResponse(
             final @NonNull BluetoothGattCharacteristic characteristic,
             final @NonNull byte[] data,
-            final long timeout,
             final @NonNull UUCharacteristicDelegate delegate)
     {
         writeCharacteristicDelegate = delegate;
@@ -466,10 +465,6 @@ class UUBluetoothGatt
                 if (!success)
                 {
                     notifyCharacteristicWritten(characteristic, UUBluetoothError.operationFailedError("writeCharacteristic"));
-                }
-                else
-                {
-                    notifyCharacteristicWritten(characteristic, null);
                 }
             }
         });
@@ -897,7 +892,7 @@ class UUBluetoothGatt
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
         {
             debugLog("onCharacteristicRead",
-                    "characteristic: " + characteristic +
+                    "characteristic: " + safeUuidString(characteristic) +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
 
@@ -909,7 +904,7 @@ class UUBluetoothGatt
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
         {
             debugLog("onCharacteristicWrite",
-                    "characteristic: " + characteristic +
+                    "characteristic: " + safeUuidString(characteristic) +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
 
@@ -921,7 +916,7 @@ class UUBluetoothGatt
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic)
         {
             debugLog("onCharacteristicChanged",
-                    "characteristic: " + characteristic +
+                    "characteristic: " + safeUuidString(characteristic) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
 
             notifyCharacteristicChanged(characteristic);
@@ -931,7 +926,7 @@ class UUBluetoothGatt
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status)
         {
             debugLog("onDescriptorRead",
-                    "descriptor: " + descriptor +
+                    "descriptor: " + safeUuidString(descriptor) +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(descriptor.getValue()));
 
@@ -943,7 +938,7 @@ class UUBluetoothGatt
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status)
         {
             debugLog("onDescriptorWrite",
-                    "descriptor: " + descriptor +
+                    "descriptor: " + safeUuidString(descriptor) +
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(descriptor.getValue()));
 
