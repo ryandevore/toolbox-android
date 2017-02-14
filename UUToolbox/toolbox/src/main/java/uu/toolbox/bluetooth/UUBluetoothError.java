@@ -132,7 +132,7 @@ public class UUBluetoothError
      */
     public static @Nullable UUBluetoothError gattStatusError(@NonNull final String method, final int gattStatus)
     {
-        if (gattStatus == BluetoothGatt.GATT_SUCCESS)
+        if (gattStatus != BluetoothGatt.GATT_SUCCESS)
         {
             UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
             err.errorDetails.put(DETAIL_KEY_METHOD_NAME, method);
