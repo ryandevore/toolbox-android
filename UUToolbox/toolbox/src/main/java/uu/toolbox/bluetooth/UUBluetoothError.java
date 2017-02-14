@@ -1,5 +1,6 @@
 package uu.toolbox.bluetooth;
 
+import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -18,6 +19,7 @@ public class UUBluetoothError
      * Lookup key for errorDetails for the failing underlying bluetooth method name.
      */
     public static final String DETAIL_KEY_METHOD_NAME = "methodName";
+    public static final String DETAIL_KEY_GATT_STATUS = "gattStatus";
 
     private Exception caughtException = null;
     private UUBluetoothErrorCode errorCode;
@@ -108,12 +110,38 @@ public class UUBluetoothError
      * Wrapper method to return an underlying Bluetooth method failure.  This is returned when
      * a method returns false or null or othe error condition.
      *
+     *  @param method the method name
+     *
      * @return a UUBluetoothError object
      */
-    public static @NonNull UUBluetoothError operationFailedError(final String method)
+    public static @NonNull UUBluetoothError operationFailedError(@NonNull final String method)
     {
         UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
         err.errorDetails.put(DETAIL_KEY_METHOD_NAME, method);
         return err;
+    }
+
+    /**
+     * Wrapper method to return an underlying Bluetooth method failure.  This is returned when
+     * a method returns false or null or othe error condition.
+     *
+     *  @param method the method name
+     *  @param gattStatus the gatt status at time of failure
+     *
+     * @return a UUBluetoothError object
+     */
+    public static @Nullable UUBluetoothError gattStatusError(@NonNull final String method, final int gattStatus)
+    {
+        if (gattStatus == BluetoothGatt.GATT_SUCCESS)
+        {
+            UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
+            err.errorDetails.put(DETAIL_KEY_METHOD_NAME, method);
+            err.errorDetails.put(DETAIL_KEY_GATT_STATUS, String.valueOf(gattStatus));
+            return err;
+        }
+        else
+        {
+            return null;
+        }
     }
 }

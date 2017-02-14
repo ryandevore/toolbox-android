@@ -83,7 +83,7 @@ class UUBluetoothGatt
             public void onDisconnected(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
             {
                 debugLog("connect", "Disconnected from: " + peripheral + ", error: " + error);
-                UUTimer.cancelActiveTimer(timerId);
+                cancelAllTimers();
                 delegate.onDisconnected(peripheral, error);
             }
         };
@@ -985,8 +985,7 @@ class UUBluetoothGatt
             }
             else if (newState == BluetoothGatt.STATE_DISCONNECTED)
             {
-                // TODO: Handle disconnect errors
-                notifyDisconnected(null);
+                notifyDisconnected(UUBluetoothError.gattStatusError("onConnectionStateChanged", status));
             }
         }
 
@@ -996,8 +995,7 @@ class UUBluetoothGatt
             debugLog("onServicesDiscovered",
                     String.format(Locale.US, "status: %s", statusLog(status)));
 
-            // TODO: Handle service discovery errors
-            notifyServicesDiscovered(null);
+            notifyServicesDiscovered(UUBluetoothError.gattStatusError("onServicesDiscovered", status));
         }
 
         @Override
@@ -1008,8 +1006,7 @@ class UUBluetoothGatt
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
 
-            // TODO: Handle errors
-            notifyCharacteristicRead(characteristic, null);
+            notifyCharacteristicRead(characteristic, UUBluetoothError.gattStatusError("onCharacteristicRead", status));
         }
 
         @Override
@@ -1020,8 +1017,7 @@ class UUBluetoothGatt
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(characteristic.getValue()));
 
-            // TODO: handle errors
-            notifyCharacteristicWritten(characteristic, null);
+            notifyCharacteristicWritten(characteristic, UUBluetoothError.gattStatusError("onCharacteristicWrite", status));
         }
 
         @Override
@@ -1042,8 +1038,7 @@ class UUBluetoothGatt
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(descriptor.getValue()));
 
-            // TODO: Handle errors
-            notifyDescriptorRead(descriptor, null);
+            notifyDescriptorRead(descriptor, UUBluetoothError.gattStatusError("onDescriptorRead", status));
         }
 
         @Override
@@ -1054,8 +1049,7 @@ class UUBluetoothGatt
                             ", status: " + statusLog(status) +
                             ", char.data: " + UUString.byteToHex(descriptor.getValue()));
 
-            // TODO: Handle errors
-            notifyDescriptorWritten(descriptor, null);
+            notifyDescriptorWritten(descriptor, UUBluetoothError.gattStatusError("onDescriptorWrite", status));
         }
 
         @Override
@@ -1069,5 +1063,5 @@ class UUBluetoothGatt
         {
             debugLog("onReadRemoteRssi", "rssi: " + rssi + ", status: " + status);
         }
-    };
+    }
 }
