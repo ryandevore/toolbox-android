@@ -83,19 +83,24 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     private BluetoothDevice device;
     private byte[] scanRecord;
     private int rssi;
+    private long lastRssiUpdateTime;
     private byte[] manufacturingData;
     private String localName;
     private final ArrayList<String> serviceUuids = new ArrayList<>();
-    private long timestamp;
+    private long firstAdvertisementTime = 0;
+    private long lastAdvertisementTime = 0;
 
     private BluetoothGatt bluetoothGatt;
 
     public UUPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @Nullable byte[] scanRecord)
     {
         this.device = device;
-        this.rssi = rssi;
         this.scanRecord = scanRecord;
-        this.timestamp = System.currentTimeMillis();
+
+        firstAdvertisementTime = System.currentTimeMillis();
+        lastAdvertisementTime = firstAdvertisementTime;
+
+        updateRssi(rssi);
         parseScanRecord();
     }
 
@@ -160,9 +165,25 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         return rssi;
     }
 
-    public long getTimestamp()
+    public long getLastRssiUpdateTime()
     {
-        return timestamp;
+        return lastRssiUpdateTime;
+    }
+
+    public void updateRssi(final int updatedRssi)
+    {
+        rssi = updatedRssi;
+        lastRssiUpdateTime = System.currentTimeMillis();
+    }
+
+    public long getFirstAdvertisementTime()
+    {
+        return firstAdvertisementTime;
+    }
+
+    public long getLastAdvertisementTime()
+    {
+        return lastAdvertisementTime;
     }
 
     public @NonNull ConnectionState getConnectionState(final @NonNull Context context)
@@ -296,9 +317,20 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         }
     }
 
+    public void readRssi(
+        final long timeout,
+        final @NonNull UUPeripheralDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.readRssi(timeout, delegate);
+        }
+    }
+
     public long getTimeSinceLastUpdate()
     {
-        return System.currentTimeMillis() - timestamp;
+        return System.currentTimeMillis() - lastAdvertisementTime ;
     }
 
     private void parseScanRecord()
@@ -401,8 +433,10 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     private static final String JSON_DEVICE_KEY = "device";
     private static final String JSON_RSSI_KEY = "rssi";
+    private static final String JSON_RSSI_LAST_UPDATE_KEY = "rssi_last_updated";
     private static final String JSON_SCAN_RECORD_KEY = "scanRecord";
-    private static final String JSON_TIMESTAMP_KEY = "timestamp";
+    private static final String JSON_FIRST_ADVERTISEMENT_KEY = "first_advertisement";
+    private static final String JSON_LAST_ADVERTISEMENT_KEY = "last_advertisement";
 
     @Override
     public JSONObject toJsonObject()
@@ -412,7 +446,9 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         UUJson.safePut(o, JSON_DEVICE_KEY, UUString.byteToHex(UUParcel.serializeParcel(device)));
         UUJson.safePut(o, JSON_SCAN_RECORD_KEY, UUString.byteToHex(scanRecord));
         UUJson.safePut(o, JSON_RSSI_KEY, rssi);
-        UUJson.safePut(o, JSON_TIMESTAMP_KEY, timestamp);
+        UUJson.safePut(o, JSON_RSSI_LAST_UPDATE_KEY, lastRssiUpdateTime);
+        UUJson.safePut(o, JSON_FIRST_ADVERTISEMENT_KEY, firstAdvertisementTime);
+        UUJson.safePut(o, JSON_LAST_ADVERTISEMENT_KEY, lastAdvertisementTime);
 
         return o;
     }
@@ -423,7 +459,9 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         device = UUParcel.deserializeParcelable(BluetoothDevice.CREATOR, UUString.hexToByte(UUJson.safeGetString(json, JSON_DEVICE_KEY)));
         scanRecord = UUString.hexToByte(UUJson.safeGetString(json, JSON_SCAN_RECORD_KEY));
         rssi = UUJson.safeGetInt(json, JSON_RSSI_KEY);
-        timestamp = UUJson.safeGetLong(json, JSON_TIMESTAMP_KEY);
+        lastRssiUpdateTime = UUJson.safeGetLong(json, JSON_RSSI_LAST_UPDATE_KEY);
+        firstAdvertisementTime = UUJson.safeGetLong(json, JSON_FIRST_ADVERTISEMENT_KEY);
+        lastAdvertisementTime = UUJson.safeGetLong(json, JSON_LAST_ADVERTISEMENT_KEY);
 
         // Fill in derived data from scan record
         parseScanRecord();

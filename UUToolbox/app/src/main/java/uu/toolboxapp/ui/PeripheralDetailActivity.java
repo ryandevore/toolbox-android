@@ -125,6 +125,13 @@ public class PeripheralDetailActivity extends AppCompatActivity
         connectButton.setEnabled((state == UUPeripheral.ConnectionState.Connected || state == Disconnected));
     }
 
+    private void updateTable()
+    {
+        tableData.clear();
+        tableData.addAll(peripheral.discoveredServices());
+        tableAdapter.notifyDataSetChanged();
+    }
+
     private void updateUi()
     {
         UUThread.runOnMainThread(new Runnable()
@@ -134,6 +141,7 @@ public class PeripheralDetailActivity extends AppCompatActivity
             {
                 updateHeader();
                 updateButtons();
+                updateTable();
             }
         });
     }
@@ -166,7 +174,14 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onReadRssiClicked(View view)
     {
-
+        peripheral.readRssi(300000, new UUPeripheralDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
+            {
+                updateUi();
+            }
+        });
     }
 
     public void onPollRssiClicked(View view)

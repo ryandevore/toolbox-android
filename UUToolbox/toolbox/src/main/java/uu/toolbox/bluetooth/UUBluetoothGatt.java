@@ -43,6 +43,7 @@ class UUBluetoothGatt
 
     private UUConnectionDelegate connectionDelegate;
     private UUPeripheralDelegate serviceDiscoveryDelegate;
+    private UUPeripheralDelegate readRssiDelegate;
 
     private final HashMap<String, UUCharacteristicDelegate> readCharacteristicDelegates = new HashMap<>();
     private final HashMap<String, UUCharacteristicDelegate> writeCharacteristicDelegates = new HashMap<>();
@@ -168,7 +169,7 @@ class UUBluetoothGatt
 
                 debugLog("discoverServices", "Discovering services for: " + peripheral);
                 boolean ok = bluetoothGatt.discoverServices();
-                debugLog("discoverServices", "returnCode:" + ok);
+                debugLog("discoverServices", "returnCode: " + ok);
 
                 if (!ok)
                 {
@@ -533,6 +534,62 @@ class UUBluetoothGatt
         });
     }
 
+    void readRssi(
+        final long timeout,
+        final @NonNull UUPeripheralDelegate delegate)
+    {
+        final String timerId = readRssiWatchdogTimerId();
+
+        readRssiDelegate = new UUPeripheralDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
+            {
+                debugLog("readRssi", "Read RSSI complete: " + peripheral + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(peripheral, error);
+            }
+        };
+
+        UUTimer.startTimer(timerId, timeout, peripheral, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("readRssi", "Read RSSI timeout: " + peripheral);
+
+                disconnect();
+                notifyReadRssiComplete(UUBluetoothError.timeoutError());
+            }
+        });
+
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (bluetoothGatt == null)
+                {
+                    debugLog("readRssi", "bluetoothGatt is null!");
+                    notifyReadRssiComplete(UUBluetoothError.notConnectedError());
+                    return;
+                }
+
+                debugLog("readRssi", "Reading RSSI for: " + peripheral);
+                boolean ok = bluetoothGatt.readRemoteRssi();
+                debugLog("readRssi", "returnCode: " + ok);
+
+                if (!ok)
+                {
+                    notifyReadRssiComplete(UUBluetoothError.operationFailedError("readRemoteRssi"));
+                }
+                // else
+                //
+                // wait for delegate or timeout
+            }
+        });
+    }
+
     private void notifyConnectDelegate(final @Nullable UUConnectionDelegate delegate)
     {
         try
@@ -685,6 +742,13 @@ class UUBluetoothGatt
         UUDescriptorDelegate delegate = getReadDescriptorDelegate(descriptor);
         removeReadDescriptorDelegate(descriptor);
         notifyDescriptorDelegate(delegate, descriptor, error);
+    }
+
+    private void notifyReadRssiComplete(final @Nullable UUBluetoothError error)
+    {
+        UUPeripheralDelegate delegate = readRssiDelegate;
+        readRssiDelegate = null;
+        notifyPeripheralDelegate(delegate, error);
     }
 
     private void registerCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic, final @NonNull UUCharacteristicDelegate delegate)
@@ -934,14 +998,14 @@ class UUBluetoothGatt
         return formatDescriptorTimerId(descriptor, WRITE_DESCRIPTOR_WATCHDOG_BUCKET);
     }
 
-    private @NonNull String readRssiWatchdogTimerId(final @NonNull BluetoothGattCharacteristic characteristic)
+    private @NonNull String readRssiWatchdogTimerId()
     {
-        return formatCharacteristicTimerId(characteristic, READ_RSSI_WATCHDOG_BUCKET);
+        return formatPeripheralTimerId(READ_RSSI_WATCHDOG_BUCKET);
     }
 
-    private @NonNull String pollRssiTimerId(final @NonNull BluetoothGattCharacteristic characteristic)
+    private @NonNull String pollRssiTimerId()
     {
-        return formatCharacteristicTimerId(characteristic, POLL_RSSI_BUCKET);
+        return formatPeripheralTimerId(POLL_RSSI_BUCKET);
     }
 
     private void cancelAllTimers()
@@ -1069,6 +1133,13 @@ class UUBluetoothGatt
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status)
         {
             debugLog("onReadRemoteRssi", "rssi: " + rssi + ", status: " + status);
+
+            if (status == BluetoothGatt.GATT_SUCCESS)
+            {
+                peripheral.updateRssi(rssi);
+            }
+
+            notifyReadRssiComplete(UUBluetoothError.gattStatusError("onReadRemoteRssi", status));
         }
     }
 }
