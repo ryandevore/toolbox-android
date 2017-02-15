@@ -297,7 +297,7 @@ public class UUBluetoothScanner
     {
         try
         {
-            if (bluetoothLeScanner != null)
+            if (bluetoothLeScanner != null && scanCallback != null)
             {
                 bluetoothLeScanner.stopScan(scanCallback);
             }
