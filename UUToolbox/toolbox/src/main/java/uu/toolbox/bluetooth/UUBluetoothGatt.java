@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -948,6 +949,7 @@ class UUBluetoothGatt
         if (peripheral != null)
         {
             Collection<UUTimer> list = UUTimer.listActiveTimers();
+            ArrayList<UUTimer> toRemove = new ArrayList<>();
 
             String prefix = peripheral.getAddress();
             if (prefix != null)
@@ -956,9 +958,14 @@ class UUBluetoothGatt
                 {
                     if (t.getTimerId().startsWith(prefix))
                     {
-                        t.cancel();
+                        toRemove.add(t);
                     }
                 }
+            }
+
+            for (UUTimer t : toRemove)
+            {
+                t.cancel();
             }
         }
     }
