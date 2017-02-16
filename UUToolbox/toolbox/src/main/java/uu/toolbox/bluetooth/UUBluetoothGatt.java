@@ -37,13 +37,16 @@ class UUBluetoothGatt
 
     private static final boolean DEBUG_LOGGING_ENABLED = true;
 
+    private static final int TIMEOUT_DISABLED = -1;
+
     private UUPeripheral peripheral;
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattCallback bluetoothGattCallback;
 
     private UUConnectionDelegate connectionDelegate;
-    private UUPeripheralDelegate serviceDiscoveryDelegate;
-    private UUPeripheralDelegate readRssiDelegate;
+    private UUPeripheralErrorDelegate serviceDiscoveryDelegate;
+    private UUPeripheralErrorDelegate readRssiDelegate;
+    private UUPeripheralDelegate pollRssiDelegate;
 
     private final HashMap<String, UUCharacteristicDelegate> readCharacteristicDelegates = new HashMap<>();
     private final HashMap<String, UUCharacteristicDelegate> writeCharacteristicDelegates = new HashMap<>();
@@ -128,11 +131,11 @@ class UUBluetoothGatt
 
     void discoverServices(
             final long timeout,
-            final @NonNull UUPeripheralDelegate delegate)
+            final @NonNull UUPeripheralErrorDelegate delegate)
     {
         final String timerId = serviceDiscoveryWatchdogTimerId();
 
-        serviceDiscoveryDelegate = new UUPeripheralDelegate()
+        serviceDiscoveryDelegate = new UUPeripheralErrorDelegate()
         {
             @Override
             public void onComplete(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
@@ -536,11 +539,11 @@ class UUBluetoothGatt
 
     void readRssi(
         final long timeout,
-        final @NonNull UUPeripheralDelegate delegate)
+        final @NonNull UUPeripheralErrorDelegate delegate)
     {
         final String timerId = readRssiWatchdogTimerId();
 
-        readRssiDelegate = new UUPeripheralDelegate()
+        readRssiDelegate = new UUPeripheralErrorDelegate()
         {
             @Override
             public void onComplete(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
@@ -590,6 +593,67 @@ class UUBluetoothGatt
         });
     }
 
+
+    // Begins polling RSSI for a peripheral.  When the RSSI is successfully
+    // retrieved, the peripheralFoundBlock is called.  This method is useful to
+    // perform a crude 'ranging' logic when already connected to a peripheral
+    void startRssiPolling(@NonNull final Context context, final long interval, @NonNull final UUPeripheralDelegate delegate)
+    {
+        pollRssiDelegate = delegate;
+
+        final String timerId = pollRssiTimerId();
+        UUTimer.cancelActiveTimer(timerId);
+
+        readRssi(TIMEOUT_DISABLED, new UUPeripheralErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull final UUPeripheral peripheral, @Nullable UUBluetoothError error)
+            {
+                debugLog("startRssiPolling.onComplete",
+                    String.format(Locale.US, "RSSI Updated for %s-%s, %d, error: %s",
+                            peripheral.getAddress(), peripheral.getName(), peripheral.getRssi(), error));
+
+                UUPeripheralDelegate pollDelegate = pollRssiDelegate;
+
+                if (error == null)
+                {
+                    notifyPeripheralDelegate(pollDelegate);
+                }
+                else
+                {
+                    debugLog("startRssiPolling.onComplete", "Error while reading RSSI: " + error);
+                }
+
+                if (pollDelegate != null)
+                {
+                    UUTimer.startTimer(timerId, interval, peripheral, new UUTimer.TimerDelegate()
+                    {
+                        @Override
+                        public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+                        {
+                            debugLog("rssiPolling.timer", String.format(Locale.US, "RSSI Polling timer %s - %s", peripheral.getAddress(), peripheral.getName()));
+
+                            UUPeripheralDelegate pollingDelegate = pollRssiDelegate;
+                            if (pollingDelegate == null)
+                            {
+                                debugLog("rssiPolling.timer", String.format(Locale.US, "Peripheral %s-%s not polling anymore", peripheral.getAddress(), peripheral.getAddress()));
+                            }
+                            else if (peripheral.getConnectionState(context) == UUPeripheral.ConnectionState.Connected)
+                            {
+                                //[self startRssiPolling:peripheral interval:interval peripheralUpdated:peripheralUpdated];
+                                startRssiPolling(context, interval, delegate);
+                            }
+                            else
+                            {
+                                debugLog("rssiPolling.timer", String.format(Locale.US, "Peripheral %s-%s is not connected anymore, cannot poll for RSSI", peripheral.getAddress(), peripheral.getName()));
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     private void notifyConnectDelegate(final @Nullable UUConnectionDelegate delegate)
     {
         try
@@ -620,13 +684,28 @@ class UUBluetoothGatt
         }
     }
 
-    private void notifyPeripheralDelegate(final @Nullable UUPeripheralDelegate delegate, final @Nullable UUBluetoothError error)
+    private void notifyPeripheralErrorDelegate(final @Nullable UUPeripheralErrorDelegate delegate, final @Nullable UUBluetoothError error)
     {
         try
         {
             if (delegate != null)
             {
                 delegate.onComplete(peripheral, error);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyPeripheralErrorDelegate", ex);
+        }
+    }
+
+    private void notifyPeripheralDelegate(final @Nullable UUPeripheralDelegate delegate)
+    {
+        try
+        {
+            if (delegate != null)
+            {
+                delegate.onComplete(peripheral);
             }
         }
         catch (Exception ex)
@@ -698,9 +777,9 @@ class UUBluetoothGatt
 
     private void notifyServicesDiscovered(final @Nullable UUBluetoothError error)
     {
-        UUPeripheralDelegate delegate = serviceDiscoveryDelegate;
+        UUPeripheralErrorDelegate delegate = serviceDiscoveryDelegate;
         serviceDiscoveryDelegate = null;
-        notifyPeripheralDelegate(delegate, error);
+        notifyPeripheralErrorDelegate(delegate, error);
     }
 
     private void notifyDescriptorWritten(final @NonNull BluetoothGattDescriptor descriptor, final @Nullable UUBluetoothError error)
@@ -746,9 +825,9 @@ class UUBluetoothGatt
 
     private void notifyReadRssiComplete(final @Nullable UUBluetoothError error)
     {
-        UUPeripheralDelegate delegate = readRssiDelegate;
+        UUPeripheralErrorDelegate delegate = readRssiDelegate;
         readRssiDelegate = null;
-        notifyPeripheralDelegate(delegate, error);
+        notifyPeripheralErrorDelegate(delegate, error);
     }
 
     private void registerCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic, final @NonNull UUCharacteristicDelegate delegate)
@@ -1046,6 +1125,9 @@ class UUBluetoothGatt
             if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothGatt.STATE_CONNECTED)
             {
                 notifyConnected();
+
+                boolean readRssiResult = gatt.readRemoteRssi();
+                debugLog("onConnectionStateChanged", "Read RSSI returned " + readRssiResult);
             }
             else if (status == UUBluetoothConstants.GATT_ERROR)
             {

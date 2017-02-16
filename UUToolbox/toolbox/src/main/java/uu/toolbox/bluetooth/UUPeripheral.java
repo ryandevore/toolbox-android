@@ -217,7 +217,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     public void discoverServices(
             final long timeout,
-            final @NonNull UUPeripheralDelegate delegate)
+            final @NonNull UUPeripheralErrorDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
@@ -319,12 +319,21 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     public void readRssi(
         final long timeout,
-        final @NonNull UUPeripheralDelegate delegate)
+        final @NonNull UUPeripheralErrorDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
         {
             gatt.readRssi(timeout, delegate);
+        }
+    }
+
+    public void startRssiPolling(@NonNull final Context context, final long interval, @NonNull final UUPeripheralDelegate delegate)
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.startRssiPolling(context, interval, delegate);
         }
     }
 

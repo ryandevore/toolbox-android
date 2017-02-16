@@ -24,6 +24,7 @@ import uu.toolbox.bluetooth.UUBluetoothError;
 import uu.toolbox.bluetooth.UUConnectionDelegate;
 import uu.toolbox.bluetooth.UUPeripheral;
 import uu.toolbox.bluetooth.UUPeripheralDelegate;
+import uu.toolbox.bluetooth.UUPeripheralErrorDelegate;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
 import uu.toolbox.ui.UUActivity;
@@ -174,7 +175,7 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onReadRssiClicked(View view)
     {
-        peripheral.readRssi(300000, new UUPeripheralDelegate()
+        peripheral.readRssi(300000, new UUPeripheralErrorDelegate()
         {
             @Override
             public void onComplete(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
@@ -186,6 +187,15 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onPollRssiClicked(View view)
     {
+        peripheral.startRssiPolling(getApplicationContext(), 4000, new UUPeripheralDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUPeripheral peripheral)
+            {
+                UULog.debug(getClass(), "rssiPoller.onTimer", "tick: " + peripheral.getRssi());
+            }
+        });
+
         /*
         final UUTimer t = new UUTimer("RssiPoller", 500, true, null, new UUTimer.TimerDelegate()
         {
@@ -212,7 +222,7 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onDiscoverServicesClicked(View view)
     {
-        peripheral.discoverServices(10000, new UUPeripheralDelegate()
+        peripheral.discoverServices(10000, new UUPeripheralErrorDelegate()
         {
             @Override
             public void onComplete(final @NonNull UUPeripheral peripheral, final @Nullable UUBluetoothError error)
