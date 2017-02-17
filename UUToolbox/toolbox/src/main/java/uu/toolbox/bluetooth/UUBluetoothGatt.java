@@ -654,6 +654,17 @@ class UUBluetoothGatt
         });
     }
 
+    void stopRssiPolling()
+    {
+        pollRssiDelegate = null;
+        UUTimer.cancelActiveTimer(pollRssiTimerId());
+    }
+
+    boolean isPollingForRssi()
+    {
+        return (pollRssiDelegate != null);
+    }
+
     private void notifyConnectDelegate(final @Nullable UUConnectionDelegate delegate)
     {
         try

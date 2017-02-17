@@ -45,6 +45,8 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     private Button connectButton;
     private Button discoverServicesButton;
+    private Button readRssiButton;
+    private Button pollRssiButton;
 
     private UUPeripheral peripheral;
     private final ArrayList<BluetoothGattService> tableData = new ArrayList<>();
@@ -80,6 +82,8 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
         connectButton = UUActivity.findButtonById(this, R.id.connect_button);
         discoverServicesButton = UUActivity.findButtonById(this, R.id.discover_services_button);
+        readRssiButton = UUActivity.findButtonById(this, R.id.read_rssi_button);
+        pollRssiButton = UUActivity.findButtonById(this, R.id.poll_rssi_button);
 
         tableAdapter = new PeripheralDetailActivity.BtleServiceAdapter(this, tableData);
         ListView listView = UUActivity.findListViewById (this, R.id.services_list_view);
@@ -107,15 +111,25 @@ public class PeripheralDetailActivity extends AppCompatActivity
         switch (state)
         {
             case Connecting:
+            {
+                connectButton.setText(R.string.connecting);
+                break;
+            }
+
             case Connected:
             {
                 connectButton.setText(R.string.disconnect);
                 break;
             }
 
+            case Disconnecting:
+            {
+                connectButton.setText(R.string.disconnecting);
+                break;
+            }
+
             default:
             case Disconnected:
-            case Disconnecting:
             {
                 connectButton.setText(R.string.connect);
                 break;
@@ -124,6 +138,20 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
         // Peripheral should never get 'stuck' in intermediate state
         connectButton.setEnabled((state == UUPeripheral.ConnectionState.Connected || state == Disconnected));
+
+        boolean isConnected = (state == UUPeripheral.ConnectionState.Connected);
+        discoverServicesButton.setEnabled(isConnected);
+        readRssiButton.setEnabled(isConnected);
+        pollRssiButton.setEnabled(isConnected);
+
+        if (peripheral.isPollingForRssi())
+        {
+            pollRssiButton.setText(R.string.stop_polling);
+        }
+        else
+        {
+            pollRssiButton.setText(R.string.poll_rssi);
+        }
     }
 
     private void updateTable()
@@ -187,37 +215,24 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
     public void onPollRssiClicked(View view)
     {
-        peripheral.startRssiPolling(getApplicationContext(), 4000, new UUPeripheralDelegate()
+        if (peripheral.isPollingForRssi())
         {
-            @Override
-            public void onComplete(@NonNull UUPeripheral peripheral)
-            {
-                UULog.debug(getClass(), "rssiPoller.onTimer", "tick: " + peripheral.getRssi());
-            }
-        });
-
-        /*
-        final UUTimer t = new UUTimer("RssiPoller", 500, true, null, new UUTimer.TimerDelegate()
+            peripheral.stopRssiPolling();
+        }
+        else
         {
-            @Override
-            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            peripheral.startRssiPolling(getApplicationContext(), 500, new UUPeripheralDelegate()
             {
-                UULog.debug(getClass(), "RssiPoller.onTimer", "tick, userInfo: " + userInfo + ", isMainThread: " + UUThread.isMainThread());
-            }
-        });
+                @Override
+                public void onComplete(@NonNull UUPeripheral peripheral)
+                {
+                    UULog.debug(getClass(), "rssiPoller.onTimer", "tick: " + peripheral.getRssi());
+                    updateUi();
+                }
+            });
+        }
 
-        t.start();
-
-        UUTimer.startTimer("CancelPoller", 0, null, new UUTimer.WatchdogTimerDelegate()
-        {
-            @Override
-            public void onTimer(@Nullable Object userInfo)
-            {
-                UULog.debug(getClass(), "CancelPoller.onTimer", "Cancelling repeat timer");
-                t.cancel();
-            }
-        });*/
-
+        updateUi();
     }
 
     public void onDiscoverServicesClicked(View view)
@@ -262,12 +277,16 @@ public class PeripheralDetailActivity extends AppCompatActivity
                 updateUi();
             }
         });
+
+        updateUi();
     }
 
     private void disconnect()
     {
         UULog.debug(getClass(), "disconnect", "Disconnecting from : " + peripheral);
         UUBluetooth.disconnectPeripheral(peripheral);
+
+        updateUi();
     }
 
     private void onServiceClicked(final @NonNull BluetoothGattService service)

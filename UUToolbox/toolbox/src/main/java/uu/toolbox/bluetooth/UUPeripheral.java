@@ -337,6 +337,28 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         }
     }
 
+    public void stopRssiPolling()
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.stopRssiPolling();
+        }
+    }
+
+    public boolean isPollingForRssi()
+    {
+        boolean isPolling = false;
+
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            isPolling = gatt.isPollingForRssi();
+        }
+
+        return isPolling;
+    }
+
     public long getTimeSinceLastUpdate()
     {
         return System.currentTimeMillis() - lastAdvertisementTime ;
