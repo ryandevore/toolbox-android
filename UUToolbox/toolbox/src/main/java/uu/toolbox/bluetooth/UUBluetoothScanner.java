@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import uu.toolbox.core.UUDate;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.core.UUWorkerThread;
 import uu.toolbox.logging.UULog;
@@ -61,6 +62,7 @@ public class UUBluetoothScanner
             {
                 scanFilters = filters;
                 peripheralFactory = factory;
+                isScanning = true;
 
                 if (peripheralFactory == null)
                 {
@@ -86,6 +88,8 @@ public class UUBluetoothScanner
 
     public void stopScanning()
     {
+        isScanning = false;
+
         UUThread.runOnMainThread(new Runnable()
         {
             @Override
@@ -108,8 +112,6 @@ public class UUBluetoothScanner
     {
         try
         {
-            isScanning = true;
-
             legacyScanCallback = new BluetoothAdapter.LeScanCallback()
             {
                 @Override
@@ -159,43 +161,45 @@ public class UUBluetoothScanner
             ScanSettings settings = builder.build();
 
             bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-            isScanning = true;
 
-            scanCallback = new ScanCallback()
+            if (scanCallback == null)
             {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result)
+                scanCallback = new ScanCallback()
                 {
-                    UULog.debug(getClass(), "startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
-                    handleScanResult(result, delegate);
-                }
-
-                /**
-                 * Callback when batch results are delivered.
-                 *
-                 * @param results List of scan results that are previously scanned.
-                 */
-                public void onBatchScanResults(List<ScanResult> results)
-                {
-                    UULog.debug(getClass(), "startScan.onBatchScanResults", "There are " + results.size() + " batched results");
-
-                    for (ScanResult sr : results)
+                    @Override
+                    public void onScanResult(int callbackType, ScanResult result)
                     {
-                        UULog.debug(getClass(), "startScan.onBatchScanResults", results.toString());
-                        handleScanResult(sr, delegate);
+                        UULog.debug(getClass(), "startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
+                        handleScanResult(result, delegate);
                     }
-                }
 
-                /**
-                 * Callback when scan could not be started.
-                 *
-                 * @param errorCode Error code (one of SCAN_FAILED_*) for scan failure.
-                 */
-                public void onScanFailed(int errorCode)
-                {
-                    UULog.debug(getClass(), "startScan.onScanFailed", "errorCode: " + errorCode);
-                }
-            };
+                    /**
+                     * Callback when batch results are delivered.
+                     *
+                     * @param results List of scan results that are previously scanned.
+                     */
+                    public void onBatchScanResults(List<ScanResult> results)
+                    {
+                        UULog.debug(getClass(), "startScan.onBatchScanResults", "There are " + results.size() + " batched results");
+
+                        for (ScanResult sr : results)
+                        {
+                            UULog.debug(getClass(), "startScan.onBatchScanResults", results.toString());
+                            handleScanResult(sr, delegate);
+                        }
+                    }
+
+                    /**
+                     * Callback when scan could not be started.
+                     *
+                     * @param errorCode Error code (one of SCAN_FAILED_*) for scan failure.
+                     */
+                    public void onScanFailed(int errorCode)
+                    {
+                        UULog.debug(getClass(), "startScan.onScanFailed", "errorCode: " + errorCode);
+                    }
+                };
+            }
 
             bluetoothLeScanner.startScan(filters, settings, scanCallback);
         }
@@ -255,8 +259,15 @@ public class UUBluetoothScanner
 
     private void handlePeripheralFound(final UUPeripheral peripheral, final Listener delegate)
     {
-        UULog.debug(getClass(), "handlerPeripheralFound", "Peripheral Found: " + peripheral);
-        notifyPeripheralFound(peripheral, delegate);
+        if (isScanning)
+        {
+            UULog.debug(getClass(), "handlePeripheralFound", "Peripheral Found: " + peripheral);
+            notifyPeripheralFound(peripheral, delegate);
+        }
+        else
+        {
+            UULog.debug(getClass(), "handlePeripheralFound", "Not scanning anymore, throwing away scan result");
+        }
     }
 
     private void notifyPeripheralFound(final UUPeripheral peripheral, final Listener delegate)
@@ -287,7 +298,6 @@ public class UUBluetoothScanner
         }
         finally
         {
-            isScanning = false;
             legacyScanCallback = null;
         }
     }
@@ -305,11 +315,6 @@ public class UUBluetoothScanner
         catch (Exception ex)
         {
             UULog.debug(getClass(), "stopScan", ex);
-        }
-        finally
-        {
-            isScanning = false;
-            scanCallback = null;
         }
     }
 
