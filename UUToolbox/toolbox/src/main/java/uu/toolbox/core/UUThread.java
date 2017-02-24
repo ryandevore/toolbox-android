@@ -3,6 +3,7 @@ package uu.toolbox.core;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import uu.toolbox.logging.UULog;
@@ -109,5 +110,18 @@ public class UUThread
         }
     }
 
+    public static void safeSleep(@NonNull final String fromWhere, final long millis)
+    {
+        try
+        {
+            UULog.debug(UUThread.class, "safeSleep", fromWhere + ", currentState: " + Thread.currentThread().getState() + ", isMainThread: " + UUThread.isMainThread());
+
+            Thread.sleep(millis);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUThread.class, "safeSleep", ex);
+        }
+    }
 
 }
