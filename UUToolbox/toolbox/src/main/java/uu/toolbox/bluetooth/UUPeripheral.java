@@ -215,6 +215,17 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         bluetoothGatt = gatt;
     }
 
+    public boolean requestHighPriority()
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            return gatt.requestHighPriority();
+        }
+
+        return false;
+    }
+
     public void discoverServices(
             final long timeout,
             final @NonNull UUPeripheralErrorDelegate delegate)

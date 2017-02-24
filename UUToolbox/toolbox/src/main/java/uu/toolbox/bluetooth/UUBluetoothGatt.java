@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -127,6 +128,27 @@ class UUBluetoothGatt
                 disconnectGatt();
             }
         });
+    }
+
+    boolean requestHighPriority()
+    {
+        try
+        {
+            if (bluetoothGatt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            {
+                int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_HIGH;
+                debugLog("requestHighPriority", "Requesting connection priority " + connectionPriority);
+                boolean result = bluetoothGatt.requestConnectionPriority(connectionPriority);
+                debugLog("requestHighPriority", "requestConnectionPriority returned " + result);
+                return result;
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("requestHighPriority", ex);
+        }
+
+        return false;
     }
 
     void discoverServices(
