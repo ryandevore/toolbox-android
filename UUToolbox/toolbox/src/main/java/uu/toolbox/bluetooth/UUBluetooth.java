@@ -191,7 +191,7 @@ public class UUBluetooth
     }
 
     /**
-     * Formats a string with human friendly of BluetoothGattCharacteristics
+     * Formats a string with human friendly properties of BluetoothGattCharacteristics
      *
      * @param properties properties bitmask
      * @return a string
@@ -238,6 +238,59 @@ public class UUBluetooth
         if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS))
         {
             parts.add("ExtendedProperties");
+        }
+
+        return UUString.componentsJoinedByString(parts, ", ");
+    }
+
+    /**
+     * Formats a string with human friendly permissions of BluetoothGattCharacteristics
+     *
+     * @param permssions permissions bitmask
+     * @return a string
+     */
+    public static @NonNull String characteristicPermissionsToString(final int permssions)
+    {
+        ArrayList<String> parts = new ArrayList<>();
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_READ))
+        {
+            parts.add("Read");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED))
+        {
+            parts.add("ReadEncrypted");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED_MITM))
+        {
+            parts.add("ReadEncryptedMITM");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_WRITE))
+        {
+            parts.add("Write");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED))
+        {
+            parts.add("WriteEncrypted");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED_MITM))
+        {
+            parts.add("WriteEncryptedMITM");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED))
+        {
+            parts.add("WriteSigned");
+        }
+
+        if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED_MITM))
+        {
+            parts.add("WriteSignedMITM");
         }
 
         return UUString.componentsJoinedByString(parts, ", ");

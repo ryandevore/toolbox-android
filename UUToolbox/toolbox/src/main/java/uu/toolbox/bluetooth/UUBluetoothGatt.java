@@ -544,6 +544,8 @@ class UUBluetoothGatt
                 }
 
                 debugLog("writeCharacteristic", "characteristic: " + characteristic.getUuid() + ", data: " + UUString.byteToHex(data));
+                debugLog("writeCharacteristic", "props: " + UUBluetooth.characteristicPropertiesToString(characteristic.getProperties()) + ", (" + characteristic.getProperties() + ")");
+                debugLog("writeCharacteristic", "permissions: " + UUBluetooth.characteristicPermissionsToString(characteristic.getPermissions()) + ", (" + characteristic.getPermissions() + ")");
 
                 characteristic.setValue(data);
                 characteristic.setWriteType(writeType);
