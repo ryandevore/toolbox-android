@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +23,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
+import uu.toolbox.bluetooth.UUBluetooth;
+import uu.toolbox.bluetooth.UUBluetoothError;
 import uu.toolbox.bluetooth.UUBluetoothScanner;
+import uu.toolbox.bluetooth.UUConnectionDelegate;
 import uu.toolbox.bluetooth.UUPeripheral;
+import uu.toolbox.bluetooth.UUPeripheralDelegate;
 import uu.toolbox.bluetooth.UUPeripheralFactory;
 import uu.toolbox.bluetooth.UUPeripheralFilter;
 import uu.toolbox.core.UUInteger;
@@ -117,7 +122,7 @@ public class BtleScanActivity extends AppCompatActivity
         });
     }
 
-    private <T extends UUPeripheral> void handlePeripheralFound(final @NonNull T peripheral)
+    private void handlePeripheralFound(final @NonNull UUPeripheral peripheral)
     {
         UULog.debug(getClass(), "onPeripheralFound", "peripheralFound, class: " + peripheral.getClass());
         CustomPeripheral cp = (CustomPeripheral)peripheral;
@@ -148,6 +153,34 @@ public class BtleScanActivity extends AppCompatActivity
                     tableAdapter.notifyDataSetChanged();
                 }
             });
+        }
+
+        final Context context = getApplicationContext();
+        if (UUString.areEqual("44000219.00003297", peripheral.getName()))
+        {
+            if (peripheral.getConnectionState(context) == UUPeripheral.ConnectionState.Disconnected)
+            {
+                UUBluetooth.connectPeripheral(context, peripheral, false, 30000, new UUConnectionDelegate()
+                {
+                    @Override
+                    public void onConnected(@NonNull UUPeripheral peripheral)
+                    {
+                        peripheral.startRssiPolling(context, 1000, new UUPeripheralDelegate()
+                        {
+                            @Override
+                            public void onComplete(@NonNull UUPeripheral peripheral)
+                            {
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onDisconnected(@NonNull UUPeripheral peripheral, @Nullable UUBluetoothError error)
+                    {
+
+                    }
+                });
+            }
         }
     }
 
