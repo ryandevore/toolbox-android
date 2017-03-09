@@ -92,6 +92,10 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     private BluetoothGatt bluetoothGatt;
 
+    public UUPeripheral()
+    {
+    }
+
     public UUPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @Nullable byte[] scanRecord)
     {
         this.device = device;
