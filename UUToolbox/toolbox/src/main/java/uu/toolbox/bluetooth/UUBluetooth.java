@@ -1,10 +1,13 @@
 package uu.toolbox.bluetooth;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -455,5 +458,40 @@ public class UUBluetooth
         {
             gatt.disconnect();
         }
+    }
+    
+    public static boolean isBluetoothLeSupported(@NonNull final Context context)
+    {
+        try
+        {
+            return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+    @Nullable
+    public static Integer getBluetoothState(@NonNull final Context context)
+    {
+        try
+        {
+            BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (bluetoothManager != null)
+            {
+                BluetoothAdapter adapter = bluetoothManager.getAdapter();
+                if (adapter != null)
+                {
+                    return adapter.getState();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Eat it
+        }
+
+        return null;
     }
 }
