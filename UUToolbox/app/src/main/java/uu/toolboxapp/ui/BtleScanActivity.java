@@ -100,6 +100,8 @@ public class BtleScanActivity extends AppCompatActivity
     private void startScanning()
     {
         ArrayList<UUPeripheralFilter> filters = new ArrayList<>();
+        filters.add(new NullNameFilter());
+        filters.add(new RssiFilter(-100));
 
         UUID[] uuidList = new UUID[]
         {
@@ -162,9 +164,16 @@ public class BtleScanActivity extends AppCompatActivity
         }
 
         @Override
-        public boolean shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
+        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
         {
-            return (peripheral.getRssi() > rssiLevel);
+            if (peripheral.getRssi() > rssiLevel)
+            {
+                return Result.Discover;
+            }
+            else
+            {
+                return Result.IgnoreOnce;
+            }
         }
     }
 
@@ -178,9 +187,36 @@ public class BtleScanActivity extends AppCompatActivity
         }
 
         @Override
-        public boolean shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
+        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
         {
-            return UUString.areEqual(name, peripheral.getName());
+            if (UUString.areEqual(name, peripheral.getName()))
+            {
+                return Result.Discover;
+            }
+            else
+            {
+                return Result.IgnoreOnce;
+            }
+        }
+    }
+
+    class NullNameFilter implements UUPeripheralFilter
+    {
+        NullNameFilter()
+        {
+        }
+
+        @Override
+        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
+        {
+            if (UUString.isEmpty(peripheral.getName()))
+            {
+                return Result.IgnoreForever;
+            }
+            else
+            {
+                return Result.Discover;
+            }
         }
     }
 

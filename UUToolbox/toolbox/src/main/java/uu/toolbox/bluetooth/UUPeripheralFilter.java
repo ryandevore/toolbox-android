@@ -8,12 +8,19 @@ import android.support.annotation.NonNull;
  */
 public interface UUPeripheralFilter
 {
+    enum Result
+    {
+        IgnoreOnce,
+        IgnoreForever,
+        Discover
+    };
+
     /**
      * Return true if the peripheral should be included in the scan results
      *
      * @param peripheral the peripheral to check
      *
-     * @return true or false
+     * @return value indicating whether the peripheral should be ignored for this one advertisement or forever, or discovered
      */
-    boolean shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral);
+    Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral);
 }

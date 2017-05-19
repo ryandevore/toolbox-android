@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +44,7 @@ public class UUBluetoothScanner
     private ArrayList<UUPeripheralFilter> scanFilters;
     private UUPeripheralFactory peripheralFactory;
     private boolean useLollipopScanning = true;
+    private final HashMap<String, Boolean> ignoredDevices = new HashMap<>();
 
     public UUBluetoothScanner(final Context context)
     {
@@ -65,6 +67,7 @@ public class UUBluetoothScanner
                 scanFilters = filters;
                 peripheralFactory = factory;
                 isScanning = true;
+                ignoredDevices.clear();
 
                 if (peripheralFactory == null)
                 {
@@ -233,6 +236,12 @@ public class UUBluetoothScanner
 
     private void handleLegacyScanResult(final BluetoothDevice device, final int rssi, final byte[] scanRecord, final Listener delegate)
     {
+        if (isIgnored(device))
+        {
+            debugLog("handleLegacyScanResult", "Ignoring advertisement from " + device.getAddress());
+            return;
+        }
+
         scanThread.post(new Runnable()
         {
             @Override
@@ -250,6 +259,12 @@ public class UUBluetoothScanner
     @TargetApi(21)
     private void handleScanResult(final ScanResult scanResult, final Listener delegate)
     {
+        if (isIgnored(scanResult))
+        {
+            debugLog("handleLegacyScanResult", "Ignoring advertisement from " + scanResult.getDevice().getAddress());
+            return;
+        }
+
         scanThread.post(new Runnable()
         {
             @Override
@@ -347,13 +362,36 @@ public class UUBluetoothScanner
         }
     }
 
+    private synchronized boolean isIgnored(@Nullable final BluetoothDevice device)
+    {
+        return (device == null || ignoredDevices.containsKey(device.getAddress()));
+    }
+
+    @TargetApi(21)
+    private boolean isIgnored(@Nullable final ScanResult scanResult)
+    {
+        return (scanResult == null || isIgnored(scanResult.getDevice()));
+    }
+
+    public synchronized void ignoreDevice(@NonNull final BluetoothDevice device)
+    {
+        ignoredDevices.put(device.getAddress(), Boolean.TRUE);
+    }
+
     private boolean shouldDiscoverPeripheral(final @NonNull UUPeripheral peripheral)
     {
         if (scanFilters != null)
         {
             for (UUPeripheralFilter filter : scanFilters)
             {
-                if (!filter.shouldDiscoverPeripheral(peripheral))
+                UUPeripheralFilter.Result result = filter.shouldDiscoverPeripheral(peripheral);
+                if (result == UUPeripheralFilter.Result.IgnoreForever)
+                {
+                    ignoreDevice(peripheral.getBluetoothDevice());
+                    return false;
+                }
+
+                if (result == UUPeripheralFilter.Result.IgnoreOnce)
                 {
                     return false;
                 }
