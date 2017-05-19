@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import uu.toolbox.core.UUDate;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.core.UUWorkerThread;
 import uu.toolbox.logging.UULog;
@@ -28,6 +27,8 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public class UUBluetoothScanner
 {
+    private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
+
     public interface Listener
     {
         void onPeripheralFound(final @NonNull UUBluetoothScanner scanner, final @NonNull UUPeripheral peripheral);
@@ -41,6 +42,7 @@ public class UUBluetoothScanner
     private boolean isScanning = false;
     private ArrayList<UUPeripheralFilter> scanFilters;
     private UUPeripheralFactory peripheralFactory;
+    private boolean useLollipopScanning = true;
 
     public UUBluetoothScanner(final Context context)
     {
@@ -69,7 +71,7 @@ public class UUBluetoothScanner
                     peripheralFactory = new DefaultPeripheralFactory();
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                if (shouldUseLollipopScanning())
                 {
                     startScan(serviceUuidList, delegate);
                 }
@@ -95,7 +97,7 @@ public class UUBluetoothScanner
             @Override
             public void run()
             {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                if (shouldUseLollipopScanning())
                 {
                     stopScan();
                 }
@@ -105,6 +107,26 @@ public class UUBluetoothScanner
                 }
             }
         });
+    }
+
+    public static boolean canUseLollipopScanning()
+    {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+    }
+
+    public boolean useLollipopScanning()
+    {
+        return useLollipopScanning;
+    }
+
+    public void setUseLollipopScanning(final boolean useLollipopScanning)
+    {
+        this.useLollipopScanning = useLollipopScanning;
+    }
+
+    private boolean shouldUseLollipopScanning()
+    {
+        return canUseLollipopScanning() && useLollipopScanning();
     }
 
     @SuppressWarnings("deprecation")
@@ -125,7 +147,7 @@ public class UUBluetoothScanner
         }
         catch (Exception ex)
         {
-            UULog.debug(getClass(), "startLegacyScan", ex);
+            debugLog("startLegacyScan", ex);
         }
     }
 
@@ -169,7 +191,7 @@ public class UUBluetoothScanner
                     @Override
                     public void onScanResult(int callbackType, ScanResult result)
                     {
-                        UULog.debug(getClass(), "startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
+                        debugLog("startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
                         handleScanResult(result, delegate);
                     }
 
@@ -180,11 +202,11 @@ public class UUBluetoothScanner
                      */
                     public void onBatchScanResults(List<ScanResult> results)
                     {
-                        UULog.debug(getClass(), "startScan.onBatchScanResults", "There are " + results.size() + " batched results");
+                        debugLog("startScan.onBatchScanResults", "There are " + results.size() + " batched results");
 
                         for (ScanResult sr : results)
                         {
-                            UULog.debug(getClass(), "startScan.onBatchScanResults", results.toString());
+                            debugLog("startScan.onBatchScanResults", results.toString());
                             handleScanResult(sr, delegate);
                         }
                     }
@@ -196,7 +218,7 @@ public class UUBluetoothScanner
                      */
                     public void onScanFailed(int errorCode)
                     {
-                        UULog.debug(getClass(), "startScan.onScanFailed", "errorCode: " + errorCode);
+                        debugLog("startScan.onScanFailed", "errorCode: " + errorCode);
                     }
                 };
             }
@@ -205,7 +227,7 @@ public class UUBluetoothScanner
         }
         catch (Exception ex)
         {
-            UULog.debug(getClass(), "startScan", ex);
+            debugLog("startScan", ex);
         }
     }
 
@@ -266,7 +288,7 @@ public class UUBluetoothScanner
         }
         else
         {
-            UULog.debug(getClass(), "handlePeripheralFound", "Not scanning anymore, throwing away scan result");
+            debugLog("handlePeripheralFound", "Not scanning anymore, throwing away scan result");
         }
     }
 
@@ -281,7 +303,7 @@ public class UUBluetoothScanner
         }
         catch (Exception ex)
         {
-            UULog.debug(getClass(), "notifyPeripheralFound", ex);
+            debugLog("notifyPeripheralFound", ex);
         }
     }
 
@@ -290,11 +312,18 @@ public class UUBluetoothScanner
     {
         try
         {
-            bluetoothAdapter.stopLeScan(legacyScanCallback);
+            if (bluetoothAdapter != null)
+            {
+                bluetoothAdapter.stopLeScan(legacyScanCallback);
+            }
+            else
+            {
+                debugLog("stopLegacyScan", "Bluetooth adapter is null, nothing to do.");
+            }
         }
         catch (Exception ex)
         {
-            UULog.debug(getClass(), "stopLegacyScan", ex);
+            debugLog("stopLegacyScan", ex);
         }
         finally
         {
@@ -314,7 +343,7 @@ public class UUBluetoothScanner
         }
         catch (Exception ex)
         {
-            UULog.debug(getClass(), "stopScan", ex);
+            debugLog("stopScan", ex);
         }
     }
 
@@ -345,6 +374,22 @@ public class UUBluetoothScanner
         public UUPeripheral fromScanResult(@NonNull BluetoothDevice device, int rssi, @NonNull byte[] scanRecord)
         {
             return new UUPeripheral(device, rssi, scanRecord);
+        }
+    }
+
+    private static void debugLog(final String method, final String message)
+    {
+        if (LOGGING_ENABLED)
+        {
+            UULog.debug(UUBluetoothScanner.class, method, message);
+        }
+    }
+
+    private synchronized static void debugLog(final String method, final Throwable exception)
+    {
+        if (LOGGING_ENABLED)
+        {
+            UULog.debug(UUBluetoothScanner.class, method, exception);
         }
     }
 }
