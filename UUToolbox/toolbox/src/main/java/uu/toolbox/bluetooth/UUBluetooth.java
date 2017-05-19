@@ -415,6 +415,7 @@ public class UUBluetooth
     ////////////////////////////////////////////////////////////////////////////////////////////////
     private static HashMap<String, UUBluetoothGatt> gattHashMap = new HashMap<>();
 
+    @Nullable
     static UUBluetoothGatt gattForPeripheral(final @NonNull UUPeripheral peripheral)
     {
         UUBluetoothGatt gatt = null;
@@ -441,13 +442,14 @@ public class UUBluetooth
             final @NonNull Context context,
             final @NonNull UUPeripheral peripheral,
             final boolean connectGattAutoFlag,
+            final boolean requestHighPriority,
             final long timeout,
             final @NonNull UUConnectionDelegate delegate)
     {
         UUBluetoothGatt gatt = gattForPeripheral(peripheral);
         if (gatt != null)
         {
-            gatt.connect(context, connectGattAutoFlag, timeout, delegate);
+            gatt.connect(context, connectGattAutoFlag, requestHighPriority, timeout, delegate);
         }
     }
 
@@ -459,7 +461,7 @@ public class UUBluetooth
             gatt.disconnect();
         }
     }
-    
+
     public static boolean isBluetoothLeSupported(@NonNull final Context context)
     {
         try

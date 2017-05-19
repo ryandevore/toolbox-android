@@ -56,6 +56,8 @@ class UUBluetoothGatt
     private final HashMap<String, UUDescriptorDelegate> readDescriptorDelegates = new HashMap<>();
     private final HashMap<String, UUDescriptorDelegate> writeDescriptorDelegates = new HashMap<>();
 
+    private boolean requestHighPriorityConnection = false;
+
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
     {
         this.peripheral = peripheral;
@@ -70,6 +72,7 @@ class UUBluetoothGatt
     void connect(
         final @NonNull Context context,
         final boolean connectGattAutoFlag,
+        final boolean requestHighPriority,
         final long timeout,
         final @NonNull UUConnectionDelegate delegate)
     {
@@ -111,7 +114,8 @@ class UUBluetoothGatt
             @Override
             public void run()
             {
-                debugLog("connect", "Connecting to: " + peripheral);
+                debugLog("connect", "Connecting to: " + peripheral + ", gattAuto: " + connectGattAutoFlag + ", highPriority: " + requestHighPriority);
+                requestHighPriorityConnection = requestHighPriority;
                 bluetoothGatt = peripheral.getBluetoothDevice().connectGatt(context, connectGattAutoFlag, bluetoothGattCallback);
             }
         });
@@ -130,7 +134,7 @@ class UUBluetoothGatt
         });
     }
 
-    boolean requestHighPriority()
+    private boolean requestHighPriority()
     {
         try
         {
@@ -150,6 +154,37 @@ class UUBluetoothGatt
 
         return false;
     }
+
+    private void requestHighPriorityIfNeeded()
+    {
+        if (requestHighPriorityConnection)
+        {
+            boolean result = requestHighPriority();
+            if (result)
+            {
+                // 05/12/2017 - Debugging on google pixel shows that this sleep is needed.  Not sure if
+                // lower value works.  Need to continue debugging with firmware engineers to see why
+                // delay is needed at all.
+                UUThread.safeSleep("requestHighPriorityIfNeeded", 500);
+                requestHighPriorityConnection = false;
+            }
+        }
+    }
+
+    // Let callers manually decide when to call request high priority
+    void requestHighPriority(@NonNull final UUPeripheralBoolDelegate delegate)
+    {
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                boolean result = requestHighPriority();
+                notifyBoolResult(delegate, result);
+            }
+        });
+    }
+
 
     void discoverServices(
             final long timeout,
@@ -374,7 +409,7 @@ class UUBluetoothGatt
                 descriptor.setValue(data);
 
                 boolean success = bluetoothGatt.writeDescriptor(descriptor);
-                UULog.debug(getClass(), "writeDescriptor", "writeDescriptor returned " + success);
+                debugLog("writeDescriptor", "writeDescriptor returned " + success);
 
                 if (!success)
                 {
@@ -543,6 +578,8 @@ class UUBluetoothGatt
                     return;
                 }
 
+                requestHighPriorityIfNeeded();
+
                 debugLog("writeCharacteristic", "characteristic: " + characteristic.getUuid() + ", data: " + UUString.byteToHex(data));
                 debugLog("writeCharacteristic", "props: " + UUBluetooth.characteristicPropertiesToString(characteristic.getProperties()) + ", (" + characteristic.getProperties() + ")");
                 debugLog("writeCharacteristic", "permissions: " + UUBluetooth.characteristicPermissionsToString(characteristic.getPermissions()) + ", (" + characteristic.getPermissions() + ")");
@@ -633,9 +670,9 @@ class UUBluetoothGatt
             @Override
             public void onComplete(@NonNull final UUPeripheral peripheral, @Nullable UUBluetoothError error)
             {
-                debugLog("startRssiPolling.onComplete",
-                    String.format(Locale.US, "RSSI Updated for %s-%s, %d, error: %s",
-                            peripheral.getAddress(), peripheral.getName(), peripheral.getRssi(), error));
+                debugLog("rssiPoll",
+                    String.format(Locale.US, "RSSI (%d) Updated for %s-%s, error: %s",
+                            peripheral.getRssi(), peripheral.getAddress(), peripheral.getName(), error));
 
                 UUPeripheralDelegate pollDelegate = pollRssiDelegate;
 
@@ -863,6 +900,21 @@ class UUBluetoothGatt
         UUPeripheralErrorDelegate delegate = readRssiDelegate;
         readRssiDelegate = null;
         notifyPeripheralErrorDelegate(delegate, error);
+    }
+
+    private void notifyBoolResult(@Nullable final UUPeripheralBoolDelegate delegate, final boolean result)
+    {
+        try
+        {
+            if (delegate != null)
+            {
+                delegate.onComplete(peripheral, result);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyBoolResult", ex);
+        }
     }
 
     private void registerCharacteristicChangedDelegate(final @NonNull BluetoothGattCharacteristic characteristic, final @NonNull UUCharacteristicDelegate delegate)
@@ -1160,9 +1212,6 @@ class UUBluetoothGatt
             if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothGatt.STATE_CONNECTED)
             {
                 notifyConnected();
-
-                boolean readRssiResult = gatt.readRemoteRssi();
-                debugLog("onConnectionStateChanged", "Read RSSI returned " + readRssiResult);
             }
             else if (status == UUBluetoothConstants.GATT_ERROR)
             {

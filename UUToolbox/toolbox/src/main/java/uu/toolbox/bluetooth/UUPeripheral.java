@@ -34,6 +34,8 @@ import static uu.toolbox.bluetooth.UUBluetooth.gattForPeripheral;
 @SuppressWarnings("unused")
 public class UUPeripheral implements UUJsonConvertible, Parcelable
 {
+    private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
+
     private static final byte DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS = 0x02;
     private static final byte DATA_TYPE_COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS = 0x07;
     private static final byte DATA_TYPE_COMPLETE_LOCAL_NAME = 0x09;
@@ -196,15 +198,15 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         int state = bluetoothManager.getConnectionState(device, BluetoothProfile.GATT);
         if (state == BluetoothProfile.STATE_CONNECTED)
         {
-            UUBluetoothGatt gatt = gattForPeripheral(this);
+            UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
             if (gatt == null)
             {
-                UULog.debug(getClass(), "getConnectionState", getAddress() + ", Profile is connected but UUBluetoothGatt is null! This should not happen!");
+                debugLog("getConnectionState", getAddress() + ", Profile is connected but UUBluetoothGatt is null! This should not happen!");
             }
             else
             {
                 boolean isGattConnected = gatt.isGattConnected();
-                UULog.debug(getClass(), "getConnectionState", getAddress() + ", Profile is connected, UUBluetoothGatt is non null, underlying Gatt is " + (isGattConnected ? "connected" : "NOT connected"));
+                debugLog("getConnectionState", getAddress() + ", Profile is connected, UUBluetoothGatt is non null, underlying Gatt is " + (isGattConnected ? "connected" : "NOT connected"));
                 if (!isGattConnected)
                 {
                     state = BluetoothProfile.STATE_DISCONNECTED;
@@ -219,15 +221,13 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         bluetoothGatt = gatt;
     }
 
-    public boolean requestHighPriority()
+    void requestHighPriority(@NonNull final UUPeripheralBoolDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
         {
-            return gatt.requestHighPriority();
+            gatt.requestHighPriority(delegate);
         }
-
-        return false;
     }
 
     public void discoverServices(
@@ -532,7 +532,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         }
         catch (Exception ex)
         {
-            UULog.error(getClass(), "writeToParcel", ex);
+            debugLog("writeToParcel", ex);
         }
     }
 
@@ -563,6 +563,22 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         if (gatt != null)
         {
             setBluetoothGatt(gatt.getBluetoothGatt());
+        }
+    }
+
+    private static void debugLog(final String method, final String message)
+    {
+        if (LOGGING_ENABLED)
+        {
+            UULog.debug(UUPeripheral.class, method, message);
+        }
+    }
+
+    private synchronized static void debugLog(final String method, final Throwable exception)
+    {
+        if (LOGGING_ENABLED)
+        {
+            UULog.debug(UUPeripheral.class, method, exception);
         }
     }
 }
