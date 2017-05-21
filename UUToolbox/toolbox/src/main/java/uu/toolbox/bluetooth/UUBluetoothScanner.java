@@ -26,7 +26,7 @@ import uu.toolbox.core.UUWorkerThread;
 import uu.toolbox.logging.UULog;
 
 @SuppressWarnings("unused")
-public class UUBluetoothScanner
+public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
 {
     private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
 
@@ -36,7 +36,6 @@ public class UUBluetoothScanner
     }
 
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothAdapter.LeScanCallback legacyScanCallback;
     private BluetoothLeScanner bluetoothLeScanner;
     private ScanCallback scanCallback;
     private UUWorkerThread scanThread;
@@ -45,6 +44,7 @@ public class UUBluetoothScanner
     private UUPeripheralFactory peripheralFactory;
     private boolean useLollipopScanning = true;
     private final HashMap<String, Boolean> ignoredDevices = new HashMap<>();
+    private Listener listener;
 
     public UUBluetoothScanner(final Context context)
     {
@@ -68,6 +68,7 @@ public class UUBluetoothScanner
                 peripheralFactory = factory;
                 isScanning = true;
                 ignoredDevices.clear();
+                listener = delegate;
 
                 if (peripheralFactory == null)
                 {
@@ -127,7 +128,7 @@ public class UUBluetoothScanner
         this.useLollipopScanning = useLollipopScanning;
     }
 
-    private boolean shouldUseLollipopScanning()
+    boolean shouldUseLollipopScanning()
     {
         return canUseLollipopScanning() && useLollipopScanning();
     }
@@ -135,18 +136,11 @@ public class UUBluetoothScanner
     @SuppressWarnings("deprecation")
     private void startLegacyScan(final @Nullable UUID[] serviceUuidList, final @NonNull Listener delegate)
     {
+        stopLegacyScan();
+
         try
         {
-            legacyScanCallback = new BluetoothAdapter.LeScanCallback()
-            {
-                @Override
-                public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord)
-                {
-                    handleLegacyScanResult(device, rssi, scanRecord, delegate);
-                }
-            };
-
-            bluetoothAdapter.startLeScan(serviceUuidList, legacyScanCallback);
+            bluetoothAdapter.startLeScan(serviceUuidList, this);
         }
         catch (Exception ex)
         {
@@ -154,9 +148,17 @@ public class UUBluetoothScanner
         }
     }
 
+    @Override
+    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord)
+    {
+        handleLegacyScanResult(device, rssi, scanRecord, listener);
+    }
+
     @TargetApi(21)
     private void startScan(final @Nullable UUID[] serviceUuidList, final @NonNull Listener delegate)
     {
+        stopScan();
+
         try
         {
             ArrayList<ScanFilter> filters = new ArrayList<>();
@@ -236,47 +238,73 @@ public class UUBluetoothScanner
 
     private void handleLegacyScanResult(final BluetoothDevice device, final int rssi, final byte[] scanRecord, final Listener delegate)
     {
-        if (isIgnored(device))
+        try
         {
-            debugLog("handleLegacyScanResult", "Ignoring advertisement from " + device.getAddress());
-            return;
-        }
-
-        scanThread.post(new Runnable()
-        {
-            @Override
-            public void run()
+            if (!isScanning)
             {
-                UUPeripheral peripheral = peripheralFactory.fromScanResult(device, rssi, scanRecord);
-                if (shouldDiscoverPeripheral(peripheral))
-                {
-                    handlePeripheralFound(peripheral, delegate);
-                }
+                debugLog("handleLegacyScanResult", "Not scanning, ignoring advertisement from " + device.getAddress());
+                return;
             }
-        });
+
+            if (isIgnored(device))
+            {
+                //debugLog("handleLegacyScanResult", "Ignoring advertisement from " + device.getAddress());
+                return;
+            }
+
+            scanThread.post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    UUPeripheral peripheral = peripheralFactory.fromScanResult(device, rssi, scanRecord);
+                    if (shouldDiscoverPeripheral(peripheral))
+                    {
+                        handlePeripheralFound(peripheral, delegate);
+                    }
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            debugLog("handleLegacyScanResult", ex);
+        }
     }
 
     @TargetApi(21)
     private void handleScanResult(final ScanResult scanResult, final Listener delegate)
     {
-        if (isIgnored(scanResult))
+        try
         {
-            debugLog("handleLegacyScanResult", "Ignoring advertisement from " + scanResult.getDevice().getAddress());
-            return;
-        }
-
-        scanThread.post(new Runnable()
-        {
-            @Override
-            public void run()
+            if (!isScanning)
             {
-                UUPeripheral peripheral = peripheralFactory.fromScanResult(scanResult.getDevice(), scanResult.getRssi(), safeGetScanRecord(scanResult));
-                if (shouldDiscoverPeripheral(peripheral))
-                {
-                    handlePeripheralFound(peripheral, delegate);
-                }
+                debugLog("handleScanResult", "Not scanning, ignoring advertisement from " + scanResult.getDevice().getAddress());
+                return;
             }
-        });
+
+            if (isIgnored(scanResult))
+            {
+                debugLog("handleScanResult", "Ignoring advertisement from " + scanResult.getDevice().getAddress());
+                return;
+            }
+
+            scanThread.post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    UUPeripheral peripheral = peripheralFactory.fromScanResult(scanResult.getDevice(), scanResult.getRssi(), safeGetScanRecord(scanResult));
+                    if (shouldDiscoverPeripheral(peripheral))
+                    {
+                        handlePeripheralFound(peripheral, delegate);
+                    }
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            debugLog("handleScanResult", ex);
+        }
     }
 
     @TargetApi(21)
@@ -298,12 +326,13 @@ public class UUBluetoothScanner
     {
         if (isScanning)
         {
-            UULog.debug(getClass(), "handlePeripheralFound", "Peripheral Found: " + peripheral);
+            debugLog("handlePeripheralFound", "Peripheral Found: " + peripheral);
             notifyPeripheralFound(peripheral, delegate);
         }
         else
         {
-            debugLog("handlePeripheralFound", "Not scanning anymore, throwing away scan result");
+            debugLog("handlePeripheralFound", "Not scanning anymore, throwing away scan result from: " + peripheral);
+            safeEndAllScanning();
         }
     }
 
@@ -329,7 +358,7 @@ public class UUBluetoothScanner
         {
             if (bluetoothAdapter != null)
             {
-                bluetoothAdapter.stopLeScan(legacyScanCallback);
+                bluetoothAdapter.stopLeScan(this);
             }
             else
             {
@@ -339,10 +368,6 @@ public class UUBluetoothScanner
         catch (Exception ex)
         {
             debugLog("stopLegacyScan", ex);
-        }
-        finally
-        {
-            legacyScanCallback = null;
         }
     }
 
@@ -362,6 +387,12 @@ public class UUBluetoothScanner
         }
     }
 
+    private void safeEndAllScanning()
+    {
+        stopLegacyScan();
+        stopScan();
+    }
+
     private synchronized boolean isIgnored(@Nullable final BluetoothDevice device)
     {
         return (device == null || ignoredDevices.containsKey(device.getAddress()));
@@ -376,6 +407,11 @@ public class UUBluetoothScanner
     public synchronized void ignoreDevice(@NonNull final BluetoothDevice device)
     {
         ignoredDevices.put(device.getAddress(), Boolean.TRUE);
+    }
+
+    public synchronized void clearIgnoreList()
+    {
+        ignoredDevices.clear();
     }
 
     private boolean shouldDiscoverPeripheral(final @NonNull UUPeripheral peripheral)
