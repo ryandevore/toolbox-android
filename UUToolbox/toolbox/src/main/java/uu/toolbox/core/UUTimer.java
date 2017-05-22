@@ -3,7 +3,7 @@ package uu.toolbox.core;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -202,8 +202,6 @@ public class UUTimer
 
     private static void addTimer(final @NonNull UUTimer timer)
     {
-        logAllTimers("addTimer.before");
-
         try
         {
             synchronized (theActiveTimers)
@@ -215,16 +213,10 @@ public class UUTimer
         {
             UULog.error(UUTimer.class, "addTimer", ex);
         }
-        finally
-        {
-            logAllTimers("addTimer.after");
-        }
     }
 
     private static void removeTimer(final @NonNull UUTimer timer)
     {
-        logAllTimers("removeTimer.before");
-
         try
         {
             synchronized (theActiveTimers)
@@ -235,28 +227,6 @@ public class UUTimer
         catch (Exception ex)
         {
             UULog.error(UUTimer.class, "removeTimer", ex);
-        }
-        finally
-        {
-            logAllTimers("removeTimer.after");
-        }
-    }
-
-    private static void logAllTimers(final @NonNull String fromWhere)
-    {
-        try
-        {
-            Collection<UUTimer> list = listActiveTimers();
-            UULog.debug(UUTimer.class, "logAllTimers", "There are " + list.size() + " active timers, fromWhere: " + fromWhere);
-
-            for (UUTimer t : list)
-            {
-                UULog.debug(UUTimer.class, "logAllTimers", "Timer: " + t.getTimerId() + ", userInfo: " + t.getUserInfo());
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.error(UUTimer.class, "logAllTimers", ex);
         }
     }
 
@@ -281,9 +251,18 @@ public class UUTimer
      *
      * @return a list of UUTimer's
      */
-    public static @NonNull Collection<UUTimer> listActiveTimers()
+    public static @NonNull ArrayList<UUTimer> listActiveTimers()
     {
-        return theActiveTimers.values();
+        synchronized (theActiveTimers)
+        {
+            ArrayList<UUTimer> copy = new ArrayList<>();
+            for (UUTimer t : theActiveTimers.values())
+            {
+                copy.add(t);
+            }
+
+            return copy;
+        }
     }
 
     /**
