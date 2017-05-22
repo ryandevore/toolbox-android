@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
@@ -25,6 +24,8 @@ import uu.toolbox.logging.UULog;
  */
 class UUBluetoothGatt
 {
+    private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
+
     // Internal Constants
     private static final String CONNECT_WATCHDOG_BUCKET = "UUBluetoothConnectWatchdogBucket";
     private static final String SERVICE_DISCOVERY_WATCHDOG_BUCKET = "UUBluetoothServiceDiscoveryWatchdogBucket";
@@ -35,8 +36,6 @@ class UUBluetoothGatt
     private static final String WRITE_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothWriteDescriptorValueWatchdogBucket";
     private static final String READ_RSSI_WATCHDOG_BUCKET = "UUBluetoothReadRssiWatchdogBucket";
     private static final String POLL_RSSI_BUCKET = "UUBluetoothPollRssiBucket";
-
-    private static final boolean DEBUG_LOGGING_ENABLED = true;
 
     private static final int TIMEOUT_DISABLED = -1;
 
@@ -1095,17 +1094,17 @@ class UUBluetoothGatt
 
     private void debugLog(final String method, final String message)
     {
-        if (DEBUG_LOGGING_ENABLED && UULog.LOGGING_ENABLED)
+        if (LOGGING_ENABLED)
         {
             UULog.debug(getClass(), method, message);
         }
     }
 
-    private void logException(final String method, final Exception ex)
+    private synchronized static void logException(final String method, final Throwable exception)
     {
-        if (DEBUG_LOGGING_ENABLED && UULog.LOGGING_ENABLED)
+        if (LOGGING_ENABLED)
         {
-            UULog.error(getClass(), method, ex);
+            UULog.error(UUBluetoothGatt.class, method, exception);
         }
     }
 
@@ -1176,27 +1175,28 @@ class UUBluetoothGatt
 
     private void cancelAllTimers()
     {
-        if (peripheral != null)
+        try
         {
-            Collection<UUTimer> list = UUTimer.listActiveTimers();
-            ArrayList<UUTimer> toRemove = new ArrayList<>();
-
-            String prefix = peripheral.getAddress();
-            if (prefix != null)
+            if (peripheral != null)
             {
-                for (UUTimer t : list)
+                ArrayList<UUTimer> list = UUTimer.listActiveTimers();
+
+                String prefix = peripheral.getAddress();
+                if (prefix != null)
                 {
-                    if (t.getTimerId().startsWith(prefix))
+                    for (UUTimer t : list)
                     {
-                        toRemove.add(t);
+                        if (t.getTimerId().startsWith(prefix))
+                        {
+                            t.cancel();
+                        }
                     }
                 }
             }
-
-            for (UUTimer t : toRemove)
-            {
-                t.cancel();
-            }
+        }
+        catch (Exception ex)
+        {
+            logException("cancelAllTimers", ex);
         }
     }
 
