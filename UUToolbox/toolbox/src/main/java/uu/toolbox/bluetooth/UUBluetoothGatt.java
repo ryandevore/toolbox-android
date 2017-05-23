@@ -120,6 +120,12 @@ class UUBluetoothGatt
         });
     }
 
+    boolean isConnectWatchdogActive()
+    {
+        UUTimer t = UUTimer.findActiveTimer(connectWatchdogTimerId());
+        return (t != null);
+    }
+
     void disconnect()
     {
         UUThread.runOnMainThread(new Runnable()
@@ -1057,6 +1063,10 @@ class UUBluetoothGatt
             {
                 bluetoothGatt.disconnect();
             }
+            else
+            {
+                debugLog("disconnectGatt", "Bluetooth Gatt is null. Unable to disconnect");
+            }
         }
         catch (Exception ex)
         {
@@ -1213,16 +1223,16 @@ class UUBluetoothGatt
             {
                 notifyConnected();
             }
-            else if (status == UUBluetoothConstants.GATT_ERROR)
-            {
-                // Sometimes when attempting a connection, the operation fails with status 133.  Through
-                // trial and error, calling BluetoothGatt.connect() after this happens will make the
-                // connection happen.
-                reconnectGatt();
-            }
             else if (newState == BluetoothGatt.STATE_DISCONNECTED)
             {
                 notifyDisconnected(UUBluetoothError.gattStatusError("onConnectionStateChanged", status));
+            }
+            else if (status == UUBluetoothConstants.GATT_ERROR)
+            {
+                // Sometimes when attempting a connection, the operation fails with status 133 and state
+                // other than connected.  Through trial and error, calling BluetoothGatt.connect() after
+                // this happens will make the connection happen.
+                reconnectGatt();
             }
         }
 
