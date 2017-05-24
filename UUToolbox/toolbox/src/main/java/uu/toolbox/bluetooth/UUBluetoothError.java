@@ -107,6 +107,16 @@ public class UUBluetoothError
     }
 
     /**
+     * Wrapper method to return a disconnected error
+     *
+     * @return a UUBluetoothError object
+     */
+    public static @NonNull UUBluetoothError disconnectedError()
+    {
+        return new UUBluetoothError(UUBluetoothErrorCode.Disconnected);
+    }
+
+    /**
      * Wrapper method to return an underlying Bluetooth method failure.  This is returned when
      * a method returns false or null or othe error condition.
      *
