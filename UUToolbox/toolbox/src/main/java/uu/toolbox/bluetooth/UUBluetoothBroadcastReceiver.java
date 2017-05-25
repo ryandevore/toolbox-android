@@ -43,6 +43,18 @@ public class UUBluetoothBroadcastReceiver extends BroadcastReceiver
         }
     }
 
+    public void unregisterAll()
+    {
+        try
+        {
+            context.unregisterReceiver(this);
+        }
+        catch (Exception ex)
+        {
+            UULog.error(getClass(), "unregisterAll", ex);
+        }
+    }
+
     private void registerForEvent(@NonNull final String event)
     {
         try

@@ -36,6 +36,7 @@ class UUBluetoothGatt
     private static final String WRITE_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothWriteDescriptorValueWatchdogBucket";
     private static final String READ_RSSI_WATCHDOG_BUCKET = "UUBluetoothReadRssiWatchdogBucket";
     private static final String POLL_RSSI_BUCKET = "UUBluetoothPollRssiBucket";
+    private static final String DISCONNECT_WATCHDOG_BUCKET = "UUBluetoothDisconnectWatchdogBucket";
 
     private static final int TIMEOUT_DISABLED = -1;
 
@@ -47,6 +48,8 @@ class UUBluetoothGatt
     private UUPeripheralErrorDelegate serviceDiscoveryDelegate;
     private UUPeripheralErrorDelegate readRssiDelegate;
     private UUPeripheralDelegate pollRssiDelegate;
+
+    private UUBluetoothError disconnectError;
 
     private final HashMap<String, UUCharacteristicDelegate> readCharacteristicDelegates = new HashMap<>();
     private final HashMap<String, UUCharacteristicDelegate> writeCharacteristicDelegates = new HashMap<>();
@@ -63,9 +66,15 @@ class UUBluetoothGatt
         bluetoothGattCallback = new UUBluetoothGattCallback();
     }
 
-    boolean isGattConnected()
+    boolean isConnecting()
     {
-        return (bluetoothGatt != null);
+        return (bluetoothGatt != null && isConnectWatchdogActive());
+    }
+
+    private boolean isConnectWatchdogActive()
+    {
+        UUTimer t = UUTimer.findActiveTimer(connectWatchdogTimerId());
+        return (t != null);
     }
 
     void connect(
@@ -103,8 +112,7 @@ class UUBluetoothGatt
             {
                 debugLog("connect", "Connect timeout: " + peripheral);
 
-                disconnect();
-                notifyDisconnected(UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -115,25 +123,34 @@ class UUBluetoothGatt
             {
                 debugLog("connect", "Connecting to: " + peripheral + ", gattAuto: " + connectGattAutoFlag + ", highPriority: " + requestHighPriority);
                 requestHighPriorityConnection = requestHighPriority;
+                disconnectError = null;
                 bluetoothGatt = peripheral.getBluetoothDevice().connectGatt(context, connectGattAutoFlag, bluetoothGattCallback);
             }
         });
     }
 
-    boolean isConnectWatchdogActive()
+    void disconnect(@Nullable final UUBluetoothError error)
     {
-        UUTimer t = UUTimer.findActiveTimer(connectWatchdogTimerId());
-        return (t != null);
-    }
+        disconnectError = error;
 
-    void disconnect()
-    {
+        String timerId = disconnectWatchdogTimerId();
+        long timeout = 10000;
+
+        UUTimer.startTimer(timerId, timeout, peripheral, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("disconnect", "Disconnect timeout: " + peripheral);
+                notifyDisconnected(error);
+            }
+        });
+
         UUThread.runOnMainThread(new Runnable()
         {
             @Override
             public void run()
             {
-                debugLog("disconnect", "Disconnecting from: " + peripheral);
                 disconnectGatt();
             }
         });
@@ -215,8 +232,7 @@ class UUBluetoothGatt
             {
                 debugLog("discoverServices", "Service Discovery timeout: " + peripheral);
 
-                disconnect();
-                notifyServicesDiscovered(UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -275,8 +291,7 @@ class UUBluetoothGatt
             {
                 debugLog("readCharacteristic", "Read characteristic timeout: " + peripheral);
 
-                disconnect();
-                notifyCharacteristicRead(characteristic, UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -334,8 +349,7 @@ class UUBluetoothGatt
             {
                 debugLog("readDescriptor", "Read descriptor timeout: " + peripheral);
 
-                disconnect();
-                notifyDescriptorRead(descriptor, UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -394,8 +408,7 @@ class UUBluetoothGatt
             {
                 debugLog("writeDescriptor", "Write descriptor timeout: " + peripheral);
 
-                disconnect();
-                notifyDescriptorWritten(descriptor, UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -458,8 +471,7 @@ class UUBluetoothGatt
             {
                 debugLog("setNotifyState", "Set notify state timeout: " + peripheral);
 
-                disconnect();
-                notifyCharacteristicNotifyStateChanged(characteristic, UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -566,8 +578,7 @@ class UUBluetoothGatt
             {
                 debugLog("writeCharacteristic", "Write characteristic timeout: " + peripheral);
 
-                disconnect();
-                notifyCharacteristicWritten(characteristic, UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -627,8 +638,7 @@ class UUBluetoothGatt
             {
                 debugLog("readRssi", "Read RSSI timeout: " + peripheral);
 
-                disconnect();
-                notifyReadRssiComplete(UUBluetoothError.timeoutError());
+                disconnect(UUBluetoothError.timeoutError());
             }
         });
 
@@ -821,10 +831,11 @@ class UUBluetoothGatt
         }
     }
 
-    private void notifyConnected()
+    private void notifyConnected(@NonNull final String fromWhere)
     {
         try
         {
+            debugLog("notifyConnected", "Notifying connected from: " + fromWhere);
             peripheral.setBluetoothGatt(bluetoothGatt);
 
             UUConnectionDelegate delegate = connectionDelegate;
@@ -844,7 +855,6 @@ class UUBluetoothGatt
     private void notifyDisconnected(final @Nullable UUBluetoothError error)
     {
         closeGatt();
-        bluetoothGatt = null;
         peripheral.setBluetoothGatt(null);
 
         UUConnectionDelegate delegate = connectionDelegate;
@@ -1059,6 +1069,8 @@ class UUBluetoothGatt
     {
         try
         {
+            debugLog("disconnectGatt", "Disconnecting from: " + peripheral);
+
             if (bluetoothGatt != null)
             {
                 bluetoothGatt.disconnect();
@@ -1087,6 +1099,10 @@ class UUBluetoothGatt
         {
             logException("closeGatt", ex);
         }
+        finally
+        {
+            bluetoothGatt = null;
+        }
     }
 
     private void reconnectGatt()
@@ -1110,7 +1126,7 @@ class UUBluetoothGatt
         }
     }
 
-    private synchronized static void logException(final String method, final Throwable exception)
+    private static void logException(final String method, final Throwable exception)
     {
         if (LOGGING_ENABLED)
         {
@@ -1141,6 +1157,11 @@ class UUBluetoothGatt
     private @NonNull String connectWatchdogTimerId()
     {
         return formatPeripheralTimerId(CONNECT_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String disconnectWatchdogTimerId()
+    {
+        return formatPeripheralTimerId(DISCONNECT_WATCHDOG_BUCKET);
     }
 
     private @NonNull String serviceDiscoveryWatchdogTimerId()
@@ -1221,11 +1242,23 @@ class UUBluetoothGatt
 
             if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothGatt.STATE_CONNECTED)
             {
-                notifyConnected();
+                notifyConnected("onConnectionStateChange");
             }
             else if (newState == BluetoothGatt.STATE_DISCONNECTED)
             {
-                notifyDisconnected(UUBluetoothError.gattStatusError("onConnectionStateChanged", status));
+                UUBluetoothError err = disconnectError;
+
+                if (err == null)
+                {
+                    err = UUBluetoothError.gattStatusError("onConnectionStateChanged", status);
+                }
+
+                if (err == null)
+                {
+                    err = UUBluetoothError.disconnectedError();
+                }
+
+                notifyDisconnected(err);
             }
             else if (status == UUBluetoothConstants.GATT_ERROR)
             {

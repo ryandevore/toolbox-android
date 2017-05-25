@@ -26,8 +26,6 @@ import uu.toolbox.core.UUParcel;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
-import static uu.toolbox.bluetooth.UUBluetooth.gattForPeripheral;
-
 /**
  * Wrapper class around a BTLE scanning result.
  */
@@ -196,23 +194,24 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     {
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         int state = bluetoothManager.getConnectionState(device, BluetoothProfile.GATT);
-        if (state == BluetoothProfile.STATE_CONNECTED)
+        debugLog("getConnectionState", "Actual connection state is: " + state + " (" + ConnectionState.fromProfileConnectionState(state) + ")");
+
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+
+        if (gatt != null)
         {
-            UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
-            if (gatt == null)
+            if (state != BluetoothProfile.STATE_CONNECTING && gatt.isConnecting())
             {
-                debugLog("getConnectionState", getAddress() + ", Profile is connected but UUBluetoothGatt is null! This should not happen!");
+                debugLog("getConnectionState", "Forcing state to connecting");
+                state = BluetoothProfile.STATE_CONNECTING;
             }
-            else
+            else if (state != BluetoothProfile.STATE_DISCONNECTED && gatt.getBluetoothGatt() == null)
             {
-                boolean isGattConnected = gatt.isGattConnected();
-                debugLog("getConnectionState", getAddress() + ", Profile is connected, UUBluetoothGatt is non null, underlying Gatt is " + (isGattConnected ? "connected" : "NOT connected"));
-                if (!isGattConnected)
-                {
-                    state = BluetoothProfile.STATE_DISCONNECTED;
-                }
+                debugLog("getConnectionState", "Forcing state to disconnected");
+                state = BluetoothProfile.STATE_DISCONNECTED;
             }
         }
+
         return ConnectionState.fromProfileConnectionState(state);
     }
 
@@ -256,11 +255,11 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     }
 
     public void setNotifyState(
-        final @NonNull BluetoothGattCharacteristic characteristic,
-        final boolean notifyState,
-        final long timeout,
-        final @Nullable UUCharacteristicDelegate notifyDelegate,
-        final @NonNull UUCharacteristicDelegate delegate)
+            final @NonNull BluetoothGattCharacteristic characteristic,
+            final boolean notifyState,
+            final long timeout,
+            final @Nullable UUCharacteristicDelegate notifyDelegate,
+            final @NonNull UUCharacteristicDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)
@@ -333,8 +332,8 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     }
 
     public void readRssi(
-        final long timeout,
-        final @NonNull UUPeripheralErrorDelegate delegate)
+            final long timeout,
+            final @NonNull UUPeripheralErrorDelegate delegate)
     {
         UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
         if (gatt != null)

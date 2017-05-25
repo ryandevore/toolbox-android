@@ -22,9 +22,6 @@ import uu.toolbox.core.UUInteger;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
-import static uu.toolbox.bluetooth.UUBluetoothConstants.BLUETOOTH_SPEC_NAMES;
-import static uu.toolbox.bluetooth.UUBluetoothConstants.BLUETOOTH_UUID_SHORTCODE_FORMAT;
-
 /**
  * Helpful Bluetooth methods, constants, interfaces
  */
@@ -44,7 +41,7 @@ public class UUBluetooth
             return null;
         }
 
-        return String.format(Locale.US, BLUETOOTH_UUID_SHORTCODE_FORMAT, shortCode);
+        return String.format(Locale.US, UUBluetoothConstants.BLUETOOTH_UUID_SHORTCODE_FORMAT, shortCode);
     }
 
     /**
@@ -185,9 +182,9 @@ public class UUBluetooth
             return "Unknown";
         }
 
-        if (BLUETOOTH_SPEC_NAMES.containsKey(uuid))
+        if (UUBluetoothConstants.BLUETOOTH_SPEC_NAMES.containsKey(uuid))
         {
-            return BLUETOOTH_SPEC_NAMES.get(uuid);
+            return UUBluetoothConstants.BLUETOOTH_SPEC_NAMES.get(uuid);
         }
 
         return "Unknown";
@@ -458,7 +455,7 @@ public class UUBluetooth
         UUBluetoothGatt gatt = gattForPeripheral(peripheral);
         if (gatt != null)
         {
-            gatt.disconnect();
+            gatt.disconnect(null);
         }
     }
 
@@ -496,4 +493,6 @@ public class UUBluetooth
 
         return null;
     }
+
+
 }
