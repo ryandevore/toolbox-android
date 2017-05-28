@@ -60,6 +60,8 @@ class UUBluetoothGatt
 
     private boolean requestHighPriorityConnection = false;
 
+    private long disconnectTimeout = 0;
+
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
     {
         this.peripheral = peripheral;
@@ -82,6 +84,7 @@ class UUBluetoothGatt
         final boolean connectGattAutoFlag,
         final boolean requestHighPriority,
         final long timeout,
+        final long disconnectTimeout,
         final @NonNull UUConnectionDelegate delegate)
     {
         final String timerId = connectWatchdogTimerId();
@@ -116,6 +119,7 @@ class UUBluetoothGatt
             }
         });
 
+        this.disconnectTimeout = disconnectTimeout;
         UUThread.runOnMainThread(new Runnable()
         {
             @Override
@@ -134,7 +138,8 @@ class UUBluetoothGatt
         disconnectError = error;
 
         String timerId = disconnectWatchdogTimerId();
-        long timeout = 10000;
+
+        final long timeout = disconnectTimeout;
 
         UUTimer.startTimer(timerId, timeout, peripheral, new UUTimer.TimerDelegate()
         {
@@ -143,17 +148,14 @@ class UUBluetoothGatt
             {
                 debugLog("disconnect", "Disconnect timeout: " + peripheral);
                 notifyDisconnected(error);
+
+                // Just in case the timeout fires and a real disconnect is needed, this is the last
+                // ditch effort to close the connection
+                disconnectGattOnMainThread();
             }
         });
 
-        UUThread.runOnMainThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                disconnectGatt();
-            }
-        });
+        disconnectGattOnMainThread();
     }
 
     private boolean requestHighPriority()
@@ -1064,6 +1066,17 @@ class UUBluetoothGatt
         return result;
     }
 
+    private void disconnectGattOnMainThread()
+    {
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                disconnectGatt();
+            }
+        });
+    }
 
     private void disconnectGatt()
     {

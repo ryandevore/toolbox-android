@@ -441,12 +441,13 @@ public class UUBluetooth
             final boolean connectGattAutoFlag,
             final boolean requestHighPriority,
             final long timeout,
+            final long disconnectTimeout,
             final @NonNull UUConnectionDelegate delegate)
     {
         UUBluetoothGatt gatt = gattForPeripheral(peripheral);
         if (gatt != null)
         {
-            gatt.connect(context, connectGattAutoFlag, requestHighPriority, timeout, delegate);
+            gatt.connect(context, connectGattAutoFlag, requestHighPriority, timeout, disconnectTimeout, delegate);
         }
     }
 
