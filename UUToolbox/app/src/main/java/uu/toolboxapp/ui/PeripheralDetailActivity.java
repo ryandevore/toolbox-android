@@ -261,7 +261,7 @@ public class PeripheralDetailActivity extends AppCompatActivity
     private void connect()
     {
         UULog.debug(getClass(), "connect", "Connecting to : " + peripheral);
-        UUBluetooth.connectPeripheral(this, peripheral, false, false, 10000, new UUConnectionDelegate()
+        UUBluetooth.connectPeripheral(this, peripheral, false, false, 10000, 10000, new UUConnectionDelegate()
         {
             @Override
             public void onConnected(@NonNull UUPeripheral peripheral)
