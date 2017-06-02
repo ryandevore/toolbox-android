@@ -28,6 +28,30 @@ public class UUWorkerThread extends Thread
         }
     }
 
+    public void postDelayed(final Runnable runnable, final long delay)
+    {
+        if (handler != null)
+        {
+            handler.postDelayed(runnable, delay);
+        }
+        else
+        {
+            Log.d(LOG_TAG, "Handler is null! unable to post!");
+        }
+    }
+
+    public void removeRunnable(final Runnable runnable)
+    {
+        if (handler != null)
+        {
+            handler.removeCallbacks(runnable);
+        }
+        else
+        {
+            Log.d(LOG_TAG, "Handler is null! unable to remove runnable!");
+        }
+    }
+
     public void run()
     {
         try
