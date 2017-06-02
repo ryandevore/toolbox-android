@@ -639,8 +639,7 @@ class UUBluetoothGatt
             public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
             {
                 debugLog("readRssi", "Read RSSI timeout: " + peripheral);
-
-                disconnect(UUBluetoothError.timeoutError());
+                notifyReadRssiComplete(UUBluetoothError.timeoutError());
             }
         });
 
@@ -1354,7 +1353,7 @@ class UUBluetoothGatt
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status)
         {
-            debugLog("onReadRemoteRssi", "rssi: " + rssi + ", status: " + status);
+            debugLog("onReadRemoteRssi", "device: " + peripheral.getAddress() + ", rssi: " + rssi + ", status: " + status);
 
             if (status == BluetoothGatt.GATT_SUCCESS)
             {
