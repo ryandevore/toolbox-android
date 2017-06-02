@@ -5,8 +5,7 @@ import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.TimeZone;
 
 import uu.toolbox.logging.UULog;
 
@@ -16,6 +15,8 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public class UUTimer
 {
+    private static final boolean LOGGING_ENABLED = true;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public Interfaces
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,10 +44,12 @@ public class UUTimer
     private @Nullable TimerDelegate timerDelegate = null;
     private long interval = 0;
     private boolean repeat = false;
-    private @Nullable Timer underlyingTimer;
-    private @Nullable TimerTask underlyingTimerTask;
+    private @Nullable Runnable runnable;
+    private long lastFireTime = 0;
 
     private static final @NonNull HashMap<String, UUTimer> theActiveTimers = new HashMap<>();
+
+    private static UUWorkerThread workerThread = new UUWorkerThread();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Data Accessors
@@ -97,14 +100,13 @@ public class UUTimer
         this.repeat = repeat;
         this.userInfo = userInfo;
         this.timerDelegate = delegate;
-        this.underlyingTimer = new Timer();
 
-        this.underlyingTimerTask = new TimerTask()
+        this.runnable = new Runnable()
         {
             @Override
             public void run()
             {
-                handlerTimerFired();
+                safeInvokeRun();
             }
         };
     }
@@ -124,8 +126,7 @@ public class UUTimer
     public void cancel()
     {
         safeCancelTimer();
-        underlyingTimer = null;
-        underlyingTimerTask = null;
+        runnable = null;
         removeTimer(this);
     }
 
@@ -137,16 +138,16 @@ public class UUTimer
     {
         try
         {
-            if (underlyingTimer != null)
+            if (runnable != null)
             {
-                if (repeat)
+                lastFireTime = System.currentTimeMillis();
+
+                if (LOGGING_ENABLED)
                 {
-                    underlyingTimer.schedule(underlyingTimerTask, interval, interval);
+                    UULog.debug(getClass(), "safeStartTimer." + timerId, "interval: " + interval + ", expectedFireTime: " + UUDate.formatDate(System.currentTimeMillis() + interval, UUDate.RFC_3999_DATE_TIME_ALTERNATE_FORMAT, TimeZone.getDefault()));
                 }
-                else
-                {
-                    underlyingTimer.schedule(underlyingTimerTask, interval);
-                }
+
+                workerThread.postDelayed(runnable, interval);
             }
         }
         catch (Exception ex)
@@ -159,18 +160,19 @@ public class UUTimer
     {
         try
         {
-            if (underlyingTimer != null)
+            if (LOGGING_ENABLED)
             {
-                underlyingTimer.cancel();
+                UULog.debug(getClass(), "safeCancelTimer." + timerId, "Runnable is " + (runnable != null ? "not null" : "null"));
+            }
+
+            if (runnable != null)
+            {
+                workerThread.removeRunnable(runnable);
             }
         }
         catch (Exception ex)
         {
             UULog.debug(getClass(), "safeCancelTimer", ex);
-        }
-        finally
-        {
-            underlyingTimer = null;
         }
     }
 
@@ -193,6 +195,40 @@ public class UUTimer
             {
                 cancel();
             }
+        }
+    }
+
+    private void safeInvokeRun()
+    {
+        try
+        {
+            if (LOGGING_ENABLED)
+            {
+                long timeSinceFired = System.currentTimeMillis() - lastFireTime;
+                double percentDiff = ((double) interval - (double) timeSinceFired) / (double) interval;
+
+                UULog.debug(getClass(), "safeInvokeRun",
+                    "timerId: " + timerId +
+                    ", isMainThread: " + UUThread.isMainThread() +
+                    ", fired with diff: " + percentDiff +
+                    ", ExpectedInterval: " + interval +
+                    ", ActualInterval: " + timeSinceFired);
+            }
+
+            handlerTimerFired();
+
+            if (repeat)
+            {
+                safeStartTimer();
+            }
+            else
+            {
+                safeCancelTimer();
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(getClass(), "safeInvokeRun", ex);
         }
     }
 
