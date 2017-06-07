@@ -717,7 +717,6 @@ class UUBluetoothGatt
                             }
                             else if (peripheral.getConnectionState(context) == UUPeripheral.ConnectionState.Connected)
                             {
-                                //[self startRssiPolling:peripheral interval:interval peripheralUpdated:peripheralUpdated];
                                 startRssiPolling(context, interval, delegate);
                             }
                             else
@@ -1216,7 +1215,7 @@ class UUBluetoothGatt
         return formatPeripheralTimerId(POLL_RSSI_BUCKET);
     }
 
-    private void cancelAllTimers()
+    public void cancelAllTimers()
     {
         try
         {
@@ -1231,6 +1230,7 @@ class UUBluetoothGatt
                     {
                         if (t.getTimerId().startsWith(prefix))
                         {
+                            debugLog("cancelAllTimers", "Cancelling peripheral timer: " + t.getTimerId());
                             t.cancel();
                         }
                     }

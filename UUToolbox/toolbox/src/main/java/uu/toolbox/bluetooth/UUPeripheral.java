@@ -378,6 +378,15 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         return System.currentTimeMillis() - lastAdvertisementTime ;
     }
 
+    public void cancelAllTimers()
+    {
+        UUBluetoothGatt gatt = UUBluetooth.gattForPeripheral(this);
+        if (gatt != null)
+        {
+            gatt.cancelAllTimers();
+        }
+    }
+
     private void parseScanRecord()
     {
         if (scanRecord != null)
