@@ -75,6 +75,26 @@ public class UUTimer
         return userInfo;
     }
 
+    /**
+     * Gets the last time this timer was fired
+     *
+     * @return a long
+     */
+    public long getLastFireTime()
+    {
+        return lastFireTime;
+    }
+
+    /**
+     * Gets the interval
+     *
+     * @return number of milliseconds
+     */
+    public long getInterval()
+    {
+        return interval;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Construction
     ////////////////////////////////////////////////////////////////////////////////////////////////
