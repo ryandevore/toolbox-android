@@ -18,10 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
 import uu.toolbox.core.UUJson;
 import uu.toolbox.logging.UULog;
 
-/**
+/*
  * UUHttpClient is a simple wrapper for the java.net.HttpURLConnection class in the Android SDK.
  *
  * The main purpose of this class is to provide an easy to use wrapper for JSON web services.
@@ -35,7 +38,7 @@ import uu.toolbox.logging.UULog;
  * The main purpose of this class is to provide an easy to use wrapper for JSON web services.
  *
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnnecessaryToStringCall", "WeakerAccess"})
 public final class UUHttp
 {
     public static UUHttpTask get(
@@ -110,6 +113,7 @@ public final class UUHttp
         return task;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static UUHttpTask execute(final UUHttpRequest request, final UUHttpDelegate delegate)
     {
         UUHttpTask task = new UUHttpTask(delegate);
@@ -117,6 +121,7 @@ public final class UUHttp
         return task;
     }
 
+    @SuppressWarnings("ConstantConditions")
     protected static UUHttpResponse executeRequest(final UUHttpRequest request)
     {
         UUHttpResponse response = new UUHttpResponse();
@@ -132,6 +137,7 @@ public final class UUHttp
 
             if (proxy != null)
             {
+                //noinspection ConstantConditions
                 urlConnection = (HttpURLConnection) url.openConnection(proxy);
             }
             else
@@ -143,6 +149,17 @@ public final class UUHttp
             urlConnection.setReadTimeout(request.getTimeout());
             urlConnection.setDoInput(true);
             urlConnection.setRequestMethod(request.getHttpMethod().toString());
+
+            if (urlConnection instanceof HttpsURLConnection)
+            {
+                HttpsURLConnection httpsConn = (HttpsURLConnection)urlConnection;
+
+                SSLSocketFactory factory = request.getSocketFactory();
+                if (factory != null)
+                {
+                    httpsConn.setSSLSocketFactory(factory);
+                }
+            }
 
             UULog.debug(UUHttp.class, "executeRequest", request.getHttpMethod() + " " + url.toString());
             UULog.debug(UUHttp.class, "executeRequest", "Timeout: " + request.getTimeout());

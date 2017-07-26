@@ -6,6 +6,8 @@ import org.json.JSONObject;
 import java.net.Proxy;
 import java.util.HashMap;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import uu.toolbox.core.UUJson;
 
 /**
@@ -14,7 +16,7 @@ import uu.toolbox.core.UUJson;
  * Useful Utilities - Wrapper to encapsulate all request params needed for a UUHttpClient request.
  *
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class UUHttpRequest
 {
     protected String _url;
@@ -25,6 +27,7 @@ public class UUHttpRequest
     protected String _contentType;
     protected byte[] _body;
     protected Proxy _proxy;
+    protected SSLSocketFactory _sslSocketFactory;
 
 
     public String getURL()
@@ -100,6 +103,16 @@ public class UUHttpRequest
     public Proxy getProxy() { return _proxy; }
 
     public void setProxy(final Proxy proxy) { _proxy = proxy; }
+
+    public SSLSocketFactory getSocketFactory()
+    {
+        return _sslSocketFactory;
+    }
+
+    public void setSocketFactory(final SSLSocketFactory socketFactory)
+    {
+        _sslSocketFactory = socketFactory;
+    }
 
     public static UUHttpRequest get(final String url, final HashMap<String, String> queryArguments)
     {
