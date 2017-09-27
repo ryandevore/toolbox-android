@@ -1,7 +1,6 @@
 package uu.toolboxapp.ui;
 
 import android.Manifest;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,22 +27,21 @@ import uu.toolbox.bluetooth.UUPeripheralFactory;
 import uu.toolbox.bluetooth.UUPeripheralFilter;
 import uu.toolbox.core.UUInteger;
 import uu.toolbox.core.UUPermissions;
-import uu.toolbox.core.UUString;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
 import uu.toolboxapp.R;
-import uu.toolboxapp.bluetooth.CustomPeripheral;
+import uu.toolboxapp.bluetooth.IBeaconPeripheral;
 
 public class BtleScanActivity extends AppCompatActivity
 {
     private PeripheralAdapter tableAdapter;
     private Button scanButton;
-    private final ArrayList<CustomPeripheral> tableData = new ArrayList<>();
-    private final HashMap<String, CustomPeripheral> nearbyPeripherals = new HashMap<>();
+    private HashMap<String, UUPeripheral> cachedPeripherals = new HashMap<>();
+    private final ArrayList<UUPeripheral> tableData = new ArrayList<>();
     private long lastUiRefreshTime;
 
     private UUBluetoothScanner scanner;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -99,15 +97,28 @@ public class BtleScanActivity extends AppCompatActivity
 
     private void startScanning()
     {
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cachedPeripherals.clear();
+                lastUiRefreshTime = System.currentTimeMillis();
+                tableAdapter.notifyDataSetChanged();
+            }
+        });
+
+
         ArrayList<UUPeripheralFilter> filters = new ArrayList<>();
-        filters.add(new NullNameFilter());
-        filters.add(new RssiFilter(-100));
+        //filters.add(new NullNameFilter());
+        //filters.add(new RssiFilter(-100));
+        filters.add(new IBeaconPeripheral.IBeaconFilter());
 
         UUID[] uuidList = new UUID[]
         {
         };
 
-        UUPeripheralFactory factory = new CustomPeripheralFactory();
+        UUPeripheralFactory factory = new IBeaconPeripheral.IBeaconPeripheralFactory();
 
         scanner.startScanning(factory, uuidList, filters, new UUBluetoothScanner.Listener()
         {
@@ -131,17 +142,15 @@ public class BtleScanActivity extends AppCompatActivity
                 @Override
                 public void run()
                 {
-                    CustomPeripheral cp = (CustomPeripheral) peripheral;
-
-                    nearbyPeripherals.put(cp.getAddress(), cp);
+                    cachedPeripherals.put(peripheral.getAddress(), peripheral);
 
                     tableData.clear();
-                    tableData.addAll(nearbyPeripherals.values());
+                    tableData.addAll(cachedPeripherals.values());
 
-                    Collections.sort(tableData, new Comparator<CustomPeripheral>()
+                    Collections.sort(tableData, new Comparator<UUPeripheral>()
                     {
                         @Override
-                        public int compare(CustomPeripheral o1, CustomPeripheral o2)
+                        public int compare(UUPeripheral o1, UUPeripheral o2)
                         {
                             return UUInteger.compare(o2.getRssi(), o1.getRssi());
                         }
@@ -154,100 +163,18 @@ public class BtleScanActivity extends AppCompatActivity
         }
     }
 
-    class RssiFilter implements UUPeripheralFilter
-    {
-        private int rssiLevel;
-
-        RssiFilter(int rssiLevel)
-        {
-            this.rssiLevel = rssiLevel;
-        }
-
-        @Override
-        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
-        {
-            if (peripheral.getRssi() > rssiLevel)
-            {
-                return Result.Discover;
-            }
-            else
-            {
-                return Result.IgnoreOnce;
-            }
-        }
-    }
-
-    class NameFilter implements UUPeripheralFilter
-    {
-        private String name;
-
-        NameFilter(String name)
-        {
-            this.name = name;
-        }
-
-        @Override
-        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
-        {
-            if (UUString.areEqual(name, peripheral.getName()))
-            {
-                return Result.Discover;
-            }
-            else
-            {
-                return Result.IgnoreOnce;
-            }
-        }
-    }
-
-    class NullNameFilter implements UUPeripheralFilter
-    {
-        NullNameFilter()
-        {
-        }
-
-        @Override
-        public UUPeripheralFilter.Result shouldDiscoverPeripheral(@NonNull UUPeripheral peripheral)
-        {
-            if (UUString.isEmpty(peripheral.getName()))
-            {
-                return Result.IgnoreForever;
-            }
-            else
-            {
-                return Result.Discover;
-            }
-        }
-    }
-
-
-
-    class CustomPeripheralFactory implements UUPeripheralFactory<CustomPeripheral>
-    {
-        @NonNull
-        @Override
-        public CustomPeripheral fromScanResult(@NonNull BluetoothDevice device, int rssi, @NonNull byte[] scanRecord)
-        {
-            return new CustomPeripheral(device, rssi, scanRecord);
-        }
-
-
-    }
-
-
-    private void onRowClicked(final CustomPeripheral peripheral)
+    private void onRowClicked(final UUPeripheral peripheral)
     {
         scanner.stopScanning();
 
         Intent intent = new Intent(this, PeripheralDetailActivity.class);
         intent.putExtra("peripheral", peripheral);
         startActivity(intent);
-
     }
 
-    class PeripheralAdapter extends ArrayAdapter<CustomPeripheral>
+    private class PeripheralAdapter extends ArrayAdapter<UUPeripheral>
     {
-        public PeripheralAdapter(Context context, ArrayList<CustomPeripheral> data)
+        private PeripheralAdapter(Context context, ArrayList<UUPeripheral> data)
         {
             super(context, R.layout.peripheral_list_row, data);
         }
@@ -267,23 +194,28 @@ public class BtleScanActivity extends AppCompatActivity
             TextView rssiLabel = (TextView)view.findViewById(R.id.rssi_label);
             TextView timeLabel = (TextView)view.findViewById(R.id.time_label);
             TextView connectionLabel = (TextView)view.findViewById(R.id.connection_state_label);
+            TextView beaconRateLabel = (TextView)view.findViewById(R.id.beacon_rate_label);
 
-            final CustomPeripheral rowData = getItem(position);
-
-            nameLabel.setText(rowData.getName());
-            macLabel.setText(rowData.getAddress());
-            rssiLabel.setText(String.format(Locale.US, "%d", rowData.getRssi()));
-            timeLabel.setText(String.format(Locale.US, "%.3f", rowData.getTimeSinceLastUpdate() / 1000.0f));
-            connectionLabel.setText(rowData.getConnectionState(getApplicationContext()).toString());
-
-            view.setOnClickListener(new View.OnClickListener()
+            final UUPeripheral rowData = getItem(position);
+            if (rowData != null)
             {
-                @Override
-                public void onClick(View v)
+
+                nameLabel.setText(rowData.getName());
+                macLabel.setText(rowData.getAddress());
+                rssiLabel.setText(String.format(Locale.US, "%d", rowData.getRssi()));
+                timeLabel.setText(String.format(Locale.US, "%.3f", rowData.getTimeSinceLastUpdate() / 1000.0f));
+                beaconRateLabel.setText(String.format(Locale.US, "%d, %.3f", rowData.totalBeaconCount(), rowData.averageBeaconRate()));
+                connectionLabel.setText(rowData.getConnectionState(getApplicationContext()).toString());
+
+                view.setOnClickListener(new View.OnClickListener()
                 {
-                    onRowClicked(rowData);
-                }
-            });
+                    @Override
+                    public void onClick(View v)
+                    {
+                        onRowClicked(rowData);
+                    }
+                });
+            }
 
             return view;
         }
