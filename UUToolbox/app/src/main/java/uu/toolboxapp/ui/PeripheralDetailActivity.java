@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -21,6 +23,7 @@ import java.util.Locale;
 
 import uu.toolbox.bluetooth.UUBluetooth;
 import uu.toolbox.bluetooth.UUBluetoothError;
+import uu.toolbox.bluetooth.UUBluetoothPowerManager;
 import uu.toolbox.bluetooth.UUConnectionDelegate;
 import uu.toolbox.bluetooth.UUPeripheral;
 import uu.toolbox.bluetooth.UUPeripheralDelegate;
@@ -31,10 +34,6 @@ import uu.toolbox.ui.UUActivity;
 import uu.toolboxapp.R;
 
 import static uu.toolbox.bluetooth.UUPeripheral.ConnectionState.Disconnected;
-
-/**
- * Created by ryandevore on 12/29/16.
- */
 
 public class PeripheralDetailActivity extends AppCompatActivity
 {
@@ -52,11 +51,15 @@ public class PeripheralDetailActivity extends AppCompatActivity
     private final ArrayList<BluetoothGattService> tableData = new ArrayList<>();
     private PeripheralDetailActivity.BtleServiceAdapter tableAdapter;
 
+    private UUBluetoothPowerManager bluetoothPowerManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_peripheral_detail);
+
+        bluetoothPowerManager = new UUBluetoothPowerManager(getApplicationContext());
 
         Intent intent = getIntent();
         if (intent != null)
@@ -332,5 +335,104 @@ public class PeripheralDetailActivity extends AppCompatActivity
 
             return view;
         }
+    }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.peripheral_detail_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch (id)
+        {
+
+            case R.id.action_power_bluetooth_off:
+            {
+                onPowerBluetoothOff();
+                break;
+            }
+
+            case R.id.action_power_bluetooth_on:
+            {
+                onPowerBluetoothOn();
+                break;
+            }
+
+            case R.id.action_power_cycle_bluetooth:
+            {
+                onPowerCycleBluetooth();
+                break;
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void onPowerBluetoothOff()
+    {
+        bluetoothPowerManager.turnBluetoothOff(new UUBluetoothPowerManager.PowerOffDelegate()
+        {
+            @Override
+            public void onBluetoothPoweredOff(boolean success)
+            {
+                if (success)
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth Powered Off", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth NOT Powered Off", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void onPowerBluetoothOn()
+    {
+        bluetoothPowerManager.turnBluetoothOn(new UUBluetoothPowerManager.PowerOnDelegate()
+        {
+            @Override
+            public void onBluetoothPoweredOn(boolean success)
+            {
+                if (success)
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth Powered On", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth NOT Powered On", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void onPowerCycleBluetooth()
+    {
+        bluetoothPowerManager.powerCycleBluetooth(new UUBluetoothPowerManager.PowerCycleDelegate()
+        {
+            @Override
+            public void onBluetoothPoweredCycled(boolean success)
+            {
+                if (success)
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth Powered Cycled", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    Toast.makeText(PeripheralDetailActivity.this, "Bluetooth NOT Power Cycled", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }
