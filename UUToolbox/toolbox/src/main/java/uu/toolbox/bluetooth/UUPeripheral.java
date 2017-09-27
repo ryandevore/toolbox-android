@@ -87,8 +87,9 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     private byte[] manufacturingData;
     private String localName;
     private final ArrayList<String> serviceUuids = new ArrayList<>();
-    private long firstAdvertisementTime = 0;
-    private long lastAdvertisementTime = 0;
+    private long firstAdvertisementTime;
+    private long lastAdvertisementTime;
+    private long totalBeaconCount;
 
     private BluetoothGatt bluetoothGatt;
 
@@ -98,14 +99,9 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     public UUPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @Nullable byte[] scanRecord)
     {
-        this.device = device;
-        this.scanRecord = scanRecord;
-
-        firstAdvertisementTime = System.currentTimeMillis();
-        lastAdvertisementTime = firstAdvertisementTime;
-
-        updateRssi(rssi);
-        parseScanRecord();
+        firstAdvertisementTime = 0;
+        totalBeaconCount = 0;
+        updateAdvertisement(device, rssi, scanRecord);
     }
 
     public @Nullable byte[] getScanRecord()
@@ -178,6 +174,27 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     {
         rssi = updatedRssi;
         lastRssiUpdateTime = System.currentTimeMillis();
+
+    }
+
+    public void updateAdvertisement(final @NonNull BluetoothDevice device, final int rssi, final @Nullable byte[] scanRecord)
+    {
+        this.device = device;
+        this.scanRecord = scanRecord;
+
+        if (firstAdvertisementTime == 0)
+        {
+            firstAdvertisementTime = System.currentTimeMillis();
+        }
+
+        debugLog("updateAdvertisement", totalBeaconCount + ", timeSinceLastAdvertisement: " + getTimeSinceLastUpdate());
+
+        lastAdvertisementTime = System.currentTimeMillis();
+        ++totalBeaconCount;
+
+
+        updateRssi(rssi);
+        parseScanRecord();
     }
 
     public long getFirstAdvertisementTime()
@@ -189,6 +206,20 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     {
         return lastAdvertisementTime;
     }
+
+    public long totalBeaconCount()
+    {
+        return totalBeaconCount;
+    }
+
+    public double averageBeaconRate()
+    {
+        double avg = 0.0f;
+
+        long timeSinceFirstBeacon = lastAdvertisementTime - firstAdvertisementTime;
+        return (double)totalBeaconCount / (double)timeSinceFirstBeacon * 1000.0f;
+    }
+
 
     public @NonNull ConnectionState getConnectionState(final @NonNull Context context)
     {
@@ -375,7 +406,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
 
     public long getTimeSinceLastUpdate()
     {
-        return System.currentTimeMillis() - lastAdvertisementTime ;
+        return System.currentTimeMillis() - lastAdvertisementTime;
     }
 
     public void cancelAllTimers()
@@ -491,6 +522,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     private static final String JSON_SCAN_RECORD_KEY = "scanRecord";
     private static final String JSON_FIRST_ADVERTISEMENT_KEY = "first_advertisement";
     private static final String JSON_LAST_ADVERTISEMENT_KEY = "last_advertisement";
+    private static final String JSON_TOTAL_BEACON_COUNT_KEY = "total_beacon_count";
 
     @Override
     public JSONObject toJsonObject()
@@ -503,6 +535,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         UUJson.safePut(o, JSON_RSSI_LAST_UPDATE_KEY, lastRssiUpdateTime);
         UUJson.safePut(o, JSON_FIRST_ADVERTISEMENT_KEY, firstAdvertisementTime);
         UUJson.safePut(o, JSON_LAST_ADVERTISEMENT_KEY, lastAdvertisementTime);
+        UUJson.safePut(o, JSON_TOTAL_BEACON_COUNT_KEY, totalBeaconCount);
 
         return o;
     }
@@ -516,6 +549,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
         lastRssiUpdateTime = UUJson.safeGetLong(json, JSON_RSSI_LAST_UPDATE_KEY);
         firstAdvertisementTime = UUJson.safeGetLong(json, JSON_FIRST_ADVERTISEMENT_KEY);
         lastAdvertisementTime = UUJson.safeGetLong(json, JSON_LAST_ADVERTISEMENT_KEY);
+        totalBeaconCount = UUJson.safeGetLong(json, JSON_TOTAL_BEACON_COUNT_KEY);
 
         // Fill in derived data from scan record
         parseScanRecord();
