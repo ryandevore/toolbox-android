@@ -196,7 +196,7 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
                     @Override
                     public void onScanResult(int callbackType, ScanResult result)
                     {
-                        debugLog("startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
+                        //debugLog("startScan.onScanResult", "callbackType: " + callbackType + ", result: " + result.toString());
                         handleScanResult(result, delegate);
                     }
 
@@ -278,13 +278,13 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
         {
             if (!isScanning)
             {
-                debugLog("handleScanResult", "Not scanning, ignoring advertisement from " + scanResult.getDevice().getAddress());
+                //debugLog("handleScanResult", "Not scanning, ignoring advertisement from " + scanResult.getDevice().getAddress());
                 return;
             }
 
             if (isIgnored(scanResult))
             {
-                debugLog("handleScanResult", "Ignoring advertisement from " + scanResult.getDevice().getAddress());
+                //debugLog("handleScanResult", "Ignoring advertisement from " + scanResult.getDevice().getAddress());
                 return;
             }
 
