@@ -10,6 +10,7 @@ import uu.toolbox.bluetooth.UUPeripheral;
 import uu.toolbox.bluetooth.UUPeripheralFilter;
 import uu.toolbox.core.UUData;
 import uu.toolbox.core.UUString;
+import uu.toolbox.logging.UULog;
 
 @SuppressWarnings("unused")
 public class IBeaconPeripheral extends UUPeripheral
@@ -50,9 +51,9 @@ public class IBeaconPeripheral extends UUPeripheral
 
             isValidAppleBeacon = (companyId == APPLE_COMPANY_ID && beaconType == APPLE_BEACON_TYPE);
 
-            proximityUuid = new byte[16];
-            UUData.subData(manufacturingData, index, proximityUuid.length);
+            proximityUuid = UUData.subData(manufacturingData, index, 16);
             index += proximityUuid.length;
+            UULog.debug(getClass(), "parseMfgData", getAddress() + ", Proximity UUID: " + getProximityUuid() + ", " + UUString.byteToHex(proximityUuid));
 
             major = bb.getShort(index);
             index += 2;
@@ -74,7 +75,11 @@ public class IBeaconPeripheral extends UUPeripheral
     {
         try
         {
-            return UUID.nameUUIDFromBytes(proximityUuid).toString();
+            ByteBuffer bb = ByteBuffer.wrap(proximityUuid);
+            long high = bb.getLong();
+            long low = bb.getLong();
+            UUID uuid = new UUID(high, low);
+            return uuid.toString().toUpperCase();
         }
         catch (Exception ex)
         {
