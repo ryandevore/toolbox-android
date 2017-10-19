@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -27,10 +29,12 @@ import uu.toolbox.bluetooth.UUPeripheralFactory;
 import uu.toolbox.bluetooth.UUPeripheralFilter;
 import uu.toolbox.core.UUInteger;
 import uu.toolbox.core.UUPermissions;
+import uu.toolbox.core.UUString;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
 import uu.toolboxapp.R;
 import uu.toolboxapp.bluetooth.IBeaconPeripheral;
+import uu.toolboxapp.bluetooth.MacFilter;
 
 public class BtleScanActivity extends AppCompatActivity
 {
@@ -81,6 +85,34 @@ public class BtleScanActivity extends AppCompatActivity
         UUPermissions.handleRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.scan_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch (id)
+        {
+
+            case R.id.action_scan_settings:
+            {
+
+                break;
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     public void onScanClicked(View v)
     {
         if (scanner.isScanning())
@@ -112,7 +144,15 @@ public class BtleScanActivity extends AppCompatActivity
         ArrayList<UUPeripheralFilter> filters = new ArrayList<>();
         //filters.add(new NullNameFilter());
         //filters.add(new RssiFilter(-100));
-        filters.add(new IBeaconPeripheral.IBeaconFilter());
+        //filters.add(new IBeaconPeripheral.IBeaconFilter());
+
+        ArrayList<String> macList = new ArrayList<>();
+  
+        filters.add(new MacFilter(macList));
+
+
+        //
+        //
 
         UUID[] uuidList = new UUID[]
         {
@@ -195,17 +235,18 @@ public class BtleScanActivity extends AppCompatActivity
             TextView timeLabel = (TextView)view.findViewById(R.id.time_label);
             TextView connectionLabel = (TextView)view.findViewById(R.id.connection_state_label);
             TextView beaconRateLabel = (TextView)view.findViewById(R.id.beacon_rate_label);
+            TextView mfgDataLabel = (TextView)view.findViewById(R.id.mfg_data_label);
 
             final UUPeripheral rowData = getItem(position);
             if (rowData != null)
             {
-
                 nameLabel.setText(rowData.getName());
                 macLabel.setText(rowData.getAddress());
                 rssiLabel.setText(String.format(Locale.US, "%d", rowData.getRssi()));
                 timeLabel.setText(String.format(Locale.US, "%.3f", rowData.getTimeSinceLastUpdate() / 1000.0f));
                 beaconRateLabel.setText(String.format(Locale.US, "%d, %.3f", rowData.totalBeaconCount(), rowData.averageBeaconRate()));
                 connectionLabel.setText(rowData.getConnectionState(getApplicationContext()).toString());
+                mfgDataLabel.setText(UUString.byteToHex(rowData.getManufacturingData()));
 
                 view.setOnClickListener(new View.OnClickListener()
                 {
