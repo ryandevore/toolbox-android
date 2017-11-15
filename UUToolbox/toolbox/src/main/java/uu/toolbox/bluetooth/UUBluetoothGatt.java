@@ -58,8 +58,6 @@ class UUBluetoothGatt
     private final HashMap<String, UUDescriptorDelegate> readDescriptorDelegates = new HashMap<>();
     private final HashMap<String, UUDescriptorDelegate> writeDescriptorDelegates = new HashMap<>();
 
-    private boolean requestHighPriorityConnection = false;
-
     private long disconnectTimeout = 0;
 
     UUBluetoothGatt(final @NonNull UUPeripheral peripheral)
@@ -82,7 +80,6 @@ class UUBluetoothGatt
     void connect(
         final @NonNull Context context,
         final boolean connectGattAutoFlag,
-        final boolean requestHighPriority,
         final long timeout,
         final long disconnectTimeout,
         final @NonNull UUConnectionDelegate delegate)
@@ -125,8 +122,8 @@ class UUBluetoothGatt
             @Override
             public void run()
             {
-                debugLog("connect", "Connecting to: " + peripheral + ", gattAuto: " + connectGattAutoFlag + ", highPriority: " + requestHighPriority);
-                requestHighPriorityConnection = requestHighPriority;
+                debugLog("connect", "Connecting to: " + peripheral + ", gattAuto: " + connectGattAutoFlag);
+
                 disconnectError = null;
                 bluetoothGatt = peripheral.getBluetoothDevice().connectGatt(context, connectGattAutoFlag, bluetoothGattCallback);
             }
@@ -179,23 +176,6 @@ class UUBluetoothGatt
         return false;
     }
 
-    private void requestHighPriorityIfNeeded()
-    {
-        if (requestHighPriorityConnection)
-        {
-            boolean result = requestHighPriority();
-            if (result)
-            {
-                // 05/12/2017 - Debugging on google pixel shows that this sleep is needed.  Not sure if
-                // lower value works.  Need to continue debugging with firmware engineers to see why
-                // delay is needed at all.
-                UUThread.safeSleep("requestHighPriorityIfNeeded", 500);
-                requestHighPriorityConnection = false;
-            }
-        }
-    }
-
-    // Let callers manually decide when to call request high priority
     void requestHighPriority(@NonNull final UUPeripheralBoolDelegate delegate)
     {
         UUThread.runOnMainThread(new Runnable()
@@ -208,7 +188,6 @@ class UUBluetoothGatt
             }
         });
     }
-
 
     void discoverServices(
             final long timeout,
@@ -595,8 +574,6 @@ class UUBluetoothGatt
                     notifyCharacteristicWritten(characteristic, UUBluetoothError.notConnectedError());
                     return;
                 }
-
-                requestHighPriorityIfNeeded();
 
                 debugLog("writeCharacteristic", "characteristic: " + characteristic.getUuid() + ", data: " + UUString.byteToHex(data));
                 debugLog("writeCharacteristic", "props: " + UUBluetooth.characteristicPropertiesToString(characteristic.getProperties()) + ", (" + characteristic.getProperties() + ")");

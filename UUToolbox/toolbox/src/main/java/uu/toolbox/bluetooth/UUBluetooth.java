@@ -439,7 +439,6 @@ public class UUBluetooth
             final @NonNull Context context,
             final @NonNull UUPeripheral peripheral,
             final boolean connectGattAutoFlag,
-            final boolean requestHighPriority,
             final long timeout,
             final long disconnectTimeout,
             final @NonNull UUConnectionDelegate delegate)
@@ -447,7 +446,7 @@ public class UUBluetooth
         UUBluetoothGatt gatt = gattForPeripheral(peripheral);
         if (gatt != null)
         {
-            gatt.connect(context, connectGattAutoFlag, requestHighPriority, timeout, disconnectTimeout, delegate);
+            gatt.connect(context, connectGattAutoFlag, timeout, disconnectTimeout, delegate);
         }
     }
 
