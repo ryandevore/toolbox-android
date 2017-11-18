@@ -1,6 +1,5 @@
 package uu.toolbox.core;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -63,24 +62,16 @@ public class UUThread
     {
         try
         {
-            if (isMainThread())
+            Thread t = new Thread()
             {
-                safeInvokeRunnable(r);
-            }
-            else
-            {
-                AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>()
+                @Override
+                public void run()
                 {
-                    @Override
-                    protected Void doInBackground(Void... params)
-                    {
-                        safeInvokeRunnable(r);
-                        return null;
-                    }
-                };
+                    safeInvokeRunnable(r);
+                }
+            };
 
-                task.execute();
-            }
+            t.start();
         }
         catch (Exception ex)
         {
