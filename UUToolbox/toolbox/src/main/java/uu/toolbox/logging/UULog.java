@@ -1,8 +1,11 @@
 package uu.toolbox.logging;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 import java.util.Set;
@@ -17,6 +20,7 @@ public class UULog
 {
     public static final boolean LOGGING_ENABLED = true;
     private static final String NEW_LINE = "\n";
+    private static final String LOG_TAG = "UULog";
 
     private static UUWorkerThread workerThread = new UUWorkerThread();
 
@@ -169,6 +173,54 @@ public class UULog
         }
     }
 
+    public static void logDisplayMetrics(final Class callingClass, final String method, final String message, @NonNull final Context applicationContext)
+    {
+        if (LOGGING_ENABLED)
+        {
+            try
+            {
+                DisplayMetrics dm = applicationContext.getResources().getDisplayMetrics();
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(message);
+
+                sb.append(NEW_LINE);
+                sb.append("density: ");
+                sb.append(dm.density);
+
+                sb.append(NEW_LINE);
+                sb.append("densityDpi: ");
+                sb.append(dm.densityDpi);
+
+                sb.append(NEW_LINE);
+                sb.append("scaledDensity: ");
+                sb.append(dm.scaledDensity);
+
+                sb.append(NEW_LINE);
+                sb.append("heightPixels: ");
+                sb.append(dm.heightPixels);
+
+                sb.append(NEW_LINE);
+                sb.append("widthPixels: ");
+                sb.append(dm.widthPixels);
+
+                sb.append(NEW_LINE);
+                sb.append("xdpi: ");
+                sb.append(dm.xdpi);
+
+                sb.append(NEW_LINE);
+                sb.append("ydpi: ");
+                sb.append(dm.ydpi);
+
+                debug(callingClass, method, sb.toString());
+            }
+            catch (Exception ex)
+            {
+                Log.e(LOG_TAG, "Error logging display metrics", ex);
+            }
+        }
+    }
+
     private static void writeToLog(int level, String tag, String logLine)
     {
         writeToLog(level, tag, logLine, null);
@@ -194,7 +246,7 @@ public class UULog
         }
         catch (Exception ex)
         {
-            Log.e("AppLog", "Error posting runnable", ex);
+            Log.e(LOG_TAG, "Error posting runnable", ex);
         }
     }
 
@@ -224,7 +276,7 @@ public class UULog
         }
         catch (Exception ex)
         {
-            Log.e("AppLog", "Error writing to log", ex);
+            Log.e(LOG_TAG, "Error writing to log", ex);
         }
     }
 }
