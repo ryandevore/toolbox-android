@@ -29,4 +29,22 @@ public class UUObject
             UULog.error(UUObject.class, "invokeMethod", ex);
         }
     }
+
+    /**
+     * Safely invokes a void/void method on an object from the main thread.
+     *
+     * @param target object to invoke the method on
+     * @param method the method name
+     */
+    public static void invokeMethodOnMainThread(@NonNull final Object target, @NonNull final String method)
+    {
+        UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                invokeMethod(target, method);
+            }
+        });
+    }
 }
