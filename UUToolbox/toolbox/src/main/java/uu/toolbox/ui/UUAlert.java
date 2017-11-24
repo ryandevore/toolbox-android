@@ -7,6 +7,9 @@ import android.content.res.Resources;
 
 import uu.toolbox.logging.UULog;
 
+/**
+ * Convenience wrappers for using system dialogs
+ */
 public final class UUAlert
 {
     public enum ButtonType
@@ -21,7 +24,7 @@ public final class UUAlert
         void onComplete(final ButtonType which);
     }
 
-    public static void invokeAlertCallback(final AlertCallback callback, final ButtonType which)
+    private static void invokeAlertCallback(final AlertCallback callback, final ButtonType which)
     {
         try
         {
