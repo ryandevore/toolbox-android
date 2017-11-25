@@ -162,8 +162,12 @@ public class UUString
 
             for (String s : list)
             {
+                if (sb.length() > 0)
+                {
+                    sb.append(delim);
+                }
+
                 sb.append(s);
-                sb.append(delim);
             }
         }
 
