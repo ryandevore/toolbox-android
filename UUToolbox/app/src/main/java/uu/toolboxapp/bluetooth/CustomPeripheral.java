@@ -63,4 +63,15 @@ public class CustomPeripheral extends UUPeripheral
     {
         super(in);
     }
+
+
+
+    public static class CustomPeripheralFactory extends CachingPeripheralFactory<CustomPeripheral>
+    {
+        @NonNull
+        CustomPeripheral createPeripheral(final @NonNull BluetoothDevice device, final int rssi, final @NonNull byte[] scanRecord)
+        {
+            return new CustomPeripheral(device, rssi, scanRecord);
+        }
+    }
 };
