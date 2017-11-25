@@ -16,17 +16,17 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public final class UUDeviceInfo
 {
-    protected static String getPlatformString()
+    public static String getPlatformString()
     {
         return Build.MODEL;
     }
 
-    protected static String getOSVersionString()
+    public static String getOSVersionString()
     {
         return String.valueOf(Build.VERSION.RELEASE);
     }
 
-    protected static String getAppName(final Context context)
+    public static String getAppName(final Context context)
     {
         try
         {
@@ -40,7 +40,7 @@ public final class UUDeviceInfo
         return "unknown";
     }
 
-    protected static String getAppVersion(final Context context)
+    public static String getAppVersion(final Context context)
     {
         try
         {
@@ -57,18 +57,21 @@ public final class UUDeviceInfo
         return "unknown";
     }
 
-    protected static String getScreenSize(final Context context)
+    public static String getScreenSize(final Context context)
     {
         try
         {
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
+            if (wm != null)
+            {
+                Display display = wm.getDefaultDisplay();
 
-            Point size = new Point();
-            display.getSize(size);
-            int width = size.x;
-            int height = size.y;
-            return String.format(Locale.getDefault(), "%dx%d", width, height);
+                Point size = new Point();
+                display.getSize(size);
+                int width = size.x;
+                int height = size.y;
+                return String.format(Locale.getDefault(), "%dx%d", width, height);
+            }
         }
         catch(Exception ex)
         {
@@ -78,7 +81,7 @@ public final class UUDeviceInfo
         return "unknown";
     }
 
-    protected static String getHardwareId(final Context context)
+    public static String getHardwareId(final Context context)
     {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
