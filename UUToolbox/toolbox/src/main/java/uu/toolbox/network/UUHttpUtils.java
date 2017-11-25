@@ -1,4 +1,4 @@
-package uu.toolbox.http;
+package uu.toolbox.network;
 
 import java.net.MalformedURLException;
 import java.net.URL;

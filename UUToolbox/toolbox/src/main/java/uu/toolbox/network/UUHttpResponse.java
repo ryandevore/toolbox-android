@@ -1,4 +1,4 @@
-package uu.toolbox.http;
+package uu.toolbox.network;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

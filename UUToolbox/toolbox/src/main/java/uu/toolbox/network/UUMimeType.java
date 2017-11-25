@@ -1,4 +1,4 @@
-package uu.toolbox.http;
+package uu.toolbox.network;
 
 /**
  * Created by ryandevore on 9/14/16.

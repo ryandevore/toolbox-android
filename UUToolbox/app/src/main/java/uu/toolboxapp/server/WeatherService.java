@@ -6,12 +6,12 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-import uu.toolbox.http.UUHttp;
-import uu.toolbox.http.UUHttpDelegate;
-import uu.toolbox.http.UUHttpMethod;
-import uu.toolbox.http.UUHttpRequest;
-import uu.toolbox.http.UUHttpResponse;
-import uu.toolbox.http.UUMimeType;
+import uu.toolbox.network.UUHttp;
+import uu.toolbox.network.UUHttpDelegate;
+import uu.toolbox.network.UUHttpMethod;
+import uu.toolbox.network.UUHttpRequest;
+import uu.toolbox.network.UUHttpResponse;
+import uu.toolbox.network.UUMimeType;
 import uu.toolbox.logging.UULog;
 import uu.toolboxapp.data.AppDatabase;
 import uu.toolboxapp.data.models.WeatherSummary;
