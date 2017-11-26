@@ -83,7 +83,7 @@ public class UUFileTests extends ApplicationTestCase<Application>
         byte[] contents = UUFile.readFile(file);
         Assert.assertNotNull("Expect actual data when file does exist", contents);
 
-        Assert.assertNotSame("Expect readFile to return same bytes that were written", contents, data);
+        UUAssert.assertSameArray("Expect readFile to return same bytes that were written", contents, data);
     }
 
     public void test_0003_DeleteFileThatDoesExist() throws Exception
