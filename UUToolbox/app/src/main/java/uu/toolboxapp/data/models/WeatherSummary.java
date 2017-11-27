@@ -420,6 +420,7 @@ public class WeatherSummary
         return new String[] { String.valueOf(id) };
     }
 
+    @NonNull
     public ContentValues getContentValues()
     {
         ContentValues cv = new ContentValues();
@@ -447,7 +448,7 @@ public class WeatherSummary
         return cv;
     }
 
-    public void fillFromCursor(final Cursor cursor)
+    public void fillFromCursor(@NonNull final Cursor cursor)
     {
         setId(UUCursor.safeGetLong(cursor, ID_COLUMN));
         setCity(UUCursor.safeGetString(cursor, CITY_COLUMN));

@@ -54,8 +54,17 @@ public interface UUDataModel
     @NonNull
     String[] getPrimaryKeyWhereArgs();
 
-
-
+    /**
+     * Creates a ContentValues object populated with data from this object
+     *
+     * @return a ContentValues object
+     */
+    @NonNull
     ContentValues getContentValues();
-    void fillFromCursor(final Cursor cursor);
+
+    /**
+     * Fills data in this object from a SQLite cursor
+     * @param cursor the cursor to fill from
+     */
+    void fillFromCursor(@NonNull final Cursor cursor);
 }
