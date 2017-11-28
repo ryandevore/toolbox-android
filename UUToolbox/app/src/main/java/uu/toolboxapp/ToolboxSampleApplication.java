@@ -4,7 +4,9 @@ import android.app.Application;
 import android.content.Context;
 
 import uu.toolbox.bluetooth.UUBluetoothBroadcastReceiver;
-import uu.toolbox.data.UUDatabase;
+import uu.toolbox.data.UUDataCache;
+import uu.toolbox.network.UURemoteData;
+import uu.toolbox.network.UURemoteImage;
 import uu.toolboxapp.data.AppDatabase;
 
 /**
@@ -20,7 +22,10 @@ public class ToolboxSampleApplication extends Application
         super.onCreate();
 
         Context context = getApplicationContext();
-        UUDatabase.init(context, AppDatabase.class);
+        AppDatabase.init(context);
+        UUDataCache.init(context);
+        UURemoteData.init(context);
+        UURemoteImage.init(context);
 
         receiver = new UUBluetoothBroadcastReceiver(context);
     }
