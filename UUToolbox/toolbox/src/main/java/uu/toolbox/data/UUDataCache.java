@@ -118,7 +118,7 @@ public class UUDataCache implements UUDataCacheProtocol
     {
         try
         {
-            File file = diskCacheURL(key);
+            File file = getDiskFileName(key);
             return file.exists();
         }
         catch (Exception ex)
@@ -225,7 +225,7 @@ public class UUDataCache implements UUDataCacheProtocol
     }
 
     @NonNull
-    private File diskCacheURL(@NonNull final String key)
+    public File getDiskFileName(@NonNull final String key)
     {
         return new File(cacheFolder, sanitizeKey(key));
     }
@@ -245,7 +245,7 @@ public class UUDataCache implements UUDataCacheProtocol
 
         try
         {
-            File pathUrl = diskCacheURL(key);
+            File pathUrl = getDiskFileName(key);
             data = UUFile.readFile(pathUrl);
         }
         catch (Exception ex)
@@ -269,7 +269,7 @@ public class UUDataCache implements UUDataCacheProtocol
     {
         try
         {
-            File pathUrl = diskCacheURL(key);
+            File pathUrl = getDiskFileName(key);
             UUFile.deleteFile(pathUrl);
         }
         catch (Exception ex)
@@ -307,7 +307,7 @@ public class UUDataCache implements UUDataCacheProtocol
     {
         try
         {
-            File pathUrl = diskCacheURL(key);
+            File pathUrl = getDiskFileName(key);
             UUFile.writeFile(pathUrl, data);
         }
         catch (Exception ex)
