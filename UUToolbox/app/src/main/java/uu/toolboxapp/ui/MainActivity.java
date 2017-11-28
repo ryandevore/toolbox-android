@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        Intent intent = new Intent(this, BtleScanActivity.class);
+        Intent intent = new Intent(this, PhotoGalleryActivity.class);
         startActivity(intent);
     }
 
