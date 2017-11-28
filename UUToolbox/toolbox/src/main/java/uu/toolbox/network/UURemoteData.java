@@ -16,7 +16,7 @@ import uu.toolbox.logging.UULog;
 
 public class UURemoteData implements UURemoteDataProtocol
 {
-    public class MetaData extends UUDataCache.MetaData
+    public static class MetaData extends UUDataCache.MetaData
     {
         public static final String MimeType = "MimeType";
         public static final String DownloadTimestamp = "DownloadTimestamp";
