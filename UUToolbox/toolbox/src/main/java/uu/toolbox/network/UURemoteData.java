@@ -45,6 +45,11 @@ public class UURemoteData implements UURemoteDataProtocol
     public static void init(final Context context)
     {
         theSharedInstance = new UURemoteData(context);
+
+        if (UUDataCache.sharedInstance() == null)
+        {
+            UUDataCache.init(context);
+        }
     }
 
     public static synchronized UURemoteData sharedInstance()

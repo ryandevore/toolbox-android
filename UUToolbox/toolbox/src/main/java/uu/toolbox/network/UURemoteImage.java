@@ -29,6 +29,11 @@ public class UURemoteImage
     public static void init(final Context context)
     {
         theSharedInstance = new UURemoteImage(context);
+
+        if (UURemoteData.sharedInstance() == null)
+        {
+            UURemoteData.init(context);
+        }
     }
 
     public static synchronized UURemoteImage sharedInstance()
