@@ -204,7 +204,13 @@ public final class UUHttp
             long start = System.currentTimeMillis();
             byte[] responseBuffer = readResponse(urlConnection);
             logResponseBody(responseBuffer);
-            response.setParsedResponse(parseResponse(response.getContentType(), response.getContentEncoding(), responseBuffer));
+            response.setRawResponse(responseBuffer);
+
+            if (request.getProcessMimeTypes())
+            {
+                response.setParsedResponse(parseResponse(response.getContentType(), response.getContentEncoding(), responseBuffer));
+            }
+
             response.setResponseHeaders(safeGetResponseHeaderes(urlConnection));
         }
         catch (Exception ex)

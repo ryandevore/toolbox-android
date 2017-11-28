@@ -28,6 +28,7 @@ public class UUHttpRequest
     protected byte[] _body;
     protected Proxy _proxy;
     protected SSLSocketFactory _sslSocketFactory;
+    protected  boolean _processMimeTypes;
 
 
     public String getURL()
@@ -112,6 +113,16 @@ public class UUHttpRequest
     public void setSocketFactory(final SSLSocketFactory socketFactory)
     {
         _sslSocketFactory = socketFactory;
+    }
+
+    public boolean getProcessMimeTypes()
+    {
+        return _processMimeTypes;
+    }
+
+    public void setProcessMimeTypes(final boolean processMimeTypes)
+    {
+        _processMimeTypes = processMimeTypes;
     }
 
     public static UUHttpRequest get(final String url, final HashMap<String, String> queryArguments)

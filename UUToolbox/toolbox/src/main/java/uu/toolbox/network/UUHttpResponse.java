@@ -19,6 +19,7 @@ public class UUHttpResponse
     protected UUHttpRequest _request;
     protected Exception _exception;
     protected Object _parsedResponse;
+    protected byte[] _rawResponse;
     protected int _httpResponseCode;
     protected String _httpResponseMessage;
     protected String _contentType;
@@ -53,6 +54,16 @@ public class UUHttpResponse
     public void setParsedResponse(final Object parsedResponse)
     {
         _parsedResponse = parsedResponse;
+    }
+
+    public byte[] getRawResponse()
+    {
+        return _rawResponse;
+    }
+
+    public void setRawResponse(final byte[] rawResponse)
+    {
+        _rawResponse = rawResponse;
     }
 
     public int getHttpResponseCode()
