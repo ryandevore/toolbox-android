@@ -118,7 +118,8 @@ public class UUFile
     }
 
     /**
-     * Deletes a file from disk
+     * Deletes a file from disk, or if the file is a folder, recursively deletes everything under
+     * that folder
      *
      * @param file the file to delete
      * @return result of file.delete or false if an expection is thrown
@@ -127,13 +128,30 @@ public class UUFile
     {
         try
         {
-            return file.delete();
+            if (file.isDirectory())
+            {
+                File[] files = file.listFiles();
+                for (File f : files)
+                {
+                    boolean result = deleteFile(f);
+                    if (!result)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                return file.delete();
+            }
         }
         catch (Exception ex)
         {
             UULog.error(UUFile.class, "deleteFile", ex);
             return false;
         }
+
+        return true;
     }
 
     /**
