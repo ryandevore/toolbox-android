@@ -29,7 +29,7 @@ public class UUDataCache implements UUDataCacheProtocol
 
     public static class MetaData
     {
-        public static final String KEY_TIMESTAMP = "timestamp";
+        public static final String Timestamp = "Timestamp";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ public class UUDataCache implements UUDataCacheProtocol
         saveToCache(data, key);
 
         HashMap<String, Object> md = getMetaData(key);
-        md.put(MetaData.KEY_TIMESTAMP, System.currentTimeMillis());
+        md.put(MetaData.Timestamp, System.currentTimeMillis());
         setMetaData(md, key);
     }
 
@@ -132,7 +132,7 @@ public class UUDataCache implements UUDataCacheProtocol
     public boolean isDataExpired(@NonNull String key)
     {
         HashMap<String, Object> md = getMetaData(key);
-        Object timestamp = md.get(MetaData.KEY_TIMESTAMP);
+        Object timestamp = md.get(MetaData.Timestamp);
         if (timestamp != null && timestamp instanceof Long)
         {
             long actualTimestamp = (Long)timestamp;

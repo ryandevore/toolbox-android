@@ -125,7 +125,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
 
         Assert.assertEquals("Expect exactly one meta data key", 1, metaData.size());
 
-        Assert.assertTrue("Expect one key to be the only key", metaData.keySet().contains(UUDataCache.MetaData.KEY_TIMESTAMP));
+        Assert.assertTrue("Expect one key to be the only key", metaData.keySet().contains(UUDataCache.MetaData.Timestamp));
     }
 
     public void test_0006_testIsDataExpired() throws Exception
