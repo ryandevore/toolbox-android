@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
@@ -22,35 +23,16 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Member Variables 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	private static UUDatabaseHelper theDatabaseHelper;
-	private static UUDatabase theSharedDatabase;
     private SQLiteDatabase database;
+    private Context applicationContext;
 
-	public static void init(final Context context, final Class<? extends UUDatabase> dbClass)
-	{
-        try
-        {
-            theSharedDatabase = dbClass.newInstance();
-            theDatabaseHelper = new UUDatabaseHelper(context, theSharedDatabase);
-            theSharedDatabase.database = theDatabaseHelper.getWritableDatabase();
-        }
-        catch (Exception ex)
-        {
-            UULog.error(UUDatabase.class, "init", ex);
-
-            theSharedDatabase = null;
-            theDatabaseHelper = null;
-        }
-	}
-
-    public static void destroy(final Context context, final Class<? extends UUDatabase> dbClass)
+    public void destroy()
     {
-        safeCloseSharedDatabase();
+        closeDatabase(database);
 
         try
         {
-            UUDatabase db = dbClass.newInstance();
-            context.deleteDatabase(db.getDatabaseName());
+            applicationContext.deleteDatabase(getDatabaseName());
         }
         catch (Exception ex)
         {
@@ -58,38 +40,33 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
         finally
         {
-            theSharedDatabase = null;
-            theDatabaseHelper = null;
+            openDatabase(applicationContext);
         }
     }
 
-    private static void safeCloseSharedDatabase()
+    private void openDatabase(@NonNull final Context context)
     {
         try
         {
-            if (theSharedDatabase != null)
-            {
-                theSharedDatabase.closeDatabase(theSharedDatabase.database);
-            }
+            UUDatabaseHelper databaseHelper = new UUDatabaseHelper(context, this);
+            database = databaseHelper.getWritableDatabase();
         }
         catch (Exception ex)
         {
-            UULog.error(UUDatabase.class, "safeCloseSharedDatabase", ex);
+            UULog.error(UUDatabase.class, "openDatabase", ex);
         }
     }
 
-    public static UUDatabase sharedDatabase()
-    {
-        return theSharedDatabase;
-    }
-	
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Construction 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	protected UUDatabase()
-	{
-	}
-	
+
+    public UUDatabase(@NonNull final Context context)
+    {
+        applicationContext = context.getApplicationContext();
+        openDatabase(context);
+    }
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
     // Public Methods 
 	///////////////////////////////////////////////////////////////////////////////////////////////
