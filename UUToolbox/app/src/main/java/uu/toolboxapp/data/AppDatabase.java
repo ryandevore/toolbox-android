@@ -1,11 +1,14 @@
 package uu.toolboxapp.data;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
 import uu.toolbox.data.UUDataModel;
 import uu.toolbox.data.UUDatabase;
+import uu.toolbox.logging.UULog;
 import uu.toolboxapp.data.models.WeatherSummary;
 
 /**
@@ -13,6 +16,8 @@ import uu.toolboxapp.data.models.WeatherSummary;
  */
 public class AppDatabase extends UUDatabase
 {
+    private static AppDatabase theSharedDatabase;
+
     private static final String DB_NAME = "UUSampleDb";
     private static final int DB_VERSION_ONE = 1;
 
@@ -20,7 +25,26 @@ public class AppDatabase extends UUDatabase
 
     public static AppDatabase sharedInstance()
     {
-        return (AppDatabase) UUDatabase.sharedDatabase();
+        return theSharedDatabase;
+    }
+
+    public static void init(final Context context)
+    {
+        try
+        {
+            theSharedDatabase = new AppDatabase(context);
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUDatabase.class, "init", ex);
+
+            theSharedDatabase = null;
+        }
+    }
+
+    public AppDatabase(@NonNull final Context context)
+    {
+        super(context);
     }
 
     public void addWeatherSummary(final WeatherSummary summary)
