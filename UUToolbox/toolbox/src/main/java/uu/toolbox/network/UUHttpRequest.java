@@ -28,7 +28,7 @@ public class UUHttpRequest
     protected byte[] _body;
     protected Proxy _proxy;
     protected SSLSocketFactory _sslSocketFactory;
-    protected  boolean _processMimeTypes;
+    protected  boolean _processMimeTypes = true;
 
 
     public String getURL()
