@@ -1,6 +1,7 @@
 package uu.toolbox.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
@@ -18,6 +19,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -618,6 +620,35 @@ public final class UUActivity
             }
         });
 	}
+
+
+	/**
+	 * Hides the keyboard
+	 *
+	 * @param activity an activity
+	 */
+	public static void hideKeyboard(@NonNull final Activity activity)
+	{
+		try
+		{
+			View view = activity.getCurrentFocus();
+			if (view != null)
+			{
+				InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+				if (imm != null)
+				{
+					imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			UULog.error(UUActivity.class, "hideKeyboard", ex);
+		}
+	}
+
+
+
 
     private static void debugLog(final String method, final String message)
     {
