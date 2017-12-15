@@ -371,7 +371,7 @@ public class UUDataCache implements UUDataCacheProtocol
 
         @NonNull
         @Override
-        public HashMap<String, String> getColumnMap()
+        public HashMap<String, String> getColumnMap(final int version)
         {
             HashMap<String, String> map = new HashMap<>();
 
@@ -405,7 +405,7 @@ public class UUDataCache implements UUDataCacheProtocol
 
         @NonNull
         @Override
-        public ContentValues getContentValues()
+        public ContentValues getContentValues(final int version)
         {
             ContentValues cv = new ContentValues();
 
@@ -545,23 +545,23 @@ public class UUDataCache implements UUDataCacheProtocol
             }
         }
 
-        @Override
-        public ArrayList<String> getSqlCreateLines(int version)
-        {
-            return null;
-        }
+//        @Override
+//        public ArrayList<String> getSqlCreateLines(int version)
+//        {
+//            return null;
+//        }
 
-        public void handlePostOpen(SQLiteDatabase db)
-        {
-
-        }
-
-        public void handlePostCreate(SQLiteDatabase db)
+        public void handlePostOpen(SQLiteDatabase db, final int version)
         {
 
         }
 
-        public void handleUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+        public void handlePostCreate(SQLiteDatabase db, final int version)
+        {
+
+        }
+
+        public void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
 
         }
