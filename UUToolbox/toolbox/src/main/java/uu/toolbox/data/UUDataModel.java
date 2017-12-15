@@ -23,10 +23,11 @@ public interface UUDataModel
     /**
      * Returns the mapping of column name to data type
      *
+     * @param version the version of the table to get
      * @return a non null hash map of column definitions. Must not be null
      */
     @NonNull
-    HashMap<String, String> getColumnMap();
+    HashMap<String, String> getColumnMap(final int version);
 
     /**
      * Returns the primary key column name
@@ -57,10 +58,11 @@ public interface UUDataModel
     /**
      * Creates a ContentValues object populated with data from this object
      *
+     * @param version of content values to get
      * @return a ContentValues object
      */
     @NonNull
-    ContentValues getContentValues();
+    ContentValues getContentValues(final int version);
 
     /**
      * Fills data in this object from a SQLite cursor
