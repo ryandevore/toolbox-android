@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 public class UUDataModelWithCompoundKey implements UUDataModel
 {
+    public static String TABLE_NAME = "uu_data_model_with_compound_key";
+
     public String c1;
     public String c2;
     public String data;
@@ -17,12 +19,12 @@ public class UUDataModelWithCompoundKey implements UUDataModel
     @Override
     public String getTableName()
     {
-        return "uu_data_model_with_compound_key";
+        return TABLE_NAME;
     }
 
     @NonNull
     @Override
-    public HashMap<String, String> getColumnMap()
+    public HashMap<String, String> getColumnMap(final int version)
     {
         HashMap<String, String> map = new HashMap<>();
         map.put("c1", UUSql.TEXT_COLUMN_TYPE);
@@ -54,7 +56,7 @@ public class UUDataModelWithCompoundKey implements UUDataModel
 
     @NonNull
     @Override
-    public ContentValues getContentValues()
+    public ContentValues getContentValues(final int version)
     {
         ContentValues cv = new ContentValues();
         UUContentValues.putIfNotNull(cv, "c1", c1);

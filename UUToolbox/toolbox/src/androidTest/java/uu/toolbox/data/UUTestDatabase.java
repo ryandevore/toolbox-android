@@ -13,44 +13,70 @@ public class UUTestDatabase extends UUDatabase
         super(context);
     }
 
+    public static final int VERSION_ONE = 1;
+    public static final int VERSION_TWO = 2;
+    public static final int VERSION_THREE = 3;
+
+    public static int CURRENT_VERSION = VERSION_THREE;
+
+    public static String NAME = "uu_test_db";
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // UUDatabaseDefinition
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String getDatabaseName()
     {
-        return "uu_test_db";
+        return NAME;
     }
 
     public int getVersion()
     {
-        return 1;
+        return CURRENT_VERSION;
     }
 
     public ArrayList<UUDataModel> getDataModels(int version)
     {
         ArrayList<UUDataModel> list = new ArrayList<>();
-        list.add(new UUDataModelWithCompoundKey());
+
+        if (version >= VERSION_ONE)
+        {
+            list.add(new UUTestDataModel());
+        }
+
+        if (version >= VERSION_TWO)
+        {
+            list.add(new UUDataModelWithCompoundKey());
+        }
+
+        if (version >= VERSION_THREE)
+        {
+            list.add(new UUComplexDataModel());
+        }
+
         return list;
     }
 
+//    @Override
+//    public ArrayList<String> getSqlCreateLines(int version)
+//    {
+//        return null;
+//    }
+
     @Override
-    public ArrayList<String> getSqlCreateLines(int version)
-    {
-        return null;
-    }
-
-    public void handlePostOpen(SQLiteDatabase db)
+    public void handlePostOpen(SQLiteDatabase db, int version)
     {
 
     }
 
-    public void handlePostCreate(SQLiteDatabase db)
+    @Override
+    public void handlePostCreate(SQLiteDatabase db, int version)
     {
 
     }
 
-    public void handleUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    @Override
+    public void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
 
     }
