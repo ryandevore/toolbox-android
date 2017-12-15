@@ -3,6 +3,7 @@ package uu.toolbox.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,9 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 		try
 		{
             int version = databaseDefinition.getVersion();
-            ArrayList<String> lines = buildCreateLines(version);
+
+            ArrayList<String> lines = new ArrayList<>();
+            UUSql.appendCreateLines(lines, databaseDefinition, version);
 
             db.beginTransaction();
 
@@ -39,9 +42,9 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
                 db.execSQL(line);
             }
 
-            db.setTransactionSuccessful();
+            databaseDefinition.handlePostCreate(db, version);
 
-            databaseDefinition.handlePostCreate(db);
+            db.setTransactionSuccessful();
 		}
 		catch (Exception ex)
 		{
@@ -60,7 +63,7 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
 
         try
         {
-            databaseDefinition.handlePostOpen(db);
+            databaseDefinition.handlePostOpen(db, databaseDefinition.getVersion());
         }
         catch (Exception ex)
         {
@@ -71,17 +74,16 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        try
-        {
-            databaseDefinition.handleUpgrade(db, oldVersion, newVersion);
-        }
-        catch (Exception ex)
-        {
-            logException("onUpgrade", ex);
-        }
+        migrateDatabase(db, oldVersion, newVersion);
     }
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+        migrateDatabase(db, oldVersion, newVersion);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 	// Private Methods
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -95,7 +97,7 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
     	UULog.error(getClass(), "logException", message, throwable);
     }
 
-    protected void safeEndTransaction(final SQLiteDatabase db)
+    private void safeEndTransaction(final SQLiteDatabase db)
     {
         try
         {
@@ -110,25 +112,32 @@ public class UUDatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    private ArrayList<String> buildCreateLines(final int version)
+    private void migrateDatabase(@NonNull final SQLiteDatabase db, final int oldVersion, final int newVersion)
     {
-        ArrayList<String> list = new ArrayList<>();
-
-        ArrayList<UUDataModel> tableDefs = databaseDefinition.getDataModels(version);
-        if (tableDefs != null)
+        try
         {
-            for (UUDataModel dataModel : tableDefs)
+            ArrayList<String> lines = new ArrayList<>();
+            UUSql.appendUpgradeLines(lines, databaseDefinition, oldVersion, newVersion);
+
+            db.beginTransaction();
+
+            for (String line : lines)
             {
-                list.add(UUSql.buildCreateSql(dataModel));
+                logSql(line);
+                db.execSQL(line);
             }
-        }
 
-        ArrayList<String> rawLines = databaseDefinition.getSqlCreateLines(version);
-        if (rawLines != null)
+            databaseDefinition.handlePostUpgrade(db, oldVersion, newVersion);
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
         {
-            list.addAll(rawLines);
+            logException("migrateDatabase", ex);
         }
-
-        return list;
+        finally
+        {
+            safeEndTransaction(db);
+        }
     }
 }

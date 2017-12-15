@@ -114,7 +114,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 		   
 		    T dataModel = type.newInstance();
 
-		    c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel), selection, selectionArgs, null, null, orderBy, limit);
+		    c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel, getVersion()), selection, selectionArgs, null, null, orderBy, limit);
 		    
 		    while (c.moveToNext())
 		    {
@@ -427,7 +427,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      */
     public synchronized <T extends UUDataModel> T addObject(final Class<T> type, T object)
     {
-    	long rowid = insertRow(object.getTableName(), object.getContentValues());
+    	long rowid = insertRow(object.getTableName(), object.getContentValues(getVersion()));
     	return querySingleObject(type, "ROWID = ?", new String[] { String.valueOf(rowid) }, null);
     }
 
@@ -450,7 +450,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
         else
         {
-            updateRow(object.getTableName(), object.getContentValues(), whereClause, whereArgs);
+            updateRow(object.getTableName(), object.getContentValues(getVersion()), whereClause, whereArgs);
             return querySingleObject(type, whereClause, whereArgs, null);
         }
     }
@@ -525,7 +525,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues());
+                db.insert(row.getTableName(), null, row.getContentValues(getVersion()));
             }
 
             db.setTransactionSuccessful();
@@ -561,7 +561,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues());
+                db.insert(row.getTableName(), null, row.getContentValues(getVersion()));
             }
 
             db.setTransactionSuccessful();
@@ -581,6 +581,43 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         String sql = "SELECT name FROM sqlite_master WHERE type='table';";
         return listSingleStringColumn(sql, null);
     }
+
+    /*
+    public ArrayList<UUColumnDefinition> getTableSchema(@NonNull final String tableName)
+    {
+        String sql = String.format("PRAGMA table_info(%s);", tableName);
+
+        ArrayList<UUColumnDefinition> results = new ArrayList<>();
+
+        SQLiteDatabase db;
+        Cursor c = null;
+
+        try
+        {
+            db = getReadOnlyDatabase();
+
+            c = db.rawQuery(sql, null);
+
+            while (c.moveToNext())
+            {
+                UUColumnDefinition obj = new UUColumnDefinition();
+                obj.fillFromCursor(c);
+                results.add(obj);
+            }
+
+            //logQueryResults(c);
+        }
+        catch (Exception ex)
+        {
+            logException("getTableSchema", ex);
+        }
+        finally
+        {
+            closeCursor(c);
+        }
+
+        return results;
+    }*/
     
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Protected Helper Methods 
@@ -1016,8 +1053,24 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         try
         {
             db = getReadOnlyDatabase();
-
             c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
+            logQueryResults(c);
+        }
+        catch (Exception ex)
+        {
+            logException("logTable", ex);
+        }
+        finally
+        {
+            closeCursor(c);
+        }
+    }
+
+    public void logQueryResults(@NonNull final Cursor c)
+    {
+        try
+        {
+            c.moveToPosition(-1);
 
             boolean first = true;
             while (c.moveToNext())
@@ -1034,7 +1087,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
                         sb.append(", ");
                     }
 
-                    UULog.debug(getClass(), "logTable", sb.toString());
+                    UULog.debug(getClass(), "logQueryResults", sb.toString());
                 }
 
                 first = false;
@@ -1092,13 +1145,13 @@ public abstract class UUDatabase implements UUDatabaseDefinition
                     sb.append(", ");
                 }
 
-                UULog.debug(getClass(), "logTable", sb.toString());
+                UULog.debug(getClass(), "logQueryResults", sb.toString());
 
             }
         }
         catch (Exception ex)
         {
-            logException("logTable", ex);
+            logException("logQueryResults", ex);
         }
         finally
         {
