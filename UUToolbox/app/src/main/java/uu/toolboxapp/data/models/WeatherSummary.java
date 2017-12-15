@@ -364,6 +364,12 @@ public class WeatherSummary
     // UUDataModel Methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @Override
+    public int getVersion()
+    {
+        return 1;
+    }
+
     @NonNull
     @Override
     public String getTableName()
@@ -373,7 +379,7 @@ public class WeatherSummary
 
     @NonNull
     @Override
-    public HashMap<String, String> getColumnMap()
+    public HashMap<String, String> getColumnMap(final int version)
     {
         HashMap<String, String> map = new HashMap<>();
 
@@ -421,7 +427,7 @@ public class WeatherSummary
     }
 
     @NonNull
-    public ContentValues getContentValues()
+    public ContentValues getContentValues(final int version)
     {
         ContentValues cv = new ContentValues();
 
