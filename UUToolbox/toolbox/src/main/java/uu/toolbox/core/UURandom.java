@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
+import java.util.UUID;
 
 /**
  * UURandom
@@ -124,6 +125,17 @@ public final class UURandom
         byte[] result = randomBytes(2);
         ByteBuffer bb = ByteBuffer.wrap(result);
         return bb.getShort();
+    }
+
+    /**
+     * Generates a random UUID and returns the string form
+     *
+     * @return a random string
+     */
+    public static String randomUuidString()
+    {
+        UUID uid = UUID.randomUUID();
+        return uid.toString();
     }
 
     private UURandom()
