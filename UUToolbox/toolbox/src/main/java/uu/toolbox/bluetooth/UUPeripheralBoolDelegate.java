@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 /**
  * Interface for delivering async results from a UUPeripheral action that returns a boolean
  */
-interface UUPeripheralBoolDelegate
+public interface UUPeripheralBoolDelegate
 {
     /**
      * Callback invoked when a peripheral action is completed.
