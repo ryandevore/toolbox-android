@@ -128,7 +128,7 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
         this.useLollipopScanning = useLollipopScanning;
     }
 
-    boolean shouldUseLollipopScanning()
+    public boolean shouldUseLollipopScanning()
     {
         return canUseLollipopScanning() && useLollipopScanning();
     }
