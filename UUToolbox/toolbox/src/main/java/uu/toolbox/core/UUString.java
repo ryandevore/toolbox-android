@@ -19,6 +19,7 @@ public class UUString
      * "UTF-8" as a constant string
      */
     public static final String CHARSET_UTF8 = "UTF-8";
+    public static final String CHARSET_ISO_8859_1 = "ISO-8859-1";
 
     /**
      * Converts a byte array into a Hex String
@@ -125,6 +126,66 @@ public class UUString
     public static String byteToUtf8String(final byte[] data)
     {
         return byteToString(data, CHARSET_UTF8);
+    }
+
+    /**
+     * Safely creates an ASCII (Charset ISO-8859-10 string
+     *
+     * @param data the byte array
+     * @return a string or "" if an exception is caught
+     */
+    public static String byteToAsciiString(final byte[] data)
+    {
+        return byteToString(data, CHARSET_ISO_8859_1);
+    }
+
+    /**
+     * Safely creates a byte[] from a string
+     *
+     * @param input the string
+     * @param encoding the character encoding to use
+     * @return a byte[] or null if an error occurs
+     */
+    public static byte[] stringToByte(final String input, final String encoding)
+    {
+        byte[] encoded = null;
+
+        try
+        {
+            if (input != null && encoding != null)
+            {
+                encoded = input.getBytes(encoding);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUString.class, "stringToByte", ex);
+            encoded = null;
+        }
+
+        return encoded;
+    }
+
+    /**
+     * Safely creates a UTF8 byte array
+     *
+     * @param input the input instring
+     * @return a byte[] or null if an error occurs
+     */
+    public static byte[] stringToUtf8Bytes(final String input)
+    {
+        return stringToByte(input, CHARSET_UTF8);
+    }
+
+    /**
+     * Safely creates an ASCII (Charset ISO-8859-1) byte array
+     *
+     * @param input the input string
+     * @return a string or "" if an exception is caught
+     */
+    public static byte[] stringToAsciiBytes(final String input)
+    {
+        return stringToByte(input, CHARSET_ISO_8859_1);
     }
 
     /**
