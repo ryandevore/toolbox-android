@@ -2,7 +2,10 @@ package uu.toolbox.core;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -61,6 +64,41 @@ public class UUPermissions
         return (permissionCheck == PackageManager.PERMISSION_GRANTED);
     }
 
+    private static boolean hasEverRequestedPermission(final Context context, final String permission)
+    {
+        SharedPreferences prefs = context.getSharedPreferences(UUPermissions.class.getName(), Activity.MODE_PRIVATE);
+        return prefs.getBoolean("HAS_REQUESTED_" + permission, false);
+    }
+
+    private static void setHasRequestedPermission(final Context context, final String permission)
+    {
+        SharedPreferences prefs = context.getSharedPreferences(UUPermissions.class.getName(), Activity.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putBoolean("HAS_REQUESTED_" + permission, true);
+        prefsEditor.apply();
+    }
+
+
+
+    public static boolean canRequestPermission(@NonNull final Activity activity, @NonNull final String permission)
+    {
+        try
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            {
+                return !hasEverRequestedPermission(activity, permission) || activity.shouldShowRequestPermissionRationale(permission);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUPermissions.class, "canRequestPermission", ex);
+        }
+
+        return true;
+    }
+
+
+
     public static void requestPermissions(final Activity activity, final String permission, final int requestId, final UUPermissionDelegate delegate)
     {
         boolean hasPermission = hasPermission(activity, permission);
@@ -89,6 +127,7 @@ public class UUPermissions
                 for (int i = 0; i < permissions.length; i++)
                 {
                     String permission = permissions[i];
+                    setHasRequestedPermission(activity, permission);
                     int result = grantResults[i];
                     safeNotifyDelegate(delegate, permission, (result == PackageManager.PERMISSION_GRANTED));
                 }
