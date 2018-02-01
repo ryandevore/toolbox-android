@@ -1,6 +1,7 @@
 package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -165,6 +166,34 @@ public class UUBluetooth
 
             default:
                 return String.format(Locale.US, "Unknown-%d", connectionState);
+        }
+    }
+
+    /**
+     * Returns a developer friendly string for a BluetoothDevice.DEVICE_TYPE_* value
+     *
+     * @param deviceType the device type
+     *
+     * @return a string
+     */
+    public static String deviceTypeToString(final int deviceType)
+    {
+        switch (deviceType)
+        {
+            case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
+                return "Unknown";
+
+            case BluetoothDevice.DEVICE_TYPE_CLASSIC:
+                return "Classic";
+
+            case BluetoothDevice.DEVICE_TYPE_LE:
+                return "LE";
+
+            case BluetoothDevice.DEVICE_TYPE_DUAL:
+                return "Dual";
+
+            default:
+                return String.format(Locale.US, "Unknown-%d", deviceType);
         }
     }
 
