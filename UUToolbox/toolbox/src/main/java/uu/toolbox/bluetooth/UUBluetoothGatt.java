@@ -1,5 +1,6 @@
 package uu.toolbox.bluetooth;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -125,9 +126,21 @@ class UUBluetoothGatt
                 debugLog("connect", "Connecting to: " + peripheral + ", gattAuto: " + connectGattAutoFlag);
 
                 disconnectError = null;
-                bluetoothGatt = peripheral.getBluetoothDevice().connectGatt(context, connectGattAutoFlag, bluetoothGattCallback);
+                connectGatt(context, peripheral.getBluetoothDevice(), connectGattAutoFlag);
             }
         });
+    }
+
+    private void connectGatt(@NonNull final Context context, @NonNull final BluetoothDevice device, final boolean connectGattAutoFlag)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            bluetoothGatt = device.connectGatt(context, connectGattAutoFlag, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
+        }
+        else
+        {
+            bluetoothGatt = device.connectGatt(context, connectGattAutoFlag, bluetoothGattCallback);
+        }
     }
 
     void disconnect(@Nullable final UUBluetoothError error)
