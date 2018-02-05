@@ -9,23 +9,12 @@ import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import uu.toolbox.bluetooth.UUBluetoothScanner;
-import uu.toolbox.core.UUWorkerThread;
-import uu.toolbox.logging.UULog;
+import uu.toolbox.bluetooth.UUBluetooth;
+import uu.toolbox.bluetooth.UUBluetoothDeviceScanner;
 
 @SuppressWarnings("unused")
-public class UUClassicBluetoothScanner
+public class UUClassicBluetoothScanner extends UUBluetoothDeviceScanner
 {
-    private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
-
-    public interface Listener
-    {
-        void onClassicBluetoothDeviceFound(final @NonNull UUClassicBluetoothScanner scanner, final @NonNull BluetoothDevice device);
-    }
-
     private enum ScannerState
     {
         Idle,
@@ -33,18 +22,12 @@ public class UUClassicBluetoothScanner
         StoppingDiscovery,
     }
 
-    private BluetoothAdapter bluetoothAdapter;
     private BroadcastReceiver broadcastReceiver;
-    private UUWorkerThread scanThread;
-    private boolean isScanning = false;
-    private ArrayList<UUBluetoothDeviceFilter> scanFilters;
-    private final HashMap<String, Boolean> ignoredDevices = new HashMap<>();
-    private Listener listener;
     private ScannerState currentState;
 
     public UUClassicBluetoothScanner(final Context context)
     {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        super(context);
 
         initBroadcastReceiver();
         context.registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
@@ -59,17 +42,18 @@ public class UUClassicBluetoothScanner
             public void onReceive(Context context, Intent intent)
             {
                 String action = intent.getAction();
-                debugLog("onReceive", "Handled Bluetooth Action: " + action);
-
-                switch (action)
+                if (action != null)
                 {
-                    case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                        handleDiscoveryFinished(intent);
-                        break;
+                    switch (action)
+                    {
+                        case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                            handleDiscoveryFinished(intent);
+                            break;
 
-                    case BluetoothDevice.ACTION_FOUND:
-                        handleDeviceFound(intent);
-                        break;
+                        case BluetoothDevice.ACTION_FOUND:
+                            handleDeviceFound(intent);
+                            break;
+                    }
                 }
             }
         };
@@ -80,7 +64,7 @@ public class UUClassicBluetoothScanner
         switch (currentState)
         {
             case Discovery:
-                executeScan();
+                internalStartScanning();
                 break;
 
             case StoppingDiscovery:
@@ -91,86 +75,75 @@ public class UUClassicBluetoothScanner
 
     private void handleDeviceFound(final Intent intent)
     {
-        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-        debugLog("handleDeviceFound", "Device discovered: " + device.getName() + ", " + device.getAddress() + ", BondState: " + device.getBondState() + ", State: " + currentState);
-
-        if (isIgnored(device))
+        BluetoothDevice device = safeGetDevice(intent);
+        if (device != null)
         {
-            debugLog("handleDeviceFound", "Ignoring scan result from " + device.getAddress());
-            return;
-        }
-
-        if (shouldDiscoverDevice(device))
-        {
-            notifyDeviceFound(device);
-        }
-    }
-
-    private boolean shouldDiscoverDevice(@NonNull final BluetoothDevice device)
-    {
-        if (scanFilters != null)
-        {
-            for (UUBluetoothDeviceFilter filter : scanFilters)
+            // Throw out immediately any LE only device objects
+            if (!isClassicDevice(device))
             {
-                UUBluetoothDeviceFilter.Result result = filter.shouldDiscoverDevice(device);
-                if (result == UUBluetoothDeviceFilter.Result.IgnoreForever)
-                {
-                    ignoreDevice(device);
-                    return false;
-                }
-
-                if (result == UUBluetoothDeviceFilter.Result.IgnoreOnce)
-                {
-                    return false;
-                }
+                return;
             }
 
-            return true;
+            debugLog("handleDeviceFound", intent);
+
+            debugLog("handleDeviceFound",
+                    "Device discovered: " + device.getName() +
+                    ", " + device.getAddress() +
+                    ", BondState: " + UUBluetooth.bondStateToString(device.getBondState()) +
+                    ", Type:" + UUBluetooth.deviceTypeToString(device.getType()) +
+                    ", BluetoothClass: " + device.getBluetoothClass() +
+                    ", State: " + currentState);
+
+            processScannedDevice(device);
         }
-        else
+    }
+
+    private boolean isClassicDevice(@NonNull final BluetoothDevice device)
+    {
+        switch (device.getType())
         {
-            return true;
+            case BluetoothDevice.DEVICE_TYPE_CLASSIC:
+            case BluetoothDevice.DEVICE_TYPE_DUAL:
+            {
+                return true;
+            }
+
+            default:
+            {
+                return false;
+            }
         }
     }
 
-    private synchronized boolean isIgnored(@Nullable final BluetoothDevice device)
+    @Nullable
+    private BluetoothDevice safeGetDevice(@Nullable final Intent intent)
     {
-        return (device == null || ignoredDevices.containsKey(device.getAddress()));
+        BluetoothDevice device = null;
+
+        if (intent != null)
+        {
+            if (intent.hasExtra(BluetoothDevice.EXTRA_DEVICE))
+            {
+                device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            }
+        }
+
+        return device;
     }
 
-    public synchronized void ignoreDevice(@NonNull final BluetoothDevice device)
-    {
-        ignoredDevices.put(device.getAddress(), Boolean.TRUE);
-    }
-
-    public synchronized void clearIgnoreList()
-    {
-        ignoredDevices.clear();
-    }
-
-
-    public void startScanning(
-            final @Nullable ArrayList<UUBluetoothDeviceFilter> filters,
-            final @NonNull Listener delegate)
-    {
-        scanFilters = filters;
-        listener = delegate;
-        executeScan();
-    }
-
-    private void executeScan()
+    @Override
+    protected void internalStartScanning()
     {
         boolean discoveryStarted = false;
 
         try
         {
             discoveryStarted = bluetoothAdapter.startDiscovery();
-            debugLog("scan", "bluetoothAdapter.startDiscovery() returned " + discoveryStarted);
+            debugLog("internalStartScanning", "bluetoothAdapter.startDiscovery() returned " + discoveryStarted);
         }
         catch (Exception ex)
         {
-            debugLog("discover", ex);
+            debugLog("internalStartScanning", ex);
             discoveryStarted = false;
         }
         finally
@@ -186,17 +159,18 @@ public class UUClassicBluetoothScanner
         }
     }
 
-    public void stopScan()
+    @Override
+    protected void internalStopScanning()
     {
         try
         {
             changeState(ScannerState.StoppingDiscovery);
             boolean result = bluetoothAdapter.cancelDiscovery();
-            debugLog("stopScan", "bluetoothAdapter.cancelDiscovery() returned " + result);
+            debugLog("internalStopScanning", "bluetoothAdapter.cancelDiscovery() returned " + result);
         }
         catch (Exception ex)
         {
-            debugLog("stopScan", ex);
+            debugLog("internalStopScanning", ex);
         }
     }
 
@@ -206,37 +180,6 @@ public class UUClassicBluetoothScanner
         {
             currentState = state;
             debugLog("changeState", "New State: " + state);
-        }
-    }
-
-    private void notifyDeviceFound(final BluetoothDevice device)
-    {
-        try
-        {
-            if (listener != null && device != null && currentState == ScannerState.Discovery)
-            {
-                listener.onClassicBluetoothDeviceFound(this, device);
-            }
-        }
-        catch (Exception ex)
-        {
-            debugLog("notifyDeviceFound", ex);
-        }
-    }
-
-    private static void debugLog(final String method, final String message)
-    {
-        if (LOGGING_ENABLED)
-        {
-            UULog.debug(UUBluetoothScanner.class, method, message);
-        }
-    }
-
-    private synchronized static void debugLog(final String method, final Throwable exception)
-    {
-        if (LOGGING_ENABLED)
-        {
-            UULog.debug(UUBluetoothScanner.class, method, exception);
         }
     }
 }

@@ -198,6 +198,31 @@ public class UUBluetooth
     }
 
     /**
+     * Returns a developer friendly string for a BluetoothDevice_BOND_* value
+     *
+     * @param bondState a bond state value
+     *
+     * @return a string
+     */
+    public static String bondStateToString(final int bondState)
+    {
+        switch (bondState)
+        {
+            case BluetoothDevice.BOND_NONE:
+                return "None";
+
+            case BluetoothDevice.BOND_BONDED:
+                return "Bonded";
+
+            case BluetoothDevice.BOND_BONDING:
+                return "Bonding";
+
+            default:
+                return String.format(Locale.US, "Unknown-%d", bondState);
+        }
+    }
+
+    /**
      * Returns a common name for a Bluetooth UUID.  These strings are directly
      * from the bluetooth.org website
      *

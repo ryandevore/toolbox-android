@@ -1,4 +1,4 @@
-package uu.toolbox.bluetooth.classic;
+package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;

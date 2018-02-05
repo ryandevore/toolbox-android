@@ -20,6 +20,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import uu.toolbox.bluetooth.UUBluetooth;
 import uu.toolbox.core.UUString;
 
 public class UUBluetoothSession
@@ -143,7 +144,7 @@ public class UUBluetoothSession
         int previousBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1);
         int bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1);
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        debugLog("handleBondStateChanged", "Bond State for device " + device.getAddress() + " changed from " + bondStateToString(previousBondState) + " to " + bondStateToString(bondState));
+        debugLog("handleBondStateChanged", "Bond State for device " + device.getAddress() + " changed from " + UUBluetooth.bondStateToString(previousBondState) + " to " + UUBluetooth.bondStateToString(bondState));
 
         if ((previousBondState == BluetoothDevice.BOND_BONDING) &&
                 (bondState == BluetoothDevice.BOND_BONDED || bondState == BluetoothDevice.BOND_NONE) &&
@@ -302,7 +303,7 @@ public class UUBluetoothSession
             if (device != null)
             {
                 bondState = device.getBondState();
-                debugLog("pair", "BondState is " + bondStateToString(bondState));
+                debugLog("pair", "BondState is " + UUBluetooth.bondStateToString(bondState));
                 if (bondState != BluetoothDevice.BOND_BONDED)
                 {
                     changeState(UUBluetoothSessionState.WaitingForPairing);
@@ -314,7 +315,7 @@ public class UUBluetoothSession
                     runnable.safeWait("pair");
 
                     bondState = device.getBondState();
-                    debugLog("pair", "BondState after pairing is " + bondStateToString(bondState));
+                    debugLog("pair", "BondState after pairing is " + UUBluetooth.bondStateToString(bondState));
                 }
             }
         }
@@ -448,7 +449,7 @@ public class UUBluetoothSession
             if (device != null)
             {
                 int bondState = device.getBondState();
-                debugLog("unpair", "BondState is " + bondStateToString(bondState));
+                debugLog("unpair", "BondState is " + UUBluetooth.bondStateToString(bondState));
                 if (bondState == BluetoothDevice.BOND_BONDED)
                 {
                     changeState(UUBluetoothSessionState.WaitingForUnpairing);
@@ -461,7 +462,7 @@ public class UUBluetoothSession
                     runnable.safeWait("unpair");
 
                     bondState = device.getBondState();
-                    debugLog("unpair", "BondState after unpairing is " + bondStateToString(bondState));
+                    debugLog("unpair", "BondState after unpairing is " + UUBluetooth.bondStateToString(bondState));
                     if (bondState != BluetoothDevice.BOND_NONE)
                     {
                         error = new UUBluetoothSessionError(UUBluetoothSessionErrorCode.UnpairingFailed);
@@ -1027,23 +1028,6 @@ public class UUBluetoothSession
     {
         void onComplete(UUBluetoothSessionError error, byte[] data);
     }
-
-    public static String bondStateToString(final int state)
-    {
-        switch (state)
-        {
-            case BluetoothDevice.BOND_NONE:
-                return "BOND_NONE";
-            case BluetoothDevice.BOND_BONDED:
-                return "BOND_BONDED";
-            case BluetoothDevice.BOND_BONDING:
-                return "BOND_BONDING";
-            default:
-                return String.valueOf(state);
-        }
-    }
-
-
 
     public static void startSession(final Context context, final ScanFilter filter, final long timeout, final SessionCallback callback)
     {
