@@ -364,7 +364,7 @@ public class WeatherSummary
     // UUDataModel Methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
+    //@Override
     public int getVersion()
     {
         return 1;

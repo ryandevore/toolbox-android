@@ -84,23 +84,23 @@ public class AppDatabase extends UUDatabase
         }
     }
 
-    @Override
+    //@Override
     public ArrayList<String> getSqlCreateLines(int version)
     {
         return null;
     }
 
-    public void handlePostOpen(SQLiteDatabase db)
+    public void handlePostOpen(SQLiteDatabase db, int version)
     {
 
     }
 
-    public void handlePostCreate(SQLiteDatabase db)
+    public void handlePostCreate(SQLiteDatabase db, int version)
     {
 
     }
 
-    public void handleUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    public void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
 
     }
