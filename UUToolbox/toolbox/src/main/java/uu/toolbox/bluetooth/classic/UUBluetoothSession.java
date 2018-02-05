@@ -1,4 +1,4 @@
-package uu.toolbox.bluetooth;
+package uu.toolbox.bluetooth.classic;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -55,7 +55,6 @@ public class UUBluetoothSession
         ReadFailedInvalidState,
         ReadFailedFromException,
     }
-
 
     private Context context;
 
