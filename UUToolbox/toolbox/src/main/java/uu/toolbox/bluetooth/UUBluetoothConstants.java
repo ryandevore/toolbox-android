@@ -40,9 +40,10 @@ public class UUBluetoothConstants
      */
     public static final int GATT_DISCONNECTED_BY_PERIPHERAL = 0x13;
 
-
     public static class Services
     {
+        public static final UUID SERIAL_PORT_PROFILE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
         /**
          * SpecificationName: Alert Notification Service
          * SpecificationType: org.bluetooth.service.alert_notification
@@ -1672,6 +1673,7 @@ public class UUBluetoothConstants
 
     static
     {
+        BLUETOOTH_SPEC_NAMES.put(Services.SERIAL_PORT_PROFILE_UUID, "Serial Port Profile");
         BLUETOOTH_SPEC_NAMES.put(Services.ALERT_NOTIFICATION_SERVICE_UUID, "Alert Notification Service");
         BLUETOOTH_SPEC_NAMES.put(Services.AUTOMATION_IO_UUID, "Automation IO");
         BLUETOOTH_SPEC_NAMES.put(Services.BATTERY_SERVICE_UUID, "Battery Service");

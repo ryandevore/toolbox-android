@@ -21,13 +21,12 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import uu.toolbox.bluetooth.UUBluetooth;
+import uu.toolbox.bluetooth.UUBluetoothConstants;
 import uu.toolbox.core.UUString;
 
 public class UUBluetoothSession
 {
     private static final String LOG_TAG = "UUBluetoothSession";
-
-    private static final UUID SERIAL_PORT_PROFILE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     enum UUBluetoothSessionState
     {
@@ -173,7 +172,7 @@ public class UUBluetoothSession
                 UUID uuid = parcelUuid.getUuid();
                 debugLog("handleActionUuid", "uuid: " + uuid.toString());
 
-                if (uuid.compareTo(SERIAL_PORT_PROFILE_UUID) == 0)
+                if (uuid.compareTo(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID) == 0)
                 {
                     foundSpp = true;
                 }
@@ -390,13 +389,13 @@ public class UUBluetoothSession
                 if (tryInsecure)
                 {
                     debugLog("connect", "Creating socket with createInsecureRfcommSocketToServiceRecord");
-                    bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(SERIAL_PORT_PROFILE_UUID);
+                    bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
                     debugLog("connect", "createInsecureRfcommSocketToServiceRecord returned " + ((bluetoothSocket != null) ? bluetoothSocket.toString() : "null"));
                 }
                 else
                 {
                     debugLog("connect", "Creating socket with createRfcommSocketToServiceRecord");
-                    bluetoothSocket = device.createRfcommSocketToServiceRecord(SERIAL_PORT_PROFILE_UUID);
+                    bluetoothSocket = device.createRfcommSocketToServiceRecord(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
                     debugLog("connect", "createRfcommSocketToServiceRecord returned " + ((bluetoothSocket != null) ? bluetoothSocket.toString() : "null"));
                 }
 
