@@ -1,6 +1,5 @@
 package uu.toolbox.bluetooth.classic;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
@@ -1003,6 +1002,7 @@ public class UUBluetoothSession
         }
     }
 
+    /*
     public interface ScanFilter
     {
         boolean shouldScanDevice(BluetoothDevice device);
@@ -1011,7 +1011,7 @@ public class UUBluetoothSession
     interface ScanCallback
     {
         void deviceFound(BluetoothDevice device);
-    }
+    }*/
 
     public interface SessionCallback
     {
@@ -1028,6 +1028,7 @@ public class UUBluetoothSession
         void onComplete(UUBluetoothSessionError error, byte[] data);
     }
 
+    /*
     public static void startSession(final Context context, final ScanFilter filter, final long timeout, final SessionCallback callback)
     {
         final Scanner scanner = new Scanner(context);
@@ -1040,7 +1041,7 @@ public class UUBluetoothSession
                 notifyStartSession(context, device, callback);
             }
         });
-    }
+    }*/
 
     private static void notifyStartSession(final Context context, final BluetoothDevice device, final SessionCallback callback)
     {
@@ -1077,182 +1078,6 @@ public class UUBluetoothSession
         catch (Exception ex)
         {
             logException("notifySessionCallback", ex);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    enum ScannerState
-    {
-        Idle,
-        Discovery,
-        StoppingDiscovery,
-    }
-
-    static class Scanner
-    {
-        private BluetoothAdapter bluetoothAdapter;
-        private BroadcastReceiver broadcastReceiver;
-        private ScanFilter scanFilter;
-        private ScanCallback scanCallback;
-        private ScannerState currentState;
-
-        public Scanner(final Context context)
-        {
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-            initBroadcastReceiver();
-            context.registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-            context.registerReceiver(broadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-        }
-
-        private void initBroadcastReceiver()
-        {
-            broadcastReceiver = new BroadcastReceiver()
-            {
-                @Override
-                public void onReceive(Context context, Intent intent)
-                {
-                    String action = intent.getAction();
-                    debugLog("onReceive", "Handled Bluetooth Action: " + action);
-
-                    switch (action)
-                    {
-                        case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                            handleDiscoveryFinished(intent);
-                            break;
-
-                        case BluetoothDevice.ACTION_FOUND:
-                            handleDeviceFound(intent);
-                            break;
-                    }
-                }
-            };
-        }
-
-        private void handleDiscoveryFinished(final Intent intent)
-        {
-            switch (currentState)
-            {
-                case Discovery:
-                    scan(scanFilter, scanCallback);
-                    break;
-
-                case StoppingDiscovery:
-                    changeState(ScannerState.Idle);
-                    break;
-            }
-        }
-
-        private void handleDeviceFound(final Intent intent)
-        {
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-            debugLog("handleDeviceFound", "Device discovered: " + device.getName() + ", " + device.getAddress() + ", BondState: " + device.getBondState() + ", State: " + currentState);
-
-            if (filterDevice(device))
-            {
-                notifyDeviceFound(device);
-            }
-        }
-
-        public void scan(final ScanFilter filter, final ScanCallback callback)
-        {
-            scanFilter = filter;
-            scanCallback = callback;
-
-            boolean discoveryStarted = false;
-
-            try
-            {
-                discoveryStarted = bluetoothAdapter.startDiscovery();
-                debugLog("scan", "bluetoothAdapter.startDiscovery() returned " + discoveryStarted);
-            }
-            catch (Exception ex)
-            {
-                logException("discover", ex);
-                discoveryStarted = false;
-            }
-            finally
-            {
-                if (discoveryStarted)
-                {
-                    changeState(ScannerState.Discovery);
-                }
-                else
-                {
-                    changeState(ScannerState.Idle);
-                }
-            }
-        }
-
-        public void stopScan()
-        {
-            try
-            {
-                changeState(ScannerState.StoppingDiscovery);
-                boolean result = bluetoothAdapter.cancelDiscovery();
-                debugLog("stopScan", "bluetoothAdapter.cancelDiscovery() returned " + result);
-            }
-            catch (Exception ex)
-            {
-                logException("stopScan", ex);
-            }
-        }
-
-        private void changeState(ScannerState state)
-        {
-            if (currentState != state)
-            {
-                currentState = state;
-                debugLog("changeState", "New State: " + state);
-            }
-        }
-
-        private boolean filterDevice(final BluetoothDevice device)
-        {
-            boolean includeDevice = true;
-
-            try
-            {
-                if (scanFilter != null && device != null && currentState == ScannerState.Discovery)
-                {
-                    includeDevice = scanFilter.shouldScanDevice(device);
-                }
-            }
-            catch (Exception ex)
-            {
-                logException("filterDevice", ex);
-            }
-
-            return includeDevice;
-        }
-
-        private void notifyDeviceFound(final BluetoothDevice device)
-        {
-            try
-            {
-                if (scanCallback != null && device != null && currentState == ScannerState.Discovery)
-                {
-                    scanCallback.deviceFound(device);
-                }
-            }
-            catch (Exception ex)
-            {
-                logException("notifyDeviceFound", ex);
-            }
         }
     }
 }
