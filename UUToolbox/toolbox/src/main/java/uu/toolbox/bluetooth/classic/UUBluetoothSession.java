@@ -8,35 +8,58 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
-import android.util.Log;
-import android.util.Pair;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 import uu.toolbox.bluetooth.UUBluetooth;
 import uu.toolbox.bluetooth.UUBluetoothConstants;
+import uu.toolbox.bluetooth.UUBluetoothError;
+import uu.toolbox.bluetooth.UUBluetoothSessionErrorDelegate;
 import uu.toolbox.core.UUString;
+import uu.toolbox.core.UUThread;
+import uu.toolbox.core.UUTimer;
+import uu.toolbox.logging.UULog;
 
 public class UUBluetoothSession
 {
-    private static final String LOG_TAG = "UUBluetoothSession";
+    private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
 
-    enum UUBluetoothSessionState
-    {
-        Idle,
-        WaitingForPairing,
-        WaitingForConnect,
-        WaitingForServiceDiscovery,
-        Connected,
-        WaitingForDisconnect,
-        WaitingForUnpairing,
-    }
+    private static final String CONNECT_WATCHDOG_BUCKET = "UUBluetoothSession_ConnectWatchdogBucket";
+    private static final String PAIR_WATCHDOG_BUCKET = "UUBluetoothSession_PairWatchdogBucket";
+    private static final String UNPAIR_WATCHDOG_BUCKET = "UUBluetoothSession_UnPairWatchdogBucket";
+    private static final String SERVICE_DISCOVERY_WATCHDOG_BUCKET = "UUBluetoothSession_ServiceDiscoveryWatchdogBucket";
+    private static final String CONNECT_SPP_WATCHDOG_BUCKET = "UUBluetoothSession_ConnectSppWatchdogBucket";
+    private static final String DISCONNECT_SPP_WATCHDOG_BUCKET = "UUBluetoothSession_DisconnectSppWatchdogBucket";
+//    private static final String CHARACTERISTIC_NOTIFY_STATE_WATCHDOG_BUCKET = "UUBluetoothSession_CharacteristicNotifyStateWatchdogBucket";
+//    private static final String READ_CHARACTERISTIC_WATCHDOG_BUCKET = "UUBluetoothSession_ReadCharacteristicValueWatchdogBucket";
+//    private static final String WRITE_CHARACTERISTIC_WATCHDOG_BUCKET = "UUBluetoothSession_WriteCharacteristicValueWatchdogBucket";
+//    private static final String READ_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothSession_ReadDescriptorValueWatchdogBucket";
+//    private static final String WRITE_DESCRIPTOR_WATCHDOG_BUCKET = "UUBluetoothSession_WriteDescriptorValueWatchdogBucket";
+//    private static final String READ_RSSI_WATCHDOG_BUCKET = "UUBluetoothSession_ReadRssiWatchdogBucket";
+//    private static final String POLL_RSSI_BUCKET = "UUBluetoothSession_PollRssiBucket";
+    private static final String DISCONNECT_WATCHDOG_BUCKET = "UUBluetoothSession_DisconnectWatchdogBucket";
+
+//    private static final int TIMEOUT_DISABLED = -1;
+
+
+    //private static final String LOG_TAG = "UUBluetoothSession";
+
+//    enum UUBluetoothSessionState
+//    {
+//        Idle,
+//        //WaitingForPairing,
+//        //WaitingForConnect,
+//        //WaitingForServiceDiscovery,
+//        //Connected,
+//        //WaitingForDisconnect,
+//        //WaitingForUnpairing,
+//    }
 
     enum UUBluetoothSessionErrorCode
     {
@@ -53,17 +76,56 @@ public class UUBluetoothSession
         WriteFailedFromException,
         ReadFailedInvalidState,
         ReadFailedFromException,
+
+        Timeout,
+        Disconnected
     }
+
+//    public interface ConnectionDelegate
+//    {
+//        /**
+//         * Invoked when a device is successfully connected.
+//         *
+//         * @param session the device that was connected
+//         */
+//        void onConnected(@NonNull final UUBluetoothSession session);
+//
+//        /**
+//         * Invoked when a device was disconnected
+//         *
+//         * @param session the session that was disconnected
+//         * @param error the error (if any) that caused the disconnect to occur
+//         */
+//        void onDisconnected(@NonNull final UUBluetoothSession session, @Nullable final UUBluetoothSessionError error);
+//    }
+
 
     private Context context;
 
     private BluetoothDevice device;
     private String deviceAddress;
     private BroadcastReceiver broadcastReceiver;
-    private UUBluetoothSessionState currentState;
+    //private UUBluetoothSessionState currentState;
     private BluetoothSocket bluetoothSocket;
-    private ErrorRunnable connectRunnable;
-    private DisconnectRunnable disconnectRunnable;
+    //private ErrorRunnable connectRunnable;
+    //private DisconnectRunnable disconnectRunnable;
+
+
+    //private ConnectionDelegate connectionDelegate;
+    private long connectTimeout;
+    private long disconnectTimeout;
+    private UUBluetoothError disconnectError;
+
+    private UUBluetoothSessionErrorDelegate startSessionSppDelegate;
+
+    private UUBluetoothSessionErrorDelegate pairDelegate;
+    private UUBluetoothSessionErrorDelegate unpairDelegate;
+
+    private UUBluetoothSessionErrorDelegate serviceDiscoveryDelegate;
+
+    private UUBluetoothSessionErrorDelegate connectSppDelegate;
+    private UUBluetoothSessionErrorDelegate disconnectSppDelegate;
+
 
     public UUBluetoothSession(Context context, BluetoothDevice device)
     {
@@ -74,14 +136,29 @@ public class UUBluetoothSession
             this.deviceAddress = device.getAddress().toLowerCase();
         }
 
-        currentState = UUBluetoothSessionState.Idle;
+        //currentState = UUBluetoothSessionState.Idle;
+
+        initBroadcastReceiver();
+
+        registerReceivers();
     }
+
+    public BluetoothDevice getDevice()
+    {
+        return device;
+    }
+
 
     private void registerReceivers()
     {
-        initBroadcastReceiver();
         registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
         registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_UUID));
+        //registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST));
+
+//        registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
+//        registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+//        registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED));
+//        registerReceiver(broadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED));
     }
 
     private void unregisterReceivers()
@@ -116,22 +193,48 @@ public class UUBluetoothSession
             @Override
             public void onReceive(Context context, Intent intent)
             {
+                debugLog("onReceive", intent);
+
                 String action = intent.getAction();
 
                 if (shouldHandleIntent(intent))
                 {
-                    debugLog("initBroadcastReceiver.onReceive", "Handled Bluetooth Action: " + action + ", device: " + getIntentDeviceAddress(intent));
+                    debugLog("onReceive", "Handled Bluetooth Action: " + action + ", device: " + getIntentDeviceAddress(intent));
 
                     switch (action)
                     {
                         case BluetoothDevice.ACTION_BOND_STATE_CHANGED:
+                        {
                             handleBondStateChanged(intent);
                             break;
+                        }
 
                         case BluetoothDevice.ACTION_UUID:
+                        {
                             handleActionUuid(intent);
                             break;
+                        }
+
+/*
+                        case BluetoothDevice.ACTION_PAIRING_REQUEST:
+                        {
+                            debugLog("handlePairingRequest", "Setting pairingConfirmation");
+                            boolean result = device.setPairingConfirmation(true);
+                            debugLog("handlePairingRequest", "Setting pairingConfirmation returned: " + result);
+
+                            break;
+                        }*/
+
+//                        case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+//                        {
+//                            handleDisconnected();
+//                            break;
+//                        }
                     }
+                }
+                else
+                {
+                    debugLog("onReceive", "Ignoring Bluetooth Action: " + action + ", device: " + getIntentDeviceAddress(intent));
                 }
             }
         };
@@ -145,24 +248,56 @@ public class UUBluetoothSession
         debugLog("handleBondStateChanged", "Bond State for device " + device.getAddress() + " changed from " + UUBluetooth.bondStateToString(previousBondState) + " to " + UUBluetooth.bondStateToString(bondState));
 
         if ((previousBondState == BluetoothDevice.BOND_BONDING) &&
-                (bondState == BluetoothDevice.BOND_BONDED || bondState == BluetoothDevice.BOND_NONE) &&
-                currentState == UUBluetoothSessionState.WaitingForPairing)
+            (bondState == BluetoothDevice.BOND_BONDED || bondState == BluetoothDevice.BOND_NONE)/* &&
+                currentState == UUBluetoothSessionState.WaitingForPairing*/ &&
+                pairDelegate != null)
         {
-            connectRunnable.safeNotify("Pairing finished");
+            //connectRunnable.safeNotify("Pairing finished");
+            UUBluetoothSessionError err = null;
+
+            if (bondState == BluetoothDevice.BOND_NONE)
+            {
+                err = new UUBluetoothSessionError(UUBluetoothSessionErrorCode.PairingFailed);
+            }
+
+            notifyPairingComplete(err);
         }
         else if ((previousBondState == BluetoothDevice.BOND_BONDING || previousBondState == BluetoothDevice.BOND_BONDED) &&
                 (bondState == BluetoothDevice.BOND_NONE) &&
-                currentState == UUBluetoothSessionState.WaitingForUnpairing)
+                /*currentState == UUBluetoothSessionState.WaitingForUnpairing*/
+                unpairDelegate != null)
         {
-            disconnectRunnable.safeNotify("Unpairing finished");
+            //disconnectRunnable.safeNotify("Unpairing finished");
+
+            UUBluetoothSessionError err = null;
+
+//            if (bondState != BluetoothDevice.BOND_NONE)
+//            {
+//                err = new UUBluetoothSessionError(UUBluetoothSessionErrorCode.UnpairingFailed);
+//            }
+
+            notifyUnpairingComplete(null);
         }
     }
 
+//    private void handleDisconnected()
+//    {
+//        notifyDisconnectedComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Disconnected));
+//    }
+
     private void handleActionUuid(final Intent intent)
     {
+        //Parcelable[] list = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
+        //debugLog("handleActionUUid", "UUID: " + UUString.safeToString(list));
+
+
+
+
+
         Parcelable extraUuids[] = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
         if (extraUuids != null)
         {
+
             boolean foundSpp = false;
 
             for (Parcelable p : extraUuids)
@@ -174,14 +309,20 @@ public class UUBluetoothSession
                 if (uuid.compareTo(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID) == 0)
                 {
                     foundSpp = true;
+                    debugLog("handleActionUuid", "Found SPP profile on device: " + deviceAddress);
                 }
             }
 
-            if (foundSpp && currentState == UUBluetoothSessionState.WaitingForServiceDiscovery)
+            if (foundSpp && serviceDiscoveryDelegate != null)
             {
-                debugLog("handleActionUuid", "Discovered Serial Port profile, kicking wait thread");
-                connectRunnable.safeNotify("SPP found uuid");
+                notifyServiceDiscoveryComplete(null);
             }
+
+//            if (foundSpp && currentState == UUBluetoothSessionState.WaitingForServiceDiscovery)
+//            {
+//                debugLog("handleActionUuid", "Discovered Serial Port profile, kicking wait thread");
+//                connectRunnable.safeNotify("SPP found uuid");
+//            }
         }
     }
 
@@ -239,6 +380,7 @@ public class UUBluetoothSession
         return address;
     }
 
+    /*
     private Thread startThread(final Runnable runnable)
     {
         Thread t = null;
@@ -254,9 +396,9 @@ public class UUBluetoothSession
         }
 
         return t;
-    }
+    }*/
 
-    public void startSession(final ErrorCallback callback)
+    /*public void startSession(final ErrorCallback callback)
     {
         registerReceivers();
         connectRunnable = connectRunnable();
@@ -288,8 +430,9 @@ public class UUBluetoothSession
         receiveRunnable.setReadTimeout(timeout);
         receiveRunnable.setCallback(callback);
         startThread(receiveRunnable);
-    }
+    }*/
 
+    /*
     private UUBluetoothSessionError pair(final SessionRunnable runnable)
     {
         UUBluetoothSessionError error = null;
@@ -336,8 +479,417 @@ public class UUBluetoothSession
         }
 
         return error;
+    }*/
+
+    public boolean isPaired()
+    {
+        return (device.getBondState() == BluetoothDevice.BOND_BONDED);
     }
 
+    public void pair(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = pairWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError error)
+            {
+                debugLog("pair", "Pairing complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        pairDelegate = tmpDelegate;
+
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("pair", "Pair timeout: " + device);
+                // TODO: Is this really how to handle timeout on pairing?
+                //disconnect(UUBluetoothError.timeoutError());
+                notifyPairingComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });
+
+        UUThread.runOnBackgroundThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (device == null)
+                {
+                    debugLog("pair", "device is null!");
+                    return;
+                }
+
+                int bondState = device.getBondState();
+                if (bondState == BluetoothDevice.BOND_BONDED)
+                {
+                    debugLog("pair", "device is already bonded.");
+                    notifyPairingComplete(null);
+                    return;
+                }
+
+//                if (bondState == BluetoothDevice.BOND_BONDING)
+//                {
+//                    debugLog("pair", "device is in the process of bonding.");
+//                    return;
+//                }
+
+                debugLog("pair", "Attempting to pair with device " + deviceAddress);
+                boolean success = device.createBond();
+                debugLog("pair", "createBond returned: " + success);
+
+                if (!success)
+                {
+                    notifyPairingComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.PairingFailed));
+                }
+            }
+        });
+    }
+
+    public void unpair(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = unpairWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError error)
+            {
+                debugLog("unpair", "Unpairing complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        unpairDelegate = tmpDelegate;
+
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("unpair", "Unpair timeout: " + device);
+                // TODO: Is this really how to handle timeout on pairing?
+                //disconnect(UUBluetoothError.timeoutError());
+                notifyUnpairingComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });
+
+        UUThread.runOnBackgroundThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (device == null)
+                {
+                    debugLog("unpair", "device is null!");
+                    return;
+                }
+
+                int bondState = device.getBondState();
+                if (bondState != BluetoothDevice.BOND_BONDED)
+                {
+                    debugLog("unpair", "device is already bonded.");
+                    return;
+                }
+
+                debugLog("unpair", "Attempting to unpair with device " + deviceAddress);
+                boolean success = callRemoveBond(device);
+                debugLog("unpair", "removeBond returned: " + success);
+
+                if (!success)
+                {
+                    notifyUnpairingComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.UnpairingFailed));
+                }
+
+
+                /*
+                if (bondState == BluetoothDevice.BOND_BONDED)
+                {
+                    changeState(UUBluetoothSessionState.WaitingForUnpairing);
+
+                    debugLog("unpair", "Removing bond with device: " + deviceAddress);
+                    Method m =  device.getClass().getMethod("removeBond", (Class[])null);
+                    Boolean returnValue = (Boolean)m.invoke(device, (Object[])null);
+                    debugLog("unpair", "removeBond returned: " + returnValue.toString());
+
+                    runnable.safeWait("unpair");
+
+                    bondState = device.getBondState();
+                    debugLog("unpair", "BondState after unpairing is " + UUBluetooth.bondStateToString(bondState));
+                    if (bondState != BluetoothDevice.BOND_NONE)
+                    {
+                        error = new UUBluetoothSessionError(UUBluetoothSessionErrorCode.UnpairingFailed);
+                    }
+                }*/
+            }
+        });
+    }
+
+    private boolean callRemoveBond(@NonNull final BluetoothDevice device)
+    {
+        try
+        {
+            Method m =  device.getClass().getMethod("removeBond", (Class[])null);
+            if (m != null)
+            {
+                Boolean result = (Boolean) m.invoke(device, (Object[]) null);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    public boolean hasService(@NonNull final UUID uuid)
+    {
+        List<UUID> services = discoveredServiceUuids();
+        return services.contains(uuid);
+    }
+
+    public boolean hasSppService()
+    {
+        return hasService(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
+    }
+
+    public void discoverServices(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = serviceDiscoveryWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError error)
+            {
+                debugLog("discoverServices", "Service Discovery complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        serviceDiscoveryDelegate = tmpDelegate;
+
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("discoverServices", "Service Discovery timeout: " + device);
+                // TODO: Is this really how to handle timeout on service discovery?
+                //disconnect(UUBluetoothError.timeoutError());
+                notifyServiceDiscoveryComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });
+
+        UUThread.runOnBackgroundThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (device == null)
+                {
+                    debugLog("discoverServices", "device is null!");
+                    return;
+                }
+
+                // TODO: Does device have to be bonded here?
+                /*
+                int bondState = device.getBondState();
+                if (bondState == BluetoothDevice.BOND_BONDED)
+                {
+                    debugLog("pair", "device is already bonded.");
+                    return;
+                }*/
+
+
+                debugLog("serviceDiscovery", "Calling fetchUuidsWithSdp");
+                boolean success = device.fetchUuidsWithSdp();
+                debugLog("serviceDiscovery", "device.fetchUuidsWithSdp returned " + success);
+
+                if (!success)
+                {
+                    notifyServiceDiscoveryComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.ServiceDiscoveryFailed));
+                }
+            }
+        });
+    }
+
+    @NonNull
+    public List<UUID> discoveredServiceUuids()
+    {
+        ArrayList<UUID> list = new ArrayList<>();
+
+        if (device != null)
+        {
+            ParcelUuid[] cached = device.getUuids();
+            if (cached != null)
+            {
+                for (ParcelUuid parcelUuid : cached)
+                {
+                    list.add(parcelUuid.getUuid());
+                }
+            }
+        }
+
+        return list;
+    }
+
+    public boolean isSppConnected()
+    {
+        return (bluetoothSocket != null && bluetoothSocket.isConnected());
+    }
+
+    public void connectSpp(final long timeout, final boolean secureConnection, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = connectSppWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError error)
+            {
+                debugLog("connectSpp", "Connect SPP complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        connectSppDelegate = tmpDelegate;
+
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("connectSpp", "Connect SPP timeout: " + device);
+                // TODO: Is this really how to handle timeout on connect SPP?
+                //disconnect(UUBluetoothError.timeoutError());
+                notifyConnectSppComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });
+
+        UUThread.runOnBackgroundThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (device == null)
+                {
+                    debugLog("connectSpp", "device is null!");
+                    return;
+                }
+
+                // TODO: Does device have to be bonded here?
+                /*
+                int bondState = device.getBondState();
+                if (bondState == BluetoothDevice.BOND_BONDED)
+                {
+                    debugLog("pair", "device is already bonded.");
+                    return;
+                }*/
+
+
+                try
+                {
+                    if (secureConnection)
+                    {
+                        debugLog("connectSpp", "Creating socket with createRfcommSocketToServiceRecord");
+                        bluetoothSocket = device.createRfcommSocketToServiceRecord(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
+                        debugLog("connectSpp", "createRfcommSocketToServiceRecord returned " + ((bluetoothSocket != null) ? bluetoothSocket.toString() : "null"));
+                    }
+                    else
+                    {
+                        debugLog("connectSpp", "Creating socket with createInsecureRfcommSocketToServiceRecord");
+                        bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
+                        debugLog("connectSpp", "createInsecureRfcommSocketToServiceRecord returned " + ((bluetoothSocket != null) ? bluetoothSocket.toString() : "null"));
+                    }
+
+                    if (bluetoothSocket == null)
+                    {
+                        // TODO: better error code
+                        notifyConnectSppComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.ConnectFailedInvalidState));
+                        return;
+                    }
+
+                    // TODO: Does this block the main thread?
+                    debugLog("connectSpp", "Opening Bluetooth Socket");
+                    bluetoothSocket.connect();
+                    debugLog("connectSpp", "Bluetooth Socket Open");
+
+                    notifyConnectSppComplete(null);
+                }
+                catch (Exception ex)
+                {
+                    logException("connectSpp", ex);
+                    notifyConnectSppComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.ConnectFailedFromException, ex));
+                }
+            }
+        });
+    }
+
+    public void disconnectSpp(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = disconnectSppWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError error)
+            {
+                debugLog("disconnectSpp", "Disconnect SPP complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        disconnectSppDelegate = tmpDelegate;
+
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("disconnectSpp", "Connect SPP timeout: " + device);
+                // TODO: Is this really how to handle timeout on connect SPP?
+                //disconnect(UUBluetoothError.timeoutError());
+                notifyDisconnectSppComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });
+
+        UUThread.runOnBackgroundThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (device == null)
+                {
+                    debugLog("disconnectSpp", "device is null!");
+                    return;
+                }
+
+                closeSocket();
+                notifyDisconnectSppComplete(null);
+            }
+        });
+    }
+
+
+
+
+/*
     private UUBluetoothSessionError serviceDiscovery(final SessionRunnable runnable)
     {
         UUBluetoothSessionError error = null;
@@ -373,8 +925,9 @@ public class UUBluetoothSession
         }
 
         return error;
-    }
+    }*/
 
+/*
     private UUBluetoothSessionError connect(final boolean tryInsecure)
     {
         UUBluetoothSessionError error = null;
@@ -436,8 +989,9 @@ public class UUBluetoothSession
         }
 
         return error;
-    }
+    }*/
 
+    /*
     private UUBluetoothSessionError unpair(final SessionRunnable runnable)
     {
         UUBluetoothSessionError error = null;
@@ -479,8 +1033,9 @@ public class UUBluetoothSession
         }
 
         return error;
-    }
+    }*/
 
+    /*
     private UUBluetoothSessionError writeData(final byte[] data)
     {
         UUBluetoothSessionError error = null;
@@ -602,18 +1157,43 @@ public class UUBluetoothSession
         {
             readDataWatchdogTimeout = null;
         }
-    }
+    }*/
 
-    private static void logException(String method, Exception ex)
+//    private static void logException(String method, Exception ex)
+//    {
+//        Log.e(LOG_TAG, method, ex);
+//    }
+//
+//    protected static void debugLog(String method, String msg)
+//    {
+//        Log.d(LOG_TAG, method + ": " + msg);
+//    }
+
+    private void debugLog(final String method, final String message)
     {
-        Log.e(LOG_TAG, method, ex);
+        if (LOGGING_ENABLED)
+        {
+            UULog.debug(getClass(), method, message);
+        }
     }
 
-    protected static void debugLog(String method, String msg)
+    protected void debugLog(final String method, final Intent intent)
     {
-        Log.d(LOG_TAG, method + ": " + msg);
+        if (LOGGING_ENABLED)
+        {
+            UULog.logIntent(getClass(), method, "", intent);
+        }
     }
 
+    private void logException(final String method, final Throwable exception)
+    {
+        if (LOGGING_ENABLED)
+        {
+            UULog.error(getClass(), method, exception);
+        }
+    }
+
+    /*
     private void changeState(UUBluetoothSessionState state)
     {
         if (currentState != state)
@@ -621,7 +1201,7 @@ public class UUBluetoothSession
             currentState = state;
             debugLog("changeState", "New State: " + state);
         }
-    }
+    }*/
 
     private void closeSocket()
     {
@@ -642,6 +1222,7 @@ public class UUBluetoothSession
         }
     }
 
+    /*
     abstract class SessionRunnable implements Runnable
     {
         private Thread thread;
@@ -842,8 +1423,9 @@ public class UUBluetoothSession
         {
             return readTimeout;
         }
-    }
+    }*/
 
+    /*
     private ErrorRunnable connectRunnable()
     {
         return new ErrorRunnable()
@@ -899,8 +1481,9 @@ public class UUBluetoothSession
                 return error;
             }
         };
-    }
+    }*/
 
+    /*
     private DisconnectRunnable disconnectRunnable()
     {
         return new DisconnectRunnable()
@@ -925,8 +1508,9 @@ public class UUBluetoothSession
                 return error;
             }
         };
-    }
+    }*/
 
+    /*
     private SendRunnable sendRunnable()
     {
         return new SendRunnable()
@@ -955,7 +1539,7 @@ public class UUBluetoothSession
                 return error;
             }
         };
-    }
+    }*/
 
     public class UUBluetoothSessionError
     {
@@ -1045,7 +1629,7 @@ public class UUBluetoothSession
 
     private static void notifyStartSession(final Context context, final BluetoothDevice device, final SessionCallback callback)
     {
-        try
+        /*try
         {
             if (device != null && callback != null)
             {
@@ -1063,10 +1647,10 @@ public class UUBluetoothSession
         catch (Exception ex)
         {
             logException("notifyStartSession", ex);
-        }
+        }*/
     }
 
-    private static void notifySessionCallback(final SessionCallback callback, final UUBluetoothSessionError error, final UUBluetoothSession session)
+    /*private static void notifySessionCallback(final SessionCallback callback, final UUBluetoothSessionError error, final UUBluetoothSession session)
     {
         try
         {
@@ -1079,5 +1663,322 @@ public class UUBluetoothSession
         {
             logException("notifySessionCallback", ex);
         }
+    }*/
+
+    private void notifyErrorCallback(final UUBluetoothSessionError error, final UUBluetoothSessionErrorDelegate callback)
+    {
+        try
+        {
+            if (callback != null)
+            {
+                callback.onComplete(this, error);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyErrorCallback", ex);
+        }
+    }
+
+    private void notifyStartSppSessionComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = startSessionSppDelegate;
+        startSessionSppDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    private void notifyPairingComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = pairDelegate;
+        pairDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    private void notifyServiceDiscoveryComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = serviceDiscoveryDelegate;
+        serviceDiscoveryDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    private void notifyUnpairingComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = unpairDelegate;
+        unpairDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    private void notifyConnectSppComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = connectSppDelegate;
+        connectSppDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    private void notifyDisconnectSppComplete(final UUBluetoothSessionError error)
+    {
+        UUBluetoothSessionErrorDelegate delegate = disconnectSppDelegate;
+        disconnectSppDelegate = null;
+        notifyErrorCallback(error, delegate);
+    }
+
+    /*
+    private void notifyConnectComplete(final UUBluetoothSessionError error)
+    {
+        ConnectionDelegate delegate = connectionDelegate;
+
+        try
+        {
+            if (delegate != null)
+            {
+                delegate.onConnected(this);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyConnectComplete", ex);
+        }
+    }
+
+    private void notifyDisconnectedComplete(final UUBluetoothSessionError error)
+    {
+        ConnectionDelegate delegate = connectionDelegate;
+        connectionDelegate = null;
+
+        try
+        {
+            if (delegate != null)
+            {
+                delegate.onDisconnected(this, error);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyDisconnectedComplete", ex);
+        }
+    }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Timers
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    private @NonNull String timerPrefix()
+    {
+        return String.format(Locale.US, "Classic__%s", device.getAddress());
+    }
+
+    private @NonNull String formatDeviceTimerId(final @NonNull String bucket)
+    {
+        return String.format(Locale.US, "%s__%s", timerPrefix(), bucket);
+    }
+
+    private @NonNull String connectWatchdogTimerId()
+    {
+        return formatDeviceTimerId(CONNECT_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String pairWatchdogTimerId()
+    {
+        return formatDeviceTimerId(PAIR_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String unpairWatchdogTimerId()
+    {
+        return formatDeviceTimerId(UNPAIR_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String serviceDiscoveryWatchdogTimerId()
+    {
+        return formatDeviceTimerId(SERVICE_DISCOVERY_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String connectSppWatchdogTimerId()
+    {
+        return formatDeviceTimerId(CONNECT_SPP_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String disconnectSppWatchdogTimerId()
+    {
+        return formatDeviceTimerId(DISCONNECT_SPP_WATCHDOG_BUCKET);
+    }
+
+    private @NonNull String disconnectWatchdogTimerId()
+    {
+        return formatDeviceTimerId(DISCONNECT_WATCHDOG_BUCKET);
+    }
+
+    public void cancelAllTimers()
+    {
+        try
+        {
+            if (device != null)
+            {
+                ArrayList<UUTimer> list = UUTimer.listActiveTimers();
+
+                String prefix = timerPrefix();
+                for (UUTimer t : list)
+                {
+                    if (t.getTimerId().startsWith(prefix))
+                    {
+                        debugLog("cancelAllTimers", "Cancelling device timer: " + t.getTimerId());
+                        t.cancel();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("cancelAllTimers", ex);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Connection Management
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void startSppSession(
+            //final @NonNull Context context,
+            //final @NonNull BluetoothDevice device,
+            final long timeout,
+            //final long disconnectTimeout,
+            final boolean secureSppSocket,
+            final @NonNull UUBluetoothSessionErrorDelegate delegate)
+    {
+        final String timerId = connectWatchdogTimerId();
+
+        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSessionError error)
+            {
+                debugLog("startSppSession", "Start SPP Session complete: " + device + ", error: " + error);
+                UUTimer.cancelActiveTimer(timerId);
+                delegate.onComplete(session, error);
+            }
+        };
+
+        startSessionSppDelegate = tmpDelegate;
+
+
+        /*
+        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        {
+            @Override
+            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
+            {
+                debugLog("startSppSession", "Start SPP timeout: " + device);
+
+                disconnect(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.Timeout));
+            }
+        });*/
+
+        //this.disconnectTimeout = disconnectTimeout;
+        /*UUThread.runOnMainThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                debugLog("connect", "Connecting to: " + peripheral);
+
+                disconnectError = null;
+                //connectGatt(context, peripheral.getBluetoothDevice(), connectGattAutoFlag);
+            }
+        });*/
+
+        pair(timeout, new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError pairingError)
+            {
+                UULog.debug(getClass(), "pair.onComplete", "error: " + UUString.safeToString(pairingError));
+                if (pairingError != null)
+                {
+                    //disconnect(pairingError);
+                    notifyStartSppSessionComplete(pairingError);
+                    return;
+                }
+
+                session.discoverServices(timeout, new UUBluetoothSessionErrorDelegate()
+                {
+                    @Override
+                    public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError serviceDiscoveryError)
+                    {
+                        UULog.debug(getClass(), "discoverServices.onComplete", "error: " + UUString.safeToString(serviceDiscoveryError));
+
+                        if (serviceDiscoveryError != null)
+                        {
+                            notifyStartSppSessionComplete(serviceDiscoveryError);
+                            return;
+                        }
+
+                        if (!session.hasSppService())
+                        {
+                            // TODO: real error code here
+                            notifyStartSppSessionComplete(new UUBluetoothSessionError(UUBluetoothSessionErrorCode.ServiceDiscoveryFailed));
+                            return;
+                        }
+
+                        session.connectSpp(timeout, secureSppSocket, new UUBluetoothSessionErrorDelegate()
+                        {
+                            @Override
+                            public void onComplete(@NonNull final UUBluetoothSession session, @Nullable UUBluetoothSession.UUBluetoothSessionError connectSppError)
+                            {
+                                UULog.debug(getClass(), "connectSpp.onComplete", "error: " + UUString.safeToString(connectSppError));
+                                notifyStartSppSessionComplete(connectSppError);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public void disconnect(@Nullable final UUBluetoothSessionError error)
+    {
+        closeSocket();
+        unregisterReceivers();
+
+        unpair(disconnectTimeout, new UUBluetoothSessionErrorDelegate()
+        {
+            @Override
+            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothSessionError error)
+            {
+                //notifyDisconnectedComplete(error);
+            }
+        });
+
+//        UUBluetoothGatt gatt = gattForPeripheral(peripheral);
+//        if (gatt != null)
+//        {
+//            gatt.disconnect(null);
+//        }
     }
 }
