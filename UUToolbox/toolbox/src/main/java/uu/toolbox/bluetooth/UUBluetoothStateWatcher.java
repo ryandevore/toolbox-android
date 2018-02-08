@@ -15,7 +15,7 @@ public class UUBluetoothStateWatcher extends BroadcastReceiver
     private Context context;
     private Listener listener;
 
-    interface Listener
+    public interface Listener
     {
         void onBluetoothStateChanged(@Nullable Integer state);
     }
@@ -61,7 +61,7 @@ public class UUBluetoothStateWatcher extends BroadcastReceiver
                 newState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
             }
 
-            UULog.debug(getClass(), "onReceive", "Bluetooth state changed from " + oldState + " to " + newState);
+            UULog.debug(getClass(), "onReceive", "Bluetooth state changed from " + UUBluetooth.powerStateToString(oldState) + " to " + UUBluetooth.powerStateToString(newState));
 
             Integer state = null;
 
