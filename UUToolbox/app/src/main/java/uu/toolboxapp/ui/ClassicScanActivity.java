@@ -195,7 +195,7 @@ public class ClassicScanActivity extends AppCompatActivity
 
 
         ArrayList<UUBluetoothDeviceFilter> filters = new ArrayList<>();
-        
+
         ArrayList<String> macList = new ArrayList<>();
 
         scanner.startScanning(filters, new UUBluetoothDeviceScanner.Listener()
