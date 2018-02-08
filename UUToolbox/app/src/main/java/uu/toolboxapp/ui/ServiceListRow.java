@@ -18,9 +18,9 @@ public class ServiceListRow
 
     public ServiceListRow(final @NonNull View parent)
     {
-        idLabel = (TextView)parent.findViewById(R.id.id_label);
-        nameLabel = (TextView)parent.findViewById(R.id.name_label);
-        isPrimaryLabel = (TextView)parent.findViewById(R.id.is_primary_label);
+        idLabel = parent.findViewById(R.id.id_label);
+        nameLabel = parent.findViewById(R.id.name_label);
+        isPrimaryLabel = parent.findViewById(R.id.is_primary_label);
     }
 
     public void update(final @NonNull BluetoothGattService service)

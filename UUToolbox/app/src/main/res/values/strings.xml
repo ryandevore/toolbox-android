@@ -33,4 +33,10 @@
     <string name="null_text">null</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="turn_bluetooth_off">Turn BT Off</string>
+    <string name="turn_bluetooth_on">Turn BT On</string>
+    <string name="pair">Pair</string>
+    <string name="unpair">Unpair</string>
+    <string name="connect_spp">Connect SPP</string>
+    <string name="disconnect_spp">Disconnect SPP</string>
 </resources>

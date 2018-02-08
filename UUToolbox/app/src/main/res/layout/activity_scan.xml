@@ -17,6 +17,13 @@
             android:onClick="onScanClicked"
             android:text="@string/scan"/>
 
+        <Button
+            android:id="@+id/toggleBluetoothButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onToggleBluetoothClicked"
+            android:text="@string/turn_bluetooth_off"/>
+
     </LinearLayout>
 
     <ListView

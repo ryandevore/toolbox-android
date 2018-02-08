@@ -24,6 +24,11 @@
         <activity android:name=".ui.ScanSettingsActivity" android:screenOrientation="portrait" />
         <activity android:name=".ui.PhotoGalleryActivity" android:screenOrientation="portrait" />
 
+        <activity android:name=".ui.ClassicScanActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.ClassicDeviceDetailActivity" android:screenOrientation="portrait" />
+
+
+
     </application>
 
 </manifest>

@@ -3,19 +3,14 @@ package uu.toolboxapp;
 import android.app.Application;
 import android.content.Context;
 
-import uu.toolbox.bluetooth.UUBluetoothBroadcastReceiver;
 import uu.toolbox.data.UUDataCache;
 import uu.toolbox.network.UURemoteData;
 import uu.toolbox.network.UURemoteImage;
 import uu.toolboxapp.data.AppDatabase;
+import uu.toolboxapp.server.WeatherService;
 
-/**
- * Created by ryandevore on 9/14/16.
- */
 public class ToolboxSampleApplication extends Application
 {
-    private UUBluetoothBroadcastReceiver receiver;
-
     @Override
     public void onCreate()
     {
@@ -26,7 +21,6 @@ public class ToolboxSampleApplication extends Application
         UUDataCache.init(context);
         UURemoteData.init(context);
         UURemoteImage.init(context);
-
-        receiver = new UUBluetoothBroadcastReceiver(context);
+        WeatherService.init(context);
     }
 }
