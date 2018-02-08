@@ -223,6 +223,34 @@ public class UUBluetooth
     }
 
     /**
+     * Returns a developer friendly string for a BluetoothAdapter.STATE* power state value
+     *
+     * @param powerState a bond state value
+     *
+     * @return a string
+     */
+    public static String powerStateToString(final int powerState)
+    {
+        switch (powerState)
+        {
+            case BluetoothAdapter.STATE_OFF:
+                return "Off";
+
+            case BluetoothAdapter.STATE_ON:
+                return "On";
+
+            case BluetoothAdapter.STATE_TURNING_ON:
+                return "TurningOn";
+
+            case BluetoothAdapter.STATE_TURNING_OFF:
+                return "TurningOff";
+
+            default:
+                return String.format(Locale.US, "Unknown-%d", powerState);
+        }
+    }
+
+    /**
      * Returns a common name for a Bluetooth UUID.  These strings are directly
      * from the bluetooth.org website
      *
