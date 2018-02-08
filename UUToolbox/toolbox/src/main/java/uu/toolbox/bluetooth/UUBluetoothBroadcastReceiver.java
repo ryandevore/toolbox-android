@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.support.annotation.NonNull;
 
 import uu.toolbox.logging.UULog;
@@ -34,13 +33,8 @@ public class UUBluetoothBroadcastReceiver extends BroadcastReceiver
         registerForEvent(BluetoothDevice.ACTION_CLASS_CHANGED);
         registerForEvent(BluetoothDevice.ACTION_FOUND);
         registerForEvent(BluetoothDevice.ACTION_NAME_CHANGED);
-
         registerForEvent(BluetoothDevice.ACTION_UUID);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-        {
-            registerForEvent(BluetoothDevice.ACTION_PAIRING_REQUEST);
-        }
+        registerForEvent(BluetoothDevice.ACTION_PAIRING_REQUEST);
     }
 
     public void unregisterAll()
