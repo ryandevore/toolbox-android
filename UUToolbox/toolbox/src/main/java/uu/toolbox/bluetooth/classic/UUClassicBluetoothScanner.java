@@ -23,7 +23,7 @@ public class UUClassicBluetoothScanner extends UUBluetoothDeviceScanner
     }
 
     private BroadcastReceiver broadcastReceiver;
-    private ScannerState currentState;
+    private ScannerState currentState = ScannerState.Idle;
 
     public UUClassicBluetoothScanner(final Context context)
     {
