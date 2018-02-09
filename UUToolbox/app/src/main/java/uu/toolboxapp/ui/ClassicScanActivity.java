@@ -28,7 +28,7 @@ import uu.toolbox.bluetooth.UUBluetoothBroadcastReceiver;
 import uu.toolbox.bluetooth.UUBluetoothDeviceFilter;
 import uu.toolbox.bluetooth.UUBluetoothDeviceScanner;
 import uu.toolbox.bluetooth.UUBluetoothPowerManager;
-import uu.toolbox.bluetooth.classic.UUClassicBluetoothScanner;
+import uu.toolbox.bluetooth.UUClassicBluetoothScanner;
 import uu.toolbox.core.UUPermissions;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;

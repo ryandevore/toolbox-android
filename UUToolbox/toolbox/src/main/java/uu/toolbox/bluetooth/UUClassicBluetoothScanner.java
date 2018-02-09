@@ -1,4 +1,4 @@
-package uu.toolbox.bluetooth.classic;
+package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,9 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
-import uu.toolbox.bluetooth.UUBluetooth;
-import uu.toolbox.bluetooth.UUBluetoothDeviceScanner;
 
 @SuppressWarnings("unused")
 public class UUClassicBluetoothScanner extends UUBluetoothDeviceScanner
