@@ -16,5 +16,5 @@ public interface UUBluetoothSessionErrorDelegate
      * @param session the session being interacted with
      * @param error an error if one occurs
      */
-    void onComplete(final @NonNull UUBluetoothSession session, final @Nullable UUBluetoothSession.UUBluetoothSessionError error);
+    void onComplete(final @NonNull UUBluetoothSession session, final @Nullable UUBluetoothError error);
 }

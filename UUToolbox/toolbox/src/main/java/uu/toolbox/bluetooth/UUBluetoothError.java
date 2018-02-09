@@ -19,6 +19,7 @@ public class UUBluetoothError
      * Lookup key for errorDetails for the failing underlying bluetooth method name.
      */
     public static final String DETAIL_KEY_METHOD_NAME = "methodName";
+    public static final String DETAIL_KEY_MESSAGE = "message";
     public static final String DETAIL_KEY_GATT_STATUS = "gattStatus";
 
     private Exception caughtException = null;
@@ -128,6 +129,35 @@ public class UUBluetoothError
     {
         UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
         err.errorDetails.put(DETAIL_KEY_METHOD_NAME, method);
+        return err;
+    }
+
+    /**
+     * Wrapper method to return an error on a pre-condition check.
+     *
+     *  @param message a developer friendly message about the precondition that failed.
+     *
+     * @return a UUBluetoothError object
+     */
+    public static @NonNull UUBluetoothError preconditionFailedError(@NonNull final String message)
+    {
+        UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.PreconditionFailed);
+        err.errorDetails.put(DETAIL_KEY_MESSAGE, message);
+        return err;
+    }
+
+    /**
+     * Wrapper method to return an underlying Bluetooth method failure.  This is returned when
+     * a method returns false or null or othe error condition.
+     *
+     *  @param caughtException the exception that caused this error
+     *
+     * @return a UUBluetoothError object
+     */
+    public static @NonNull UUBluetoothError operationFailedError(@NonNull final Exception caughtException)
+    {
+        UUBluetoothError err = new UUBluetoothError(UUBluetoothErrorCode.OperationFailed);
+        err.caughtException = caughtException;
         return err;
     }
 

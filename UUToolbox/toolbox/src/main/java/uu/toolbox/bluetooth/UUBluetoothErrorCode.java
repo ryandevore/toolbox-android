@@ -32,9 +32,8 @@ public enum UUBluetoothErrorCode
      */
     Disconnected(5),
 
-    // An operation was passed an invalid argument.  Inspect user info for
-    // specific details
-    InvalidParam(6);
+    // An operation could not be attempted because one or more preconditions failed.
+    PreconditionFailed(6);
 
     /**
      * The raw enum value
