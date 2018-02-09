@@ -63,7 +63,20 @@ public class UUDate
 	 */
 	public static Date fromHourAndMinute(final int hourOfDay, final int minute)
 	{
-		Calendar c = Calendar.getInstance(utcTimeZone());
+		return fromHourAndMinute(hourOfDay, minute, utcTimeZone());
+	}
+
+	/**
+	 * Create's a Date object filled with only an hour and minute
+	 *
+	 * @param hourOfDay hour of day (0-23)
+	 * @param minute minute of hour (0-59)
+	 * @param timeZone timezone
+	 * @return a valid Date object
+	 */
+	public static Date fromHourAndMinute(final int hourOfDay, final int minute, final TimeZone timeZone)
+	{
+		Calendar c = Calendar.getInstance(timeZone);
 		c.set(Calendar.HOUR_OF_DAY, hourOfDay);
 		c.set(Calendar.MINUTE, minute);
 		return c.getTime();
@@ -78,7 +91,19 @@ public class UUDate
 	 */
 	public static Date fromYearMonthDay(final int year, final int month, final int day)
 	{
-		Calendar c = Calendar.getInstance(utcTimeZone());
+		return fromYearMonthDay(year, month, day, utcTimeZone());
+	}
+
+	/**
+	 * Create's a Date object filled with only year, month, and day
+	 * @param year the year
+	 * @param month the month
+	 * @param day the day
+	 * @return a valid Date object
+	 */
+	public static Date fromYearMonthDay(final int year, final int month, final int day, final TimeZone timeZone)
+	{
+		Calendar c = Calendar.getInstance(timeZone);
 		c.set(Calendar.YEAR, year);
 		c.set(Calendar.MONTH, month);
 		c.set(Calendar.DAY_OF_MONTH, day);
