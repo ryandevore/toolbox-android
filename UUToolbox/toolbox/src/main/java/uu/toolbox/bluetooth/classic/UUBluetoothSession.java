@@ -746,12 +746,8 @@ public class UUBluetoothSession
                     bos = new ByteArrayOutputStream();
 
                     int bytesRead = 0;
-                    boolean waitForAvailableBytes = true;
-
                     while (bytesRead < count)
                     {
-                        //startReadDataWatchdog(timeout, runnable);
-
                         int bytesAvailable = is.available();
                         debugLog("readSppData", "There are " + bytesAvailable + " bytes available to read");
                         int bytesToRead = count - bytesRead;
@@ -760,20 +756,6 @@ public class UUBluetoothSession
                             debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
                             break;
                         }
-                        /*
-                        if (bytesAvailable <= 0)
-                        {
-                            if (waitForAvailableBytes && bytesRead == 0)
-                            {
-                                debugLog("readSppData", "There are no bytes available to read, but we have not read any bytes yet, sleeping a tiny bit...");
-                                UUThread.safeSleep("readSppData", 100);
-                                //waitForAvailableBytes = false;
-                                continue;
-                            }
-
-                            debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
-                            break;
-                        }*/
 
                         if (bytesAvailable < bytesToRead && bytesAvailable > 0)
                         {
@@ -876,40 +858,6 @@ public class UUBluetoothSession
             logException("closeStream", ex);
         }
     }
-
-    /*
-    public class UUBluetoothSessionError
-    {
-        private UUBluetoothSessionErrorCode errorCode;
-        private Exception exception;
-
-        public UUBluetoothSessionErrorCode getErrorCode()
-        {
-            return errorCode;
-        }
-
-        public Exception getException()
-        {
-            return exception;
-        }
-
-        public UUBluetoothSessionError(UUBluetoothSessionErrorCode errCode)
-        {
-            this(errCode, null);
-        }
-
-        public UUBluetoothSessionError(UUBluetoothSessionErrorCode errCode, Exception ex)
-        {
-            errorCode = errCode;
-            exception = ex;
-        }
-
-        @Override
-        public String toString()
-        {
-            return String.format(Locale.getDefault(), "ErrorCode: %s, Exception: %s", errorCode, exception != null ? exception.toString() : "null");
-        }
-    }*/
 
     private void notifyErrorCallback(final UUBluetoothError error, final UUBluetoothSessionErrorDelegate callback)
     {
