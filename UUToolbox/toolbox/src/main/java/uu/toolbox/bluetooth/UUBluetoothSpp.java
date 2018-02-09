@@ -1,4 +1,4 @@
-package uu.toolbox.bluetooth.classic;
+package uu.toolbox.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -21,16 +21,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import uu.toolbox.bluetooth.UUBluetooth;
-import uu.toolbox.bluetooth.UUBluetoothConstants;
-import uu.toolbox.bluetooth.UUBluetoothError;
-import uu.toolbox.bluetooth.UUBluetoothSessionErrorDelegate;
 import uu.toolbox.core.UUString;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.core.UUTimer;
 import uu.toolbox.logging.UULog;
 
-public class UUBluetoothSession
+public class UUBluetoothSpp
 {
     private static boolean LOGGING_ENABLED = UULog.LOGGING_ENABLED;
 
@@ -49,16 +45,15 @@ public class UUBluetoothSession
     private BroadcastReceiver broadcastReceiver;
     private BluetoothSocket bluetoothSocket;
 
-    private UUBluetoothSessionErrorDelegate pairDelegate;
-    private UUBluetoothSessionErrorDelegate unpairDelegate;
-    private UUBluetoothSessionErrorDelegate serviceDiscoveryDelegate;
-    private UUBluetoothSessionErrorDelegate connectSppDelegate;
-    private UUBluetoothSessionErrorDelegate disconnectSppDelegate;
-    private UUBluetoothSessionErrorDelegate writeSppDataDelegate;
-    private UUBluetoothSessionErrorDelegate readSppDataDelegate;
+    private UUBluetoothSppErrorDelegate pairDelegate;
+    private UUBluetoothSppErrorDelegate unpairDelegate;
+    private UUBluetoothSppErrorDelegate serviceDiscoveryDelegate;
+    private UUBluetoothSppErrorDelegate connectSppDelegate;
+    private UUBluetoothSppErrorDelegate disconnectSppDelegate;
+    private UUBluetoothSppErrorDelegate writeSppDataDelegate;
+    private UUBluetoothSppErrorDelegate readSppDataDelegate;
 
-
-    public UUBluetoothSession(Context context, BluetoothDevice device)
+    public UUBluetoothSpp(Context context, BluetoothDevice device)
     {
         this.context = context;
         this.device = device;
@@ -236,14 +231,14 @@ public class UUBluetoothSession
         return (device.getBondState() == BluetoothDevice.BOND_BONDED);
     }
 
-    public void pair(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void pair(final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = pairWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("pair", "Pairing complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -294,14 +289,14 @@ public class UUBluetoothSession
         });
     }
 
-    public void unpair(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void unpair(final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = unpairWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("unpair", "Unpairing complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -384,14 +379,14 @@ public class UUBluetoothSession
         return hasService(UUBluetoothConstants.Services.SERIAL_PORT_PROFILE_UUID);
     }
 
-    public void discoverServices(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void discoverServices(final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = serviceDiscoveryWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("discoverServices", "Service Discovery complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -461,14 +456,14 @@ public class UUBluetoothSession
         return (bluetoothSocket != null && bluetoothSocket.isConnected());
     }
 
-    public void connectSpp(final long timeout, final boolean secureConnection, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void connectSpp(final long timeout, final boolean secureConnection, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = connectSppWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("connectSpp", "Connect SPP complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -538,14 +533,14 @@ public class UUBluetoothSession
         });
     }
 
-    public void disconnectSpp(final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void disconnectSpp(final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = disconnectSppWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("disconnectSpp", "Disconnect SPP complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -584,14 +579,14 @@ public class UUBluetoothSession
     }
 
 
-    public void writeSppData(@NonNull final byte[] data, final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void writeSppData(@NonNull final byte[] data, final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = writeSppDataWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("writeSppData", "Write SPP Data complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -661,14 +656,14 @@ public class UUBluetoothSession
         });
     }
 
-    public void readSppData(final int count, final long timeout, @NonNull final UUBluetoothSessionErrorDelegate delegate)
+    public void readSppData(final int count, final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
     {
         final String timerId = readSppDataWatchdogTimerId();
 
-        UUBluetoothSessionErrorDelegate tmpDelegate = new UUBluetoothSessionErrorDelegate()
+        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 debugLog("readSppData", "Read SPP Data complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
@@ -837,7 +832,7 @@ public class UUBluetoothSession
         }
     }
 
-    private void notifyErrorCallback(final UUBluetoothError error, final UUBluetoothSessionErrorDelegate callback)
+    private void notifyErrorCallback(final UUBluetoothError error, final UUBluetoothSppErrorDelegate callback)
     {
         try
         {
@@ -854,49 +849,49 @@ public class UUBluetoothSession
 
     private void notifyPairingComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = pairDelegate;
+        UUBluetoothSppErrorDelegate delegate = pairDelegate;
         pairDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyServiceDiscoveryComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = serviceDiscoveryDelegate;
+        UUBluetoothSppErrorDelegate delegate = serviceDiscoveryDelegate;
         serviceDiscoveryDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyUnpairingComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = unpairDelegate;
+        UUBluetoothSppErrorDelegate delegate = unpairDelegate;
         unpairDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyConnectSppComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = connectSppDelegate;
+        UUBluetoothSppErrorDelegate delegate = connectSppDelegate;
         connectSppDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyDisconnectSppComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = disconnectSppDelegate;
+        UUBluetoothSppErrorDelegate delegate = disconnectSppDelegate;
         disconnectSppDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyWriteSppDataComplete(final UUBluetoothError error)
     {
-        UUBluetoothSessionErrorDelegate delegate = writeSppDataDelegate;
+        UUBluetoothSppErrorDelegate delegate = writeSppDataDelegate;
         writeSppDataDelegate = null;
         notifyErrorCallback(error, delegate);
     }
 
     private void notifyReadSppDataComplete(final UUBluetoothError error, final byte[] response)
     {
-        UUBluetoothSessionErrorDelegate delegate = readSppDataDelegate;
+        UUBluetoothSppErrorDelegate delegate = readSppDataDelegate;
         readSppDataDelegate = null;
         notifyErrorCallback(error, delegate);
     }

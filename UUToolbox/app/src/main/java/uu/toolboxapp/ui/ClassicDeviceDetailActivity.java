@@ -23,8 +23,8 @@ import java.util.UUID;
 
 import uu.toolbox.bluetooth.UUBluetoothError;
 import uu.toolbox.bluetooth.UUBluetoothPowerManager;
-import uu.toolbox.bluetooth.UUBluetoothSessionErrorDelegate;
-import uu.toolbox.bluetooth.classic.UUBluetoothSession;
+import uu.toolbox.bluetooth.UUBluetoothSppErrorDelegate;
+import uu.toolbox.bluetooth.UUBluetoothSpp;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.ui.UUActivity;
 import uu.toolboxapp.R;
@@ -43,7 +43,7 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
     private Button pollRssiButton;
 
     private BluetoothDevice device;
-    private UUBluetoothSession session;
+    private UUBluetoothSpp session;
     private final ArrayList<UUID> tableData = new ArrayList<>();
     private ClassicDeviceDetailActivity.ClassicServiceAdapter tableAdapter;
 
@@ -73,7 +73,7 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
             finish();
         }
 
-        session = new UUBluetoothSession(getApplicationContext(), device);
+        session = new UUBluetoothSpp(getApplicationContext(), device);
 
         setTitle(device.getName());// peripheral.getName());
 
@@ -203,10 +203,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
 
     private void pair()
     {
-        session.pair(60000, new UUBluetoothSessionErrorDelegate()
+        session.pair(60000, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable final UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable final UUBluetoothError error)
             {
                 updateUi();
 
@@ -231,10 +231,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
 
     private void unpair()
     {
-        session.unpair(60000, new UUBluetoothSessionErrorDelegate()
+        session.unpair(60000, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable final UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable final UUBluetoothError error)
             {
                 updateUi();
 
@@ -271,10 +271,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
 
     private void connectSpp()
     {
-        session.connectSpp(60000, false, new UUBluetoothSessionErrorDelegate()
+        session.connectSpp(60000, false, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable final UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable final UUBluetoothError error)
             {
                 updateUi();
 
@@ -299,10 +299,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
 
     private void disconnectSpp()
     {
-        session.disconnectSpp(60000, new UUBluetoothSessionErrorDelegate()
+        session.disconnectSpp(60000, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable final UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable final UUBluetoothError error)
             {
                 updateUi();
 
@@ -327,10 +327,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
 
     public void onDiscoverServicesClicked(View view)
     {
-        session.discoverServices(60000, new UUBluetoothSessionErrorDelegate()
+        session.discoverServices(60000, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable final UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable final UUBluetoothError error)
             {
                 updateUi();
 
@@ -357,17 +357,17 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
     {
         byte[] tx = new byte[] { 0x00, 0x01, 0x02, 0x03 };
 
-        session.writeSppData(tx, 30000, new UUBluetoothSessionErrorDelegate()
+        session.writeSppData(tx, 30000, new UUBluetoothSppErrorDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
             {
                 if (error == null)
                 {
-                    session.readSppData(100, 30000, new UUBluetoothSessionErrorDelegate()
+                    session.readSppData(100, 30000, new UUBluetoothSppErrorDelegate()
                     {
                         @Override
-                        public void onComplete(@NonNull UUBluetoothSession session, @Nullable UUBluetoothError error)
+                        public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
                         {
 
                         }
