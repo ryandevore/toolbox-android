@@ -42,28 +42,6 @@ public class UUBluetoothSession
     private static final String READ_SPP_DATA_WATCHDOG_BUCKET = "UUBluetoothSession_ReadSppDataWatchdogBucket";
     private static final String WRITE_SPP_DATA_WATCHDOG_BUCKET = "UUBluetoothSession_WriteSppDataWatchdogBucket";
 
-    /*
-    enum UUBluetoothSessionErrorCode
-    {
-        PairingFailed,
-        PairingFailedFromException,
-        ConnectFailedInvalidState,
-        ConnectFailedFromException,
-        ServiceDiscoveryFailed,
-        ServiceDiscoveryFailedFromException,
-        DisconnectFailedFromException,
-        UnpairingFailed,
-        UnpairingFailedFromException,
-        SocketNull,
-        SocketNotConnected,
-        WriteFailedFromException,
-        ReadFailedInvalidState,
-        ReadFailedFromException,
-
-        Timeout,
-        Disconnected
-    }*/
-
     private Context context;
 
     private BluetoothDevice device;
