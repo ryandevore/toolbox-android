@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Set;
 
 import uu.toolbox.core.UUWorkerThread;
@@ -278,5 +280,24 @@ public class UULog
         {
             Log.e(LOG_TAG, "Error writing to log", ex);
         }
+    }
+
+    public static String stackTraceToString(final Throwable throwable)
+    {
+        try
+        {
+            if (throwable != null)
+            {
+                StringWriter sw = new StringWriter();
+                throwable.printStackTrace(new PrintWriter(sw));
+                return sw.toString();
+            }
+        }
+        catch (Throwable t)
+        {
+            // Eat it
+        }
+
+        return "";
     }
 }
