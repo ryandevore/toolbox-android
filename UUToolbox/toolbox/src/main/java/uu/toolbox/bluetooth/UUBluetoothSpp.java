@@ -731,7 +731,7 @@ public class UUBluetoothSpp
                             debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
                             break;
                         }
-                        
+
                         byte[] rxChunk = new byte[1024];
                         debugLog("readSppData", "Attempting to read " + rxChunk.length + " bytes.");
                         int read = is.read(rxChunk, 0, rxChunk.length);

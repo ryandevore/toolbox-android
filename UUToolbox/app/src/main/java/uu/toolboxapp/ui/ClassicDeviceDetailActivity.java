@@ -23,8 +23,9 @@ import java.util.UUID;
 
 import uu.toolbox.bluetooth.UUBluetoothError;
 import uu.toolbox.bluetooth.UUBluetoothPowerManager;
-import uu.toolbox.bluetooth.UUBluetoothSppErrorDelegate;
 import uu.toolbox.bluetooth.UUBluetoothSpp;
+import uu.toolbox.bluetooth.UUBluetoothSppErrorDataDelegate;
+import uu.toolbox.bluetooth.UUBluetoothSppErrorDelegate;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.ui.UUActivity;
 import uu.toolboxapp.R;
@@ -364,10 +365,10 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
             {
                 if (error == null)
                 {
-                    session.readSppData(100, 30000, new UUBluetoothSppErrorDelegate()
+                    session.readSppData(100, 30000, new UUBluetoothSppErrorDataDelegate()
                     {
                         @Override
-                        public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
+                        public void onComplete(@NonNull UUBluetoothSpp session, byte[] data, @Nullable UUBluetoothError error)
                         {
 
                         }
