@@ -51,7 +51,7 @@ public class UUBluetoothSpp
     private UUBluetoothSppErrorDelegate connectSppDelegate;
     private UUBluetoothSppErrorDelegate disconnectSppDelegate;
     private UUBluetoothSppErrorDelegate writeSppDataDelegate;
-    private UUBluetoothSppErrorDelegate readSppDataDelegate;
+    private UUBluetoothSppErrorDataDelegate readSppDataDelegate;
 
     public UUBluetoothSpp(Context context, BluetoothDevice device)
     {
@@ -266,6 +266,7 @@ public class UUBluetoothSpp
                 if (device == null)
                 {
                     debugLog("pair", "device is null!");
+                    notifyPairingComplete(UUBluetoothError.operationFailedError("device is null"));
                     return;
                 }
 
@@ -324,13 +325,15 @@ public class UUBluetoothSpp
                 if (device == null)
                 {
                     debugLog("unpair", "device is null!");
+                    notifyUnpairingComplete(UUBluetoothError.operationFailedError("device is null"));
                     return;
                 }
 
                 int bondState = device.getBondState();
                 if (bondState != BluetoothDevice.BOND_BONDED)
                 {
-                    debugLog("unpair", "device is already bonded.");
+                    debugLog("unpair", "device is not bonded.");
+                    notifyUnpairingComplete(null);
                     return;
                 }
 
@@ -656,18 +659,18 @@ public class UUBluetoothSpp
         });
     }
 
-    public void readSppData(final int count, final long timeout, @NonNull final UUBluetoothSppErrorDelegate delegate)
+    public void readSppData(final int count, final long timeout, @NonNull final UUBluetoothSppErrorDataDelegate delegate)
     {
         final String timerId = readSppDataWatchdogTimerId();
 
-        UUBluetoothSppErrorDelegate tmpDelegate = new UUBluetoothSppErrorDelegate()
+        UUBluetoothSppErrorDataDelegate tmpDelegate = new UUBluetoothSppErrorDataDelegate()
         {
             @Override
-            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable UUBluetoothError error)
+            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable byte[] data, @Nullable UUBluetoothError error)
             {
                 debugLog("readSppData", "Read SPP Data complete: " + device + ", error: " + error);
                 UUTimer.cancelActiveTimer(timerId);
-                delegate.onComplete(session, error);
+                delegate.onComplete(session, data, error);
             }
         };
 
@@ -723,20 +726,13 @@ public class UUBluetoothSpp
                     {
                         int bytesAvailable = is.available();
                         debugLog("readSppData", "There are " + bytesAvailable + " bytes available to read");
-                        int bytesToRead = count - bytesRead;
                         if (bytesAvailable <= 0 && bytesRead > 0)
                         {
                             debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
                             break;
                         }
-
-                        if (bytesAvailable < bytesToRead && bytesAvailable > 0)
-                        {
-                            bytesToRead = bytesAvailable;
-                            debugLog("readSppData", "There are fewer bytes available than we want to read!");
-                        }
-
-                        byte[] rxChunk = new byte[bytesToRead];
+                        
+                        byte[] rxChunk = new byte[1024];
                         debugLog("readSppData", "Attempting to read " + rxChunk.length + " bytes.");
                         int read = is.read(rxChunk, 0, rxChunk.length);
                         debugLog("readSppData", "Read " + read + " bytes.");
@@ -847,6 +843,21 @@ public class UUBluetoothSpp
         }
     }
 
+    private void notifyErrorDataCallback(final UUBluetoothError error, final byte[] data, final UUBluetoothSppErrorDataDelegate callback)
+    {
+        try
+        {
+            if (callback != null)
+            {
+                callback.onComplete(this, data, error);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("notifyErrorDataCallback", ex);
+        }
+    }
+
     private void notifyPairingComplete(final UUBluetoothError error)
     {
         UUBluetoothSppErrorDelegate delegate = pairDelegate;
@@ -891,9 +902,9 @@ public class UUBluetoothSpp
 
     private void notifyReadSppDataComplete(final UUBluetoothError error, final byte[] response)
     {
-        UUBluetoothSppErrorDelegate delegate = readSppDataDelegate;
+        UUBluetoothSppErrorDataDelegate delegate = readSppDataDelegate;
         readSppDataDelegate = null;
-        notifyErrorCallback(error, delegate);
+        notifyErrorDataCallback(error, response, delegate);
     }
 
 
