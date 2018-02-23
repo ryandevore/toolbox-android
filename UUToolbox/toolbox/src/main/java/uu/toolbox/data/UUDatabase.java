@@ -680,6 +680,25 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 	    	logException("truncateTable", ex);
 	    }
     }
+
+    /**
+     * Delete's all records from a table
+     */
+    protected <T extends UUDataModel> void truncateTable(final Class<T> type)
+    {
+        if (type != null)
+        {
+            try
+            {
+                truncateTable(type.newInstance().getTableName());
+            }
+            catch (Exception ex)
+            {
+                logException("truncateTable", ex);
+            }
+        }
+    }
+
     
     /**
      * Count of all records in a table
