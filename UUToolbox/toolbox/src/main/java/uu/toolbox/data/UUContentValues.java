@@ -19,11 +19,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final String value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final String value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -34,11 +34,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Long value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Long value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -49,11 +49,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Integer value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Integer value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -64,11 +64,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Short value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Short value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -79,11 +79,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Byte value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Byte value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -94,11 +94,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Boolean value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Boolean value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -109,11 +109,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final byte[] value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final byte[] value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -124,11 +124,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Float value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Float value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 
@@ -139,11 +139,11 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
-    public static void putIfNotNull(final ContentValues cv, final String key, final Double value)
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Double value)
     {
         if (cv != null && key != null && value != null)
         {
-            cv.put(key, value);
+            cv.put(key.toString(), value);
         }
     }
 }
