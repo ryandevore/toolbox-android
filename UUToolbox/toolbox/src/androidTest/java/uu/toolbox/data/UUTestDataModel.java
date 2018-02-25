@@ -9,12 +9,15 @@ import java.util.HashMap;
 
 public class UUTestDataModel implements UUDataModel
 {
-    public static String TABLE_NAME = "uu_test_model";
+    public static String TableName = "uu_test_model";
 
-    private static String ID_COLUMN = "id";
-    private static String NAME_COLUMN = "name";
-    private static String NUMBER_COLUMN = "number";
-    private static String TEAM_COLUMN = "team";
+    private enum Columns
+    {
+        id,
+        name,
+        number,
+        team
+    }
 
     private static int VERSION_ONE = 1;
     private static int VERSION_TWO = 2;
@@ -29,25 +32,25 @@ public class UUTestDataModel implements UUDataModel
     @Override
     public String getTableName()
     {
-        return TABLE_NAME;
+        return TableName;
     }
 
     @NonNull
     @Override
-    public HashMap<String, String> getColumnMap(int version)
+    public HashMap<Object, Object> getColumnMap(int version)
     {
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<Object, Object> map = new HashMap<>();
 
         if (version >= VERSION_ONE)
         {
-            map.put(ID_COLUMN, UUSql.INTEGER_PRIMARY_KEY_AUTO_INCREMENT_TYPE);
-            map.put(NAME_COLUMN, UUSql.TEXT_COLUMN_TYPE);
-            map.put(TEAM_COLUMN, UUSql.TEXT_COLUMN_TYPE);
+            map.put(Columns.id, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
+            map.put(Columns.name, UUSqlColumnType.text);
+            map.put(Columns.team, UUSqlColumnType.text);
         }
 
         if (version >= VERSION_TWO)
         {
-            map.put(NUMBER_COLUMN, UUSql.INTEGER_COLUMN_TYPE);
+            map.put(Columns.number, UUSqlColumnType.integer);
         }
 
         return map;
@@ -65,7 +68,7 @@ public class UUTestDataModel implements UUDataModel
     @Override
     public String getPrimaryKeyWhereClause()
     {
-        return UUSql.buildSingleColumnWhere(ID_COLUMN);
+        return UUSql.buildSingleColumnWhere(Columns.id);
     }
 
     @NonNull
@@ -83,14 +86,14 @@ public class UUTestDataModel implements UUDataModel
 
         if (version >= VERSION_ONE)
         {
-            UUContentValues.putIfNotNull(cv, ID_COLUMN, id);
-            UUContentValues.putIfNotNull(cv, NAME_COLUMN, name);
-            UUContentValues.putIfNotNull(cv, TEAM_COLUMN, team);
+            UUContentValues.putIfNotNull(cv, Columns.id, id);
+            UUContentValues.putIfNotNull(cv, Columns.name, name);
+            UUContentValues.putIfNotNull(cv, Columns.team, team);
         }
 
         if (version >= VERSION_TWO)
         {
-            UUContentValues.putIfNotNull(cv, NUMBER_COLUMN, number);
+            UUContentValues.putIfNotNull(cv, Columns.number, number);
         }
 
         return cv;
@@ -99,10 +102,10 @@ public class UUTestDataModel implements UUDataModel
     @Override
     public void fillFromCursor(@NonNull Cursor cursor)
     {
-        id = UUCursor.safeGetInt(cursor, ID_COLUMN);
-        name = UUCursor.safeGetString(cursor, NAME_COLUMN);
-        team = UUCursor.safeGetString(cursor, TEAM_COLUMN);
-        number = UUCursor.safeGetInt(cursor, NUMBER_COLUMN);
+        id = UUCursor.safeGetInt(cursor, Columns.id);
+        name = UUCursor.safeGetString(cursor, Columns.name);
+        team = UUCursor.safeGetString(cursor, Columns.number);
+        number = UUCursor.safeGetInt(cursor, Columns.team);
 
     }
 }

@@ -9,28 +9,31 @@ import java.util.HashMap;
 
 public class UUComplexDataModel implements UUDataModel
 {
-    public static String TABLE_NAME = "uu_complex_test_model";
+    public static String TableName = "uu_complex_test_model";
 
-    private static String ID_COLUMN = "id";
-    private static String STRING_COLUMN_NULLABLE_NO_DEFAULT = "string_nullable_nodefault";
-    private static String STRING_COLUMN_NULLABLE_WITH_DEFAULT = "string_nullable_withdefault";
-    private static String STRING_COLUMN_NON_NULL_NO_DEFAULT = "string_nonnull_nodefault";
-    private static String STRING_COLUMN_NON_NULL_WITH_DEFAULT = "string_nonnull_withdefault";
+    private enum Columns
+    {
+        id,
+        string_nullable_nodefault,
+        string_nullable_withdefault,
+        string_nonnull_nodefault,
+        string_nonnull_withdefault,
 
-    private static String INT_COLUMN_NULLABLE_NO_DEFAULT = "int_nullable_nodefault";
-    private static String INT_COLUMN_NULLABLE_WITH_DEFAULT = "int_nullable_withdefault";
-    private static String INT_COLUMN_NON_NULL_NO_DEFAULT = "int_nonnull_nodefault";
-    private static String INT_COLUMN_NON_NULL_WITH_DEFAULT = "int_nonnull_withdefault";
+        int_nullable_nodefault,
+        int_nullable_withdefault,
+        int_nonnull_nodefault,
+        int_nonnull_withdefault,
 
-    private static String REAL_COLUMN_NULLABLE_NO_DEFAULT = "real_nullable_nodefault";
-    private static String REAL_COLUMN_NULLABLE_WITH_DEFAULT = "real_nullable_withdefault";
-    private static String REAL_COLUMN_NON_NULL_NO_DEFAULT = "real_nonnull_nodefault";
-    private static String REAL_COLUMN_NON_NULL_WITH_DEFAULT = "real_nonnull_withdefault";
+        real_nullable_nodefault,
+        real_nullable_withdefault,
+        real_nonnull_nodefault,
+        real_nonnull_withdefault,
 
-    private static String BLOB_COLUMN_NULLABLE_NO_DEFAULT = "blob_nullable_nodefault";
-    private static String BLOB_COLUMN_NULLABLE_WITH_DEFAULT = "blob_nullable_withdefault";
-    private static String BLOB_COLUMN_NON_NULL_NO_DEFAULT = "blob_nonnull_nodefault";
-    private static String BLOB_COLUMN_NON_NULL_WITH_DEFAULT = "real_nonnull_withdefault";
+        blob_nullable_nodefault,
+        blob_nullable_withdefault,
+        blob_nonnull_nodefault,
+        blob_nonnull_withdefault
+    }
 
 
     private int id;
@@ -59,36 +62,36 @@ public class UUComplexDataModel implements UUDataModel
     @Override
     public String getTableName()
     {
-        return TABLE_NAME;
+        return TableName;
     }
 
     @NonNull
     @Override
-    public HashMap<String, String> getColumnMap(int version)
+    public HashMap<Object, Object> getColumnMap(int version)
     {
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<Object, Object> map = new HashMap<>();
 
-        map.put(ID_COLUMN, UUSql.INTEGER_PRIMARY_KEY_AUTO_INCREMENT_TYPE);
+        map.put(Columns.id, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
 
-        map.put(STRING_COLUMN_NULLABLE_NO_DEFAULT, UUSql.TEXT_COLUMN_TYPE);
-        map.put(STRING_COLUMN_NULLABLE_WITH_DEFAULT, UUSql.TEXT_COLUMN_TYPE + " DEFAULT Foo");
-        map.put(STRING_COLUMN_NON_NULL_NO_DEFAULT, UUSql.TEXT_COLUMN_TYPE + " NOT NULL");
-        map.put(STRING_COLUMN_NON_NULL_WITH_DEFAULT, UUSql.TEXT_COLUMN_TYPE + " NOT NULL DEFAULT Bar");
+        map.put(Columns.string_nullable_nodefault, UUSqlColumnType.text);
+        map.put(Columns.string_nullable_withdefault, UUSqlColumnType.text.withDefault("Foo"));
+        map.put(Columns.string_nonnull_nodefault, UUSqlColumnType.text.notNull());
+        map.put(Columns.string_nonnull_withdefault, UUSqlColumnType.text.notNull().withDefault("Bar"));
 
-        map.put(INT_COLUMN_NULLABLE_NO_DEFAULT, UUSql.INTEGER_COLUMN_TYPE);
-        map.put(INT_COLUMN_NULLABLE_WITH_DEFAULT, UUSql.INTEGER_COLUMN_TYPE + " DEFAULT 99");
-        map.put(INT_COLUMN_NON_NULL_NO_DEFAULT, UUSql.INTEGER_COLUMN_TYPE + " NOT NULL");
-        map.put(INT_COLUMN_NON_NULL_WITH_DEFAULT, UUSql.INTEGER_COLUMN_TYPE + " NOT NULL DEFAULT 4");
+        map.put(Columns.int_nullable_nodefault, UUSqlColumnType.integer);
+        map.put(Columns.int_nullable_withdefault, UUSqlColumnType.integer.withDefault("99"));
+        map.put(Columns.int_nonnull_nodefault, UUSqlColumnType.integer.notNull());
+        map.put(Columns.int_nonnull_withdefault, UUSqlColumnType.integer.notNull().withDefault("4"));
 
-        map.put(REAL_COLUMN_NULLABLE_NO_DEFAULT, UUSql.REAL_COLUMN_TYPE);
-        map.put(REAL_COLUMN_NULLABLE_WITH_DEFAULT, UUSql.REAL_COLUMN_TYPE + " DEFAULT 57.0");
-        map.put(REAL_COLUMN_NON_NULL_NO_DEFAULT, UUSql.REAL_COLUMN_TYPE + " NOT NULL");
-        map.put(REAL_COLUMN_NON_NULL_WITH_DEFAULT, UUSql.REAL_COLUMN_TYPE + " NOT NULL DEFAULT 32.0");
+        map.put(Columns.real_nullable_nodefault, UUSqlColumnType.real);
+        map.put(Columns.real_nullable_withdefault, UUSqlColumnType.real.withDefault("57.0"));
+        map.put(Columns.real_nonnull_nodefault, UUSqlColumnType.real.notNull());
+        map.put(Columns.real_nonnull_withdefault, UUSqlColumnType.real.notNull().withDefault("32.0"));
 
-        map.put(BLOB_COLUMN_NULLABLE_NO_DEFAULT, UUSql.BLOB_COLUMN_TYPE);
-        map.put(BLOB_COLUMN_NULLABLE_WITH_DEFAULT, UUSql.BLOB_COLUMN_TYPE + " DEFAULT 0xABCD");
-        map.put(BLOB_COLUMN_NON_NULL_NO_DEFAULT, UUSql.BLOB_COLUMN_TYPE + " NOT NULL");
-        map.put(BLOB_COLUMN_NON_NULL_WITH_DEFAULT, UUSql.BLOB_COLUMN_TYPE + " NOT NULL DEFAULT 0x1234");
+        map.put(Columns.blob_nullable_nodefault, UUSqlColumnType.blob);
+        map.put(Columns.blob_nullable_withdefault, UUSqlColumnType.blob.withDefault("0xABCD"));
+        map.put(Columns.blob_nonnull_nodefault, UUSqlColumnType.blob.notNull());
+        map.put(Columns.blob_nonnull_withdefault, UUSqlColumnType.blob.notNull().withDefault("0x1234"));
 
         return map;
     }
@@ -105,7 +108,7 @@ public class UUComplexDataModel implements UUDataModel
     @Override
     public String getPrimaryKeyWhereClause()
     {
-        return UUSql.buildSingleColumnWhere(ID_COLUMN);
+        return UUSql.buildSingleColumnWhere(Columns.id);
     }
 
     @NonNull
@@ -121,7 +124,7 @@ public class UUComplexDataModel implements UUDataModel
     {
         ContentValues cv = new ContentValues();
 
-        UUContentValues.putIfNotNull(cv, ID_COLUMN, id);
+        UUContentValues.putIfNotNull(cv, Columns.id, id);
 
         return cv;
     }
@@ -129,7 +132,7 @@ public class UUComplexDataModel implements UUDataModel
     @Override
     public void fillFromCursor(@NonNull Cursor cursor)
     {
-        id = UUCursor.safeGetInt(cursor, ID_COLUMN);
+        id = UUCursor.safeGetInt(cursor, Columns.id);
 
     }
 }

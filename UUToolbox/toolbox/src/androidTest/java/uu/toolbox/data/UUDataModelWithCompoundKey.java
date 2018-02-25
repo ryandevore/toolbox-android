@@ -24,12 +24,12 @@ public class UUDataModelWithCompoundKey implements UUDataModel
 
     @NonNull
     @Override
-    public HashMap<String, String> getColumnMap(final int version)
+    public HashMap<Object, Object> getColumnMap(final int version)
     {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("c1", UUSql.TEXT_COLUMN_TYPE);
-        map.put("c2", UUSql.TEXT_COLUMN_TYPE);
-        map.put("data", UUSql.TEXT_COLUMN_TYPE);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("c1", UUSqlColumnType.text);
+        map.put("c2", UUSqlColumnType.text);
+        map.put("data", UUSqlColumnType.text);
         return map;
     }
 
