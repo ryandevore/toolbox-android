@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,22 +14,12 @@ import uu.toolbox.core.UUString;
 @SuppressWarnings("unused")
 public final class UUSql
 {
-    public static final String TEXT_COLUMN_TYPE = "TEXT";
-    public static final String INT8_COLUMN_TYPE = "INTEGER(1)";
-    public static final String INT16_COLUMN_TYPE = "INTEGER(2)";
-    public static final String INT32_COLUMN_TYPE = "INTEGER(4)";
-    public static final String INT64_COLUMN_TYPE = "INTEGER(8)";
-    public static final String INTEGER_COLUMN_TYPE = "INTEGER";
-    public static final String REAL_COLUMN_TYPE = "REAL";
-    public static final String BLOB_COLUMN_TYPE = "BLOB";
-    public static final String INTEGER_PRIMARY_KEY_AUTO_INCREMENT_TYPE = "INTEGER PRIMARY KEY AUTOINCREMENT";
-
     public static String buildCreateSql(final UUDataModel dataModel, final int version)
     {
         return buildCreateSql(dataModel.getTableName(), dataModel.getColumnMap(version), dataModel.getPrimaryKeyColumnName());
     }
 
-    public static String buildCreateSql(final String tableName, final Map<String, String> columnDefs, final String primaryKey)
+    public static String buildCreateSql(final String tableName, final Map<Object, Object> columnDefs, final String primaryKey)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -37,13 +28,13 @@ public final class UUSql
         sb.append(" (");
 
         boolean first = true;
-        for (String col : columnDefs.keySet())
+        for (Object col : columnDefs.keySet())
         {
             sb.append(first ? "" : ", ");
-            String dataType = columnDefs.get(col);
-            sb.append(col);
+            Object dataType = columnDefs.get(col);
+            sb.append(col.toString());
             sb.append(" ");
-            sb.append(dataType);
+            sb.append(dataType.toString());
             first = false;
         }
 
@@ -66,16 +57,16 @@ public final class UUSql
     {
         String tableName = dataModel.getTableName();
 
-        HashMap<String, String> fromColumns = dataModel.getColumnMap(fromVersion);
-        HashMap<String, String> toColumns = dataModel.getColumnMap(toVersion);
+        HashMap<Object, Object> fromColumns = dataModel.getColumnMap(fromVersion);
+        HashMap<Object, Object> toColumns = dataModel.getColumnMap(toVersion);
 
-        Set<String> fromColumnNames = fromColumns.keySet();
-        Set<String> toColumnNames = toColumns.keySet();
+        Set<Object> fromColumnNames = fromColumns.keySet();
+        Set<Object> toColumnNames = toColumns.keySet();
 
-        ArrayList<String> removedColumns = new ArrayList<>();
-        ArrayList<String> addedColumns = new ArrayList<>();
+        ArrayList<Object> removedColumns = new ArrayList<>();
+        ArrayList<Object> addedColumns = new ArrayList<>();
 
-        for (String fromColumn : fromColumnNames)
+        for (Object fromColumn : fromColumnNames)
         {
             if (!toColumnNames.contains(fromColumn))
             {
@@ -83,7 +74,7 @@ public final class UUSql
             }
         }
 
-        for (String toColumn : toColumnNames)
+        for (Object toColumn : toColumnNames)
         {
             if (!fromColumnNames.contains(toColumn))
             {
@@ -105,14 +96,14 @@ public final class UUSql
         }
         else
         {
-            for (String column : addedColumns)
+            for (Object column : addedColumns)
             {
                 list.add(buildAddColumnSql(tableName, column, toColumns.get(column)));
             }
         }
     }
 
-    public static String buildSelectIntoTableCopy(final String srcTable, final String destTable, final String[] columns)
+    public static String buildSelectIntoTableCopy(final String srcTable, final String destTable, final Object[] columns)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
@@ -127,38 +118,46 @@ public final class UUSql
 
     public static String buildRenameTableSql(final String existingTable, final String newTable)
     {
-        return String.format("ALTER TABLE %s RENAME TO %s;", existingTable, newTable);
+        return String.format(Locale.US, "ALTER TABLE %s RENAME TO %s;", existingTable, newTable);
     }
 
     public static String buildDropTableSql(final String tableName)
     {
-        return String.format("DROP TABLE IF EXISTS %s;", tableName);
+        return String.format(Locale.US, "DROP TABLE IF EXISTS %s;", tableName);
     }
 
-    public static String buildAddColumnSql(final String table, final String column, final String type)
+    public static String buildAddColumnSql(final String table, final Object column, final Object type)
     {
-        return String.format("ALTER TABLE %s ADD COLUMN %s %s;", table, column, type);
+        return String.format(Locale.US, "ALTER TABLE %s ADD COLUMN %s %s;", table, column, type);
     }
 
-    public static String buildCreateIndexSql(final String table, final String indexName, final String column)
+    public static String buildCreateIndexSql(final String table, final String indexName, final Object column)
     {
-        return String.format("CREATE INDEX IF NOT EXISTS %s ON %s (%s);", indexName, table, column);
+        return String.format(Locale.US, "CREATE INDEX IF NOT EXISTS %s ON %s (%s);", indexName, table, column);
     }
 
     public static String buildDropIndexSql(final String indexName)
     {
-        return String.format("DROP INDEX IF EXISTS %s;", indexName);
+        return String.format(Locale.US, "DROP INDEX IF EXISTS %s;", indexName);
     }
 
     public static String[] getColumnNames(final UUDataModel dataModel, final int version)
     {
-        HashMap<String, String> columnMap = dataModel.getColumnMap(version);
-        return columnMap.keySet().toArray(new String[columnMap.size()]);
+        HashMap<Object, Object> columnMap = dataModel.getColumnMap(version);
+
+        Object[] columnObjects = columnMap.keySet().toArray(new Object[columnMap.size()]);
+        String[] list = new String[columnObjects.length];
+        for (int i = 0; i < list.length; i++)
+        {
+            list[i] = columnObjects[i].toString();
+        }
+
+        return list;
     }
 
-    public static String buildSingleColumnWhere(@NonNull final String columnName)
+    public static String buildSingleColumnWhere(@NonNull final Object columnName)
     {
-        return String.format("%s = ?", columnName);
+        return String.format(Locale.US, "%s = ?", columnName);
     }
 
     public static void appendCreateLines(@NonNull final ArrayList<String> list, @NonNull UUDatabaseDefinition databaseDefinition, final int version)
