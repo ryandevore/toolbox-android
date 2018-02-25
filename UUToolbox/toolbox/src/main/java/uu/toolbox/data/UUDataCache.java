@@ -371,13 +371,13 @@ public class UUDataCache implements UUDataCacheProtocol
 
         @NonNull
         @Override
-        public HashMap<String, String> getColumnMap(final int version)
+        public HashMap<Object, Object> getColumnMap(final int version)
         {
-            HashMap<String, String> map = new HashMap<>();
+            HashMap<Object, Object> map = new HashMap<>();
 
-            map.put(NAME_COLUMN, UUSql.TEXT_COLUMN_TYPE);
-            map.put(TIMESTAMP_COLUMN, UUSql.INT64_COLUMN_TYPE);
-            map.put(META_DATA_COLUMN, UUSql.TEXT_COLUMN_TYPE);
+            map.put(NAME_COLUMN, UUSqlColumnType.text);
+            map.put(TIMESTAMP_COLUMN, UUSqlColumnType.int64);
+            map.put(META_DATA_COLUMN, UUSqlColumnType.text);
 
             return map;
         }
