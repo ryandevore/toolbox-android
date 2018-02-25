@@ -910,7 +910,7 @@ public final class UUTools
 		int degrees = (int)Math.floor(input);
 	    int hours = (int)Math.floor((input - degrees) * 60);
 	    double minutes = (input - ((double)degrees+((double)hours/60))) * 3600000;
-		return String.format("%d/1,%d/1,%f/1000", degrees, hours, minutes);
+		return String.format(Locale.US, "%d/1,%d/1,%f/1000", degrees, hours, minutes);
 	}
 	
 	private static final String latitudeRef(final double latitude)
