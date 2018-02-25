@@ -581,43 +581,6 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         String sql = "SELECT name FROM sqlite_master WHERE type='table';";
         return listSingleStringColumn(sql, null);
     }
-
-    /*
-    public ArrayList<UUColumnDefinition> getTableSchema(@NonNull final String tableName)
-    {
-        String sql = String.format("PRAGMA table_info(%s);", tableName);
-
-        ArrayList<UUColumnDefinition> results = new ArrayList<>();
-
-        SQLiteDatabase db;
-        Cursor c = null;
-
-        try
-        {
-            db = getReadOnlyDatabase();
-
-            c = db.rawQuery(sql, null);
-
-            while (c.moveToNext())
-            {
-                UUColumnDefinition obj = new UUColumnDefinition();
-                obj.fillFromCursor(c);
-                results.add(obj);
-            }
-
-            //logQueryResults(c);
-        }
-        catch (Exception ex)
-        {
-            logException("getTableSchema", ex);
-        }
-        finally
-        {
-            closeCursor(c);
-        }
-
-        return results;
-    }*/
     
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Protected Helper Methods 
