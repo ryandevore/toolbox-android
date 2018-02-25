@@ -70,7 +70,7 @@ public final class UUDeviceInfo
                 display.getSize(size);
                 int width = size.x;
                 int height = size.y;
-                return String.format(Locale.getDefault(), "%dx%d", width, height);
+                return String.format(Locale.US, "%dx%d", width, height);
             }
         }
         catch(Exception ex)

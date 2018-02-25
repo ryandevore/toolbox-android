@@ -503,7 +503,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     {
         try
         {
-            return String.format(Locale.getDefault(),
+            return String.format(Locale.US,
                     "%s, %s, %d, %s", getAddress(), getName(), this.rssi, UUString.byteToHex(manufacturingData));
         }
         catch (Exception ex)

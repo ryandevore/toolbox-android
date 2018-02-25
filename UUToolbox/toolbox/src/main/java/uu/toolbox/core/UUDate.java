@@ -289,7 +289,7 @@ public class UUDate
     {
         try
         {
-            SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.getDefault());
+            SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
             df.setTimeZone(timeZone);
             return df.parse(string);
         }
@@ -358,7 +358,7 @@ public class UUDate
 	{
 		if (date != null)
 		{
-			SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.getDefault());
+			SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
 			df.setTimeZone(timeZone);
 			return df.format(date);
 		}
@@ -510,7 +510,7 @@ public class UUDate
 	
 	public static String currentTimeInFileNameFormat()
 	{
-		SimpleDateFormat df = new SimpleDateFormat(EXTENDED_FILE_NAME_FORMAT, Locale.getDefault());
+		SimpleDateFormat df = new SimpleDateFormat(EXTENDED_FILE_NAME_FORMAT, Locale.US);
 		Date d = new Date();
 		return df.format(d);
 	}
