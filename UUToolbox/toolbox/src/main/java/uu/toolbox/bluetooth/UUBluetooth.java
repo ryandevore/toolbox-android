@@ -280,7 +280,7 @@ public class UUBluetooth
      */
     public static @NonNull String characteristicPropertiesToString(final int properties)
     {
-        ArrayList<String> parts = new ArrayList<>();
+        ArrayList<Object> parts = new ArrayList<>();
 
         if (UUInteger.isBitSet(properties, BluetoothGattCharacteristic.PROPERTY_BROADCAST))
         {
@@ -333,7 +333,7 @@ public class UUBluetooth
      */
     public static @NonNull String characteristicPermissionsToString(final int permssions)
     {
-        ArrayList<String> parts = new ArrayList<>();
+        ArrayList<Object> parts = new ArrayList<>();
 
         if (UUInteger.isBitSet(permssions, BluetoothGattCharacteristic.PERMISSION_READ))
         {

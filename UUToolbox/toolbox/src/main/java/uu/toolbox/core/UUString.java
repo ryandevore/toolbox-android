@@ -195,9 +195,9 @@ public class UUString
      * @param separator the separator
      * @return a string
      */
-    public static String componentsJoinedByString(final String[] list, final String separator)
+    public static String componentsJoinedByString(final Object[] list, final String separator)
     {
-        ArrayList<String> arrayList = new ArrayList<>();
+        ArrayList<Object> arrayList = new ArrayList<>();
         Collections.addAll(arrayList, list);
         return componentsJoinedByString(arrayList, separator);
     }
@@ -209,7 +209,7 @@ public class UUString
      * @param separator the separator
      * @return a string
      */
-    public static String componentsJoinedByString(final ArrayList<String> list, final String separator)
+    public static String componentsJoinedByString(final ArrayList<Object> list, final String separator)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -221,14 +221,14 @@ public class UUString
                 delim = separator;
             }
 
-            for (String s : list)
+            for (Object s : list)
             {
                 if (sb.length() > 0)
                 {
                     sb.append(delim);
                 }
 
-                sb.append(s);
+                sb.append(s.toString());
             }
         }
 
