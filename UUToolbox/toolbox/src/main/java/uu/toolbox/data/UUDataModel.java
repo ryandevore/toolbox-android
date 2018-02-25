@@ -27,7 +27,7 @@ public interface UUDataModel
      * @return a non null hash map of column definitions. Must not be null
      */
     @NonNull
-    HashMap<String, String> getColumnMap(final int version);
+    HashMap<Object, Object> getColumnMap(final int version);
 
     /**
      * Returns the primary key column name
