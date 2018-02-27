@@ -1,5 +1,7 @@
 package uu.toolbox.network;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -25,6 +27,24 @@ public class UUHttpResponse
     protected String _contentType;
     protected String _contentEncoding;
     protected Map<String, List<String>> _responseHeaders;
+
+    public UUHttpResponse()
+    {
+
+    }
+
+    public UUHttpResponse(@NonNull final UUHttpResponse other)
+    {
+        _request = other._request;
+        _exception = other._exception;
+        _parsedResponse = other._parsedResponse;
+        _rawResponse = other._rawResponse;
+        _httpResponseCode = other._httpResponseCode;
+        _httpResponseMessage = other._httpResponseMessage;
+        _contentType = other._contentType;
+        _contentEncoding = other._contentEncoding;
+        _responseHeaders = other._responseHeaders;
+    }
 
     public UUHttpRequest getRequest()
     {
