@@ -22,22 +22,28 @@ import uu.toolbox.logging.UULog;
  * Useful Utilities - A set of extension methods for the JSONObject class.
  *
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class UUJson
 {
-    public static String safeGetString(final JSONObject json, final String key)
+    public static String safeGetString(final JSONObject json, final Object key)
     {
         return safeGetString(json, key, null);
     }
 
-    public static String safeGetString(final JSONObject json, final String key, final String defaultValue)
+    public static boolean hasNonNullValueForKey(final JSONObject json, final Object key)
+    {
+        return (json != null && key != null && json.has(key.toString()) && !json.isNull(key.toString()));
+    }
+
+    public static String safeGetString(final JSONObject json, final Object key, final String defaultValue)
     {
         String  val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.getString(key);
+                val = json.getString(key.toString());
             }
         }
         catch (JSONException ex)
@@ -49,20 +55,21 @@ public final class UUJson
         return val;
     }
 
-    public static long safeGetLong(final JSONObject json, final String key)
+    public static long safeGetLong(final JSONObject json, final Object key)
     {
         return safeGetLong(json, key, 0);
     }
 
-    public static long safeGetLong(final JSONObject json, final String key, final long defaultValue)
+    //noinspection ConstantConditions
+    public static long safeGetLong(final JSONObject json, final Object key, final long defaultValue)
     {
         long val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.getLong(key);
+                val = json.getLong(key.toString());
             }
         }
         catch (JSONException ex)
@@ -74,20 +81,20 @@ public final class UUJson
         return val;
     }
 
-    public static int safeGetInt(final JSONObject json, final String key)
+    public static int safeGetInt(final JSONObject json, final Object key)
     {
         return safeGetInt(json, key, 0);
     }
 
-    public static int safeGetInt(final JSONObject json, final String key, final int defaultValue)
+    public static int safeGetInt(final JSONObject json, final Object key, final int defaultValue)
     {
         int val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.getInt(key);
+                val = json.getInt(key.toString());
             }
         }
         catch (JSONException ex)
@@ -99,20 +106,20 @@ public final class UUJson
         return val;
     }
 
-    public static boolean safeGetBool(final JSONObject json, final String key)
+    public static boolean safeGetBool(final JSONObject json, final Object key)
     {
         return safeGetBool(json, key, false);
     }
 
-    public static boolean safeGetBool(final JSONObject json, final String key, final boolean defaultValue)
+    public static boolean safeGetBool(final JSONObject json, final Object key, final boolean defaultValue)
     {
         boolean val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.getBoolean(key);
+                val = json.getBoolean(key.toString());
             }
         }
         catch (JSONException ex)
@@ -124,20 +131,20 @@ public final class UUJson
         return val;
     }
 
-    public static float safeGetFloat(final JSONObject json, final String key)
+    public static float safeGetFloat(final JSONObject json, final Object key)
     {
         return safeGetFloat(json, key, 0.0f);
     }
 
-    public static float safeGetFloat(final JSONObject json, final String key, final float defaultValue)
+    public static float safeGetFloat(final JSONObject json, final Object key, final float defaultValue)
     {
         float val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = (float)json.getDouble(key);
+                val = (float)json.getDouble(key.toString());
             }
         }
         catch (JSONException ex)
@@ -149,20 +156,20 @@ public final class UUJson
         return val;
     }
 
-    public static double safeGetDouble(final JSONObject json, final String key)
+    public static double safeGetDouble(final JSONObject json, final Object key)
     {
         return safeGetDouble(json, key, 0);
     }
 
-    public static double safeGetDouble(final JSONObject json, final String key, final double defaultValue)
+    public static double safeGetDouble(final JSONObject json, final Object key, final double defaultValue)
     {
         double val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.getDouble(key);
+                val = json.getDouble(key.toString());
             }
         }
         catch (JSONException ex)
@@ -174,12 +181,12 @@ public final class UUJson
         return val;
     }
 
-    public static byte[] safeGetDataFromBase64String(final JSONObject json, final String key)
+    public static byte[] safeGetDataFromBase64String(final JSONObject json, final Object key)
     {
         return safeGetDataFromBase64String(json, key, null);
     }
 
-    public static byte[] safeGetDataFromBase64String(final JSONObject json, final String key, final byte[] defaultValue)
+    public static byte[] safeGetDataFromBase64String(final JSONObject json, final Object key, final byte[] defaultValue)
     {
         byte[] val = defaultValue;
 
@@ -202,7 +209,7 @@ public final class UUJson
 
     public static long safeGetDate(
             final JSONObject json,
-            final String key,
+            final Object key,
             final String[] formatters,
             final TimeZone timeZone)
     {
@@ -211,7 +218,7 @@ public final class UUJson
 
     public static long safeGetDate(
             final JSONObject json,
-            final String key,
+            final Object key,
             final long defaultValue,
             final String[] formatters,
             final TimeZone timeZone)
@@ -232,20 +239,20 @@ public final class UUJson
         return result;
     }
 
-    public static Object safeGet(final JSONObject json, final String key)
+    public static Object safeGet(final JSONObject json, final Object key)
     {
         return safeGet(json, key, null);
     }
 
-    public static Object safeGet(final JSONObject json, final String key, final Object defaultValue)
+    public static Object safeGet(final JSONObject json, final Object key, final Object defaultValue)
     {
         Object val = defaultValue;
 
         try
         {
-            if (json != null && json.has(key) && !json.isNull(key))
+            if (hasNonNullValueForKey(json, key))
             {
-                val = json.get(key);
+                val = json.get(key.toString());
             }
         }
         catch (JSONException ex)
@@ -257,12 +264,12 @@ public final class UUJson
         return val;
     }
 
-    public static JSONObject safeGetJsonObject(final JSONObject json, final String key)
+    public static JSONObject safeGetJsonObject(final JSONObject json, final Object key)
     {
         return safeGetObject(JSONObject.class, json, key);
     }
 
-    public static JSONArray safeGetJsonArray(final JSONObject json, final String key)
+    public static JSONArray safeGetJsonArray(final JSONObject json, final Object key)
     {
         return safeGetObject(JSONArray.class, json, key);
     }
@@ -287,12 +294,12 @@ public final class UUJson
         return obj;
     }
 
-    public static <T extends Object> T safeGetObject(final Class<T> type, final JSONObject json, final String key)
+    public static <T extends Object> T safeGetObject(final Class<T> type, final JSONObject json, final Object key)
     {
         return safeGetObject(type, json, key, null);
     }
 
-    public static <T extends Object> T safeGetObject(final Class<T> type, final JSONObject json, final String key, final T defaultValue)
+    public static <T extends Object> T safeGetObject(final Class<T> type, final JSONObject json, final Object key, final T defaultValue)
     {
         T val = defaultValue;
 
@@ -313,7 +320,7 @@ public final class UUJson
     }
 
 
-    public static void safePut(final JSONObject json, final String key, final Object val)
+    public static void safePut(final JSONObject json, final Object key, final Object val)
     {
         try
         {
@@ -323,11 +330,11 @@ public final class UUJson
                 {
                     if (val instanceof UUJsonConvertible)
                     {
-                        json.put(key, ((UUJsonConvertible)val).toJsonObject());
+                        json.put(key.toString(), ((UUJsonConvertible)val).toJsonObject());
                     }
                     else
                     {
-                        json.put(key, val);
+                        json.put(key.toString(), val);
                     }
                 }
             }
@@ -338,7 +345,7 @@ public final class UUJson
         }
     }
 
-    public static void safePutArray(final JSONObject json, final String key, final List val)
+    public static void safePutArray(final JSONObject json, final Object key, final List val)
     {
         try
         {
@@ -355,7 +362,7 @@ public final class UUJson
                         }
                     }
 
-                    json.put(key, arr);
+                    json.put(key.toString(), arr);
                 }
             }
         }
@@ -761,4 +768,44 @@ public final class UUJson
             UULog.debug(UUJson.class, "closeJsonReader", ex);
         }
     }
+
+    /*
+    // Experimantal function to convert an arbitrary object to JSON via reflection.
+    @Nullable
+    public static JSONObject objectToJson(@Nullable final Object object)
+    {
+        JSONObject json = null;
+
+        try
+        {
+            if (object != null)
+            {
+                Class objectClass = object.getClass();
+
+                json = new JSONObject();
+                Field[] fields = objectClass.getDeclaredFields();
+
+                // compare values now
+                for (Field f : fields)
+                {
+
+                    f.setAccessible(true);
+                    Object val = f.get(object);
+                    if (val == null)
+                    {
+                        val = JSONObject.NULL;
+                    }
+
+                    safePut(json, f.getName(), val);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUJson.class, "objectToJson", ex);
+            json = null;
+        }
+
+        return json;
+    }*/
 }
