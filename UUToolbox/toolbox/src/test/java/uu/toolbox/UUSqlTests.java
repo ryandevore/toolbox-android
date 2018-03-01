@@ -17,6 +17,7 @@ import uu.toolbox.data.UUContentValues;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModel;
 import uu.toolbox.data.UUSql;
+import uu.toolbox.data.UUSqlColumnType;
 
 public class UUSqlTests
 {
@@ -25,11 +26,11 @@ public class UUSqlTests
     {
         String tableName = "uu_test_table";
 
-        HashMap<String, String> map = new LinkedHashMap<>();
-        map.put("id", UUSql.INTEGER_COLUMN_TYPE);
-        map.put("name", UUSql.TEXT_COLUMN_TYPE);
-        map.put("photo", UUSql.BLOB_COLUMN_TYPE);
-        map.put("timestamp", UUSql.REAL_COLUMN_TYPE);
+        HashMap<Object, Object> map = new LinkedHashMap<>();
+        map.put("id", UUSqlColumnType.integer);
+        map.put("name", UUSqlColumnType.text);
+        map.put("photo", UUSqlColumnType.blob);
+        map.put("timestamp", UUSqlColumnType.real);
 
         String sql = UUSql.buildCreateSql(tableName, map, null);
         Assert.assertNotNull("Expect buildCreateSql to generate non null string", sql);
@@ -43,11 +44,11 @@ public class UUSqlTests
     {
         String tableName = "uu_test_table";
 
-        HashMap<String, String> map = new LinkedHashMap<>();
-        map.put("id", UUSql.INTEGER_COLUMN_TYPE);
-        map.put("name", UUSql.TEXT_COLUMN_TYPE);
-        map.put("photo", UUSql.BLOB_COLUMN_TYPE);
-        map.put("timestamp", UUSql.REAL_COLUMN_TYPE);
+        HashMap<Object, Object> map = new LinkedHashMap<>();
+        map.put("id", UUSqlColumnType.integer);
+        map.put("name", UUSqlColumnType.text);
+        map.put("photo", UUSqlColumnType.blob);
+        map.put("timestamp", UUSqlColumnType.real);
 
         String sql = UUSql.buildCreateSql(tableName, map, "id");
         Assert.assertNotNull("Expect buildCreateSql to generate non null string", sql);
@@ -258,22 +259,22 @@ public class UUSqlTests
 
         @NonNull
         @Override
-        public HashMap<String, String> getColumnMap(int version)
+        public HashMap<Object, Object> getColumnMap(int version)
         {
             // Use LinkedHashMap to preserve insertion order for unit test validation.
 
-            HashMap<String, String> map = new LinkedHashMap<>();
+            HashMap<Object, Object> map = new LinkedHashMap<>();
 
             if (version >= VERSION_ONE)
             {
-                map.put(ID_COLUMN, UUSql.INTEGER_PRIMARY_KEY_AUTO_INCREMENT_TYPE);
-                map.put(NAME_COLUMN, UUSql.TEXT_COLUMN_TYPE);
-                map.put(TEAM_COLUMN, UUSql.TEXT_COLUMN_TYPE);
+                map.put(ID_COLUMN, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
+                map.put(NAME_COLUMN, UUSqlColumnType.text);
+                map.put(TEAM_COLUMN, UUSqlColumnType.text);
             }
 
             if (version >= VERSION_TWO)
             {
-                map.put(NUMBER_COLUMN, UUSql.INTEGER_COLUMN_TYPE);
+                map.put(NUMBER_COLUMN, UUSqlColumnType.integer);
             }
 
             return map;
@@ -343,7 +344,7 @@ public class UUSqlTests
 
         @NonNull
         @Override
-        public HashMap<String, String> getColumnMap(int version)
+        public HashMap<Object, Object> getColumnMap(int version)
         {
             return new HashMap<>();
         }
@@ -393,7 +394,7 @@ public class UUSqlTests
 
         @NonNull
         @Override
-        public HashMap<String, String> getColumnMap(int version)
+        public HashMap<Object, Object> getColumnMap(int version)
         {
             return new HashMap<>();
         }
