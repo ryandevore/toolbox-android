@@ -5,8 +5,9 @@ package uu.toolbox.network;
  */
 public enum UUMimeType
 {
-    ApplicationJson     ("application/json"),
-    TextJson            ("text/json");
+    ApplicationJson("application/json"),
+    TextJson("text/json"),
+    ApplicationOctetStream("appliction/octet-stream");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     private String stringVal;
