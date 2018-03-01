@@ -1,6 +1,6 @@
 package uu.toolbox.core;
 
-import org.json.JSONObject;
+import java.util.HashMap;
 
 /*
     Android equivalent of NSError.  Simply a container for an error code, domain and a dictionary
@@ -12,7 +12,7 @@ public class UUError
     private int code;
     private String domain;
     private Exception exception;
-    private JSONObject userInfo;
+    private HashMap<Object, Object> userInfo;
 
     public UUError()
     {
@@ -48,12 +48,12 @@ public class UUError
         this.exception = exception;
     }
 
-    public JSONObject getUserInfo()
+    public HashMap<Object, Object> getUserInfo()
     {
         return userInfo;
     }
 
-    public void setUserInfo(JSONObject userInfo)
+    public void setUserInfo(HashMap<Object, Object> userInfo)
     {
         this.userInfo = userInfo;
     }
