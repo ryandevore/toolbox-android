@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.NonNull;
+
 import java.util.HashMap;
 
 import uu.toolbox.logging.UULog;
@@ -18,6 +20,12 @@ public class UUError
 
     public UUError()
     {
+    }
+
+    public UUError(@NonNull final String domain, final int code)
+    {
+        this.domain = domain;
+        this.code = code;
     }
 
     public int getCode()
