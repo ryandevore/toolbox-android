@@ -2,6 +2,7 @@ package uu.toolbox.core;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -186,6 +187,17 @@ public class UUString
     public static byte[] stringToAsciiBytes(final String input)
     {
         return stringToByte(input, CHARSET_ISO_8859_1);
+    }
+
+    @NonNull
+    public static String byteToBase64String(@Nullable final byte[] data)
+    {
+        if (data == null)
+        {
+            return "";
+        }
+
+        return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
     /**
