@@ -1,6 +1,5 @@
 package uu.toolbox.core;
 
-import android.content.Context;
 import android.util.Base64;
 import android.util.JsonReader;
 
@@ -588,7 +587,7 @@ public final class UUJson
         return list;
     }
 
-    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Context context, final Class<T> type, final ArrayList<JSONObject> list)
+    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Class<T> type, final ArrayList<JSONObject> list)
     {
         ArrayList<T> parsedResults = new ArrayList<>();
 
@@ -613,7 +612,7 @@ public final class UUJson
         return parsedResults;
     }
 
-    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Context context, final Class<T> type, final JSONArray list)
+    public static <T extends UUJsonConvertible> ArrayList<T> parseJsonArray(final Class<T> type, final JSONArray list)
     {
         ArrayList<T> parsedResults = new ArrayList<>();
 
@@ -640,12 +639,12 @@ public final class UUJson
     }
 
     public static <T extends UUJsonConvertible> ArrayList<T> safeGetArrayOfObjects(
-            final Context context, final Class<T> type, final JSONObject json, final String key)
+            final Class<T> type, final JSONObject json, final String key)
     {
-        return parseJsonArray(context, type, safeGetJsonArray(json, key));
+        return parseJsonArray(type, safeGetJsonArray(json, key));
     }
 
-    public static <T extends UUJsonConvertible> T parseJsonObject(final Context context, final Class<T> type, final JSONObject jsonObj)
+    public static <T extends UUJsonConvertible> T parseJsonObject(final Class<T> type, final JSONObject jsonObj)
     {
         T parsedResult = null;
 
