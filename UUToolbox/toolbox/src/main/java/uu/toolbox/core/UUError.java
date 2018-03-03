@@ -4,8 +4,6 @@ import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 
-import uu.toolbox.logging.UULog;
-
 /*
     Android equivalent of NSError.  Simply a container for an error code, domain and a dictionary
     of user information.
@@ -108,20 +106,5 @@ public class UUError
         }
 
         userInfo.put(key, value);
-    }
-
-    public static void notifyDelegate(final UUErrorDelegate delegate, final UUError error)
-    {
-        try
-        {
-            if (delegate != null)
-            {
-                delegate.onCompleted(error);
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.error(UUError.class, "notifyDelegate", ex);
-        }
     }
 }
