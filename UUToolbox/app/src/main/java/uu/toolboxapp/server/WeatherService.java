@@ -85,7 +85,7 @@ public class WeatherService
                             if (parsedResponse != null)
                             {
                                 WeatherSummary summary = new WeatherSummary();
-                                summary.fillFromJson(context, parsedResponse);
+                                summary.fillFromJson(parsedResponse);
                                 UULog.debug(getClass(), "fetchWeather.onComplete", "Weather Summary: " + summary.toString());
 
                                 AppDatabase.sharedInstance().logTable(WeatherSummary.class);

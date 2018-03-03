@@ -281,7 +281,7 @@ public class WeatherSummary
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void fillFromJson(final Context context, final JSONObject json)
+    public void fillFromJson(@NonNull final JSONObject json)
     {
         setId(null);
 
@@ -328,11 +328,12 @@ public class WeatherSummary
         setSunset(UUJson.safeGetLong(sys, "sunset") * 1000);
     }
 
+    @NonNull
     @Override
     public JSONObject toJsonObject()
     {
         // Return null because we only care about deserializing from JSON
-        return null;
+        return new JSONObject();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

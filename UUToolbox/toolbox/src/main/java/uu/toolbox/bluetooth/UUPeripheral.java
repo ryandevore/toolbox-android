@@ -524,6 +524,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     private static final String JSON_LAST_ADVERTISEMENT_KEY = "last_advertisement";
     private static final String JSON_TOTAL_BEACON_COUNT_KEY = "total_beacon_count";
 
+    @NonNull
     @Override
     public JSONObject toJsonObject()
     {
@@ -541,7 +542,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     }
 
     @Override
-    public void fillFromJson(final Context context, final JSONObject json)
+    public void fillFromJson(@NonNull final JSONObject json)
     {
         device = UUParcel.deserializeParcelable(BluetoothDevice.CREATOR, UUString.hexToByte(UUJson.safeGetString(json, JSON_DEVICE_KEY)));
         scanRecord = UUString.hexToByte(UUJson.safeGetString(json, JSON_SCAN_RECORD_KEY));
@@ -596,7 +597,7 @@ public class UUPeripheral implements UUJsonConvertible, Parcelable
     {
         String jsonStr = in.readString();
         JSONObject json = UUJson.toJsonObject(jsonStr);
-        fillFromJson(null, json);
+        fillFromJson(json);
     }
 
     private void acquireExistingGatt()

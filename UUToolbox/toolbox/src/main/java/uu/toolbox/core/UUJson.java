@@ -599,7 +599,7 @@ public final class UUJson
                 for (JSONObject json : list)
                 {
                     T obj = type.newInstance();
-                    obj.fillFromJson(context, json);
+                    obj.fillFromJson(json);
                     parsedResults.add(obj);
                 }
             }
@@ -625,7 +625,7 @@ public final class UUJson
                 {
                     JSONObject json = list.getJSONObject(i);
                     T obj = type.newInstance();
-                    obj.fillFromJson(context, json);
+                    obj.fillFromJson(json);
                     parsedResults.add(obj);
                 }
             }
@@ -654,7 +654,7 @@ public final class UUJson
             if (type != null && jsonObj != null)
             {
                 parsedResult = type.newInstance();
-                parsedResult.fillFromJson(context, jsonObj);
+                parsedResult.fillFromJson(jsonObj);
             }
         }
         catch (Exception ex)

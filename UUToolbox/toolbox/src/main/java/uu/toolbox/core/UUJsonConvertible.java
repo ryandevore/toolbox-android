@@ -1,12 +1,13 @@
 package uu.toolbox.core;
 
-import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.json.JSONObject;
 
 public interface UUJsonConvertible
 {
-    void fillFromJson(final Context context, final JSONObject json);
+    void fillFromJson(@NonNull final JSONObject json);
 
+    @NonNull
     JSONObject toJsonObject();
 }
