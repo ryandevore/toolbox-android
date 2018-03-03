@@ -1,12 +1,15 @@
 package uu.toolbox.network;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Map;
+
+import uu.toolbox.core.UUObject;
 
 /**
  * UUHttpResponse
@@ -185,5 +188,16 @@ public class UUHttpResponse
         }
 
         return arr;
+    }
+
+    @Nullable
+    public static <T> T parsedResponseAs(@Nullable Class<T> type, @Nullable UUHttpResponse response)
+    {
+        if (response == null)
+        {
+            return null;
+        }
+
+        return UUObject.safeCast(type, response.getParsedResponse());
     }
 }
