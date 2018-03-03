@@ -1,6 +1,7 @@
 package uu.toolbox.core;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -46,5 +47,25 @@ public class UUObject
                 invokeMethod(target, method);
             }
         });
+    }
+
+    @Nullable
+    public static <T> T safeCast(@Nullable Class<T> type, @Nullable Object obj)
+    {
+        T castedObj = null;
+
+        try
+        {
+            if (obj != null && type != null && obj.getClass().isAssignableFrom(type))
+            {
+                castedObj = type.cast(obj);
+            }
+        }
+        catch (Exception ex)
+        {
+            castedObj = null;
+        }
+
+        return castedObj;
     }
 }
