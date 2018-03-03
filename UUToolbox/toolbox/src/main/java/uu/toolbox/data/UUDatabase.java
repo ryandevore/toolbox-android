@@ -24,7 +24,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     // Member Variables 
 	///////////////////////////////////////////////////////////////////////////////////////////////
     private SQLiteDatabase database;
-    private Context applicationContext;
+    protected Context applicationContext;
 
     public void destroy()
     {
