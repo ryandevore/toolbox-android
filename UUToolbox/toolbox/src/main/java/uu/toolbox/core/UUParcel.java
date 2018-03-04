@@ -22,12 +22,13 @@ public class UUParcel
     public static @Nullable byte[] serializeParcel(final @Nullable Parcelable parcelable)
     {
         byte[] result = null;
+        Parcel p = null;
 
         try
         {
             if (parcelable != null)
             {
-                Parcel p = Parcel.obtain();
+                p = Parcel.obtain();
                 parcelable.writeToParcel(p, 0);
                 result = p.marshall();
             }
@@ -36,6 +37,10 @@ public class UUParcel
         {
             UULog.error(UUParcel.class, "serializeParcel", ex);
             result = null;
+        }
+        finally
+        {
+            safeRecyle(p);
         }
 
         return result;
@@ -52,12 +57,13 @@ public class UUParcel
     public static @Nullable <T extends Parcelable> T deserializeParcelable(final Parcelable.Creator<T> parcelableCreator, final @Nullable byte[] bytes)
     {
         T result = null;
+        Parcel p = null;
 
         try
         {
             if (bytes != null)
             {
-                Parcel p = Parcel.obtain();
+                p = Parcel.obtain();
                 p.unmarshall(bytes, 0, bytes.length);
                 p.setDataPosition(0);
 
@@ -69,8 +75,32 @@ public class UUParcel
             UULog.error(UUParcel.class, "deserializeParcelable", ex);
             result = null;
         }
+        finally
+        {
+            safeRecyle(p);
+        }
 
         return result;
+    }
+
+    /**
+     * Safely calls the Parcel.recycle method
+     *
+     * @param parcel The parcel to recycle
+     */
+    public static void safeRecyle(@Nullable final Parcel parcel)
+    {
+        try
+        {
+            if (parcel != null)
+            {
+                parcel.recycle();
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUParcel.class, "safeRecycle", ex);
+        }
     }
 
 }
