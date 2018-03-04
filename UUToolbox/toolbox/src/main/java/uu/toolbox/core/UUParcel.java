@@ -19,7 +19,8 @@ public class UUParcel
      *
      * @return an array of bytes on success or null if an error occurs
      */
-    public static @Nullable byte[] serializeParcel(final @Nullable Parcelable parcelable)
+    @Nullable
+    public static byte[] serializeParcel(final @Nullable Parcelable parcelable)
     {
         byte[] result = null;
         Parcel p = null;
@@ -54,7 +55,8 @@ public class UUParcel
      * @param <T> type of object to be returned
      * @return the deserialized object or null if an error occurs.
      */
-    public static @Nullable <T extends Parcelable> T deserializeParcelable(final Parcelable.Creator<T> parcelableCreator, final @Nullable byte[] bytes)
+    @Nullable
+    public static <T extends Parcelable> T deserializeParcelable(final Parcelable.Creator<T> parcelableCreator, final @Nullable byte[] bytes)
     {
         T result = null;
         Parcel p = null;
