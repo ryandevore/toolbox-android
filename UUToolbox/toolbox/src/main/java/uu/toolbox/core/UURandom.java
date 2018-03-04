@@ -1,6 +1,7 @@
 package uu.toolbox.core;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
@@ -141,5 +142,231 @@ public final class UURandom
     private UURandom()
     {
         // Static class only, do not allow instantiation
+    }
+
+
+
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Testing Helpers
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @VisibleForTesting
+    public static byte[] randomByteArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        byte[] a = new byte[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomByte();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Byte[] randomByteObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Byte[] a = new Byte[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomByte();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static short[] randomShortArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        short[] a = new short[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomShort();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Short[] randomShortObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Short[] a = new Short[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomShort();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static int[] randomIntArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        int[] a = new int[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomInt();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Integer[] randomIntObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Integer[] a = new Integer[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomInt();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static long[] randomLongArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        long[] a = new long[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomLong();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Long[] randomLongObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Long[] a = new Long[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomLong();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static float[] randomFloatArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        float[] a = new float[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomFloat();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Float[] randomFloatObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Float[] a = new Float[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomFloat();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static double[] randomDoubleArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        double[] a = new double[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomDouble();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Double[] randomDoubleObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Double[] a = new Double[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomDouble();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static boolean[] randomBooleanArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        boolean[] a = new boolean[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomBoolean();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Boolean[] randomBooleanObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Boolean[] a = new Boolean[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = UURandom.randomBoolean();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static char[] randomCharArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        char[] a = new char[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = (char)UURandom.randomByte();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static Character[] randomCharObjArray(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        Character[] a = new Character[length];
+        for (int i = 0; i < length; i++)
+        {
+            a[i] = (char)UURandom.randomByte();
+        }
+
+        return a;
+    }
+
+    @VisibleForTesting
+    public static String randomString(int maxLength)
+    {
+        return new String(randomCharArray(maxLength));
     }
 }
