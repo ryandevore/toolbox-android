@@ -16,8 +16,9 @@ public class UUTestDatabase extends UUDatabase
     public static final int VERSION_ONE = 1;
     public static final int VERSION_TWO = 2;
     public static final int VERSION_THREE = 3;
+    public static final int VERSION_FOUR = 4;
 
-    public static int CURRENT_VERSION = VERSION_THREE;
+    public static int CURRENT_VERSION = VERSION_FOUR;
 
     public static String NAME = "uu_test_db";
 
@@ -54,14 +55,13 @@ public class UUTestDatabase extends UUDatabase
             list.add(new UUComplexDataModel());
         }
 
+        if (version >= VERSION_FOUR)
+        {
+            list.add(new DataModelWithObjPrimitiveTypes());
+        }
+
         return list;
     }
-
-//    @Override
-//    public ArrayList<String> getSqlCreateLines(int version)
-//    {
-//        return null;
-//    }
 
     @Override
     public void handlePostOpen(SQLiteDatabase db, int version)

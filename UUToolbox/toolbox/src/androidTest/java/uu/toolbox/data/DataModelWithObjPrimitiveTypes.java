@@ -1,0 +1,14 @@
+package uu.toolbox.data;
+
+@UUSqlTable(tableName = "uu_object_primitives")
+public class DataModelWithObjPrimitiveTypes implements UUDataModel
+{
+    @UUSqlColumn(name = "MyInt", type = UUSqlColumn.Type.INT_32)
+    public Integer anInt;
+
+    @UUSqlColumn(name = "YourFloat", type = UUSqlColumn.Type.REAL)
+    public Float aFloat;
+
+    @UUSqlColumn(name = "TheirFloat", type = UUSqlColumn.Type.REAL)
+    public float aPrimFloat;
+}

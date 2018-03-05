@@ -1,30 +1,33 @@
 package uu.toolbox;
 
-import android.app.Application;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
-import android.test.ApplicationTestCase;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import junit.framework.Assert;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
-import uu.toolbox.data.UUComplexDataModel;
+import uu.toolbox.data.DataModelWithObjPrimitiveTypes;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModelWithCompoundKey;
 import uu.toolbox.data.UUTestDataModel;
 import uu.toolbox.data.UUTestDatabase;
 import uu.toolbox.logging.UULog;
 
-public class UUDatabaseTests extends ApplicationTestCase<Application>
+@RunWith(AndroidJUnit4.class)
+public class UUDatabaseTests
 {
-    public UUDatabaseTests()
-    {
-        super(Application.class);
-    }
+    private static String TEST_DATA_MODEL_TABLE_NAME = "uu_test_model";
+    private static String DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME = "uu_data_model_with_compound_key";
+    private static String COMPLEX_DATA_MODEL_TABLE_NAME = "uu_complex_test_model";
 
     static class UUColumnDefinition
     {
@@ -89,6 +92,12 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
         return results;
     }
 
+    private Context getContext()
+    {
+        return InstrumentationRegistry.getTargetContext();
+    }
+
+    @Test
     public void test_0000_initialCreate()
     {
         Context ctx = getContext();
@@ -113,13 +122,14 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
                 continue;
             }
 
-            Assert.assertEquals("Expect one table name to be correct", UUTestDataModel.TableName, table);
+            Assert.assertEquals("Expect one table name to be correct", TEST_DATA_MODEL_TABLE_NAME, table);
 
             getTableSchema(db.getReadOnlyDatabase(), table);
         }
     }
 
-    public void test_0001_upgradeToVersionTwo()
+    @Test
+    public void test_0001_upgradeToVersionTwo() throws Exception
     {
         Context ctx = getContext();
         UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_TWO;
@@ -133,14 +143,15 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
         // 'android_metadata' and if any auto increment tables are used, a 'sqlite_sequence' table.
         Assert.assertTrue("Expect more than one table", tables.size() >= 1);
 
-        Assert.assertTrue("Expect tables to contain test data model", tables.contains(UUTestDataModel.TableName));
-        Assert.assertTrue("Expect tables to contain compound primary key test data model", tables.contains(UUDataModelWithCompoundKey.TABLE_NAME));
+        Assert.assertTrue("Expect tables to contain test data model", tables.contains(TEST_DATA_MODEL_TABLE_NAME));
+        Assert.assertTrue("Expect tables to contain compound primary key test data model", tables.contains(DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME));
 
-        getTableSchema(db.getReadOnlyDatabase(), UUTestDataModel.TableName);
-        getTableSchema(db.getReadOnlyDatabase(), UUDataModelWithCompoundKey.TABLE_NAME);
+        getTableSchema(db.getReadOnlyDatabase(), TEST_DATA_MODEL_TABLE_NAME);
+        getTableSchema(db.getReadOnlyDatabase(), DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME);
     }
 
-    public void test_0002_downgradeToVersionOne()
+    @Test
+    public void test_0002_downgradeToVersionOne() throws Exception
     {
         Context ctx = getContext();
         UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_ONE;
@@ -154,10 +165,11 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
         // 'android_metadata' and if any auto increment tables are used, a 'sqlite_sequence' table.
         Assert.assertTrue("Expect more than one table", tables.size() >= 1);
 
-        Assert.assertTrue("Expect tables to contain test data model", tables.contains(UUTestDataModel.TableName));
+        Assert.assertTrue("Expect tables to contain test data model", tables.contains(new UUTestDataModel().getTableName()));
     }
 
-    public void test_0003_addObjectTwice()
+    @Test
+    public void test_0003_addObjectTwice() throws Exception
     {
         Context ctx = getContext();
         UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_TWO;
@@ -180,7 +192,8 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
         Assert.assertNull("Expect add to fail when object exists", added2);
     }
 
-    public void test_0004_createWithComplexDataModels()
+    @Test
+    public void test_0004_createWithComplexDataModels() throws Exception
     {
         Context ctx = getContext();
         UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_THREE;
@@ -188,7 +201,7 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
 
         UUTestDatabase db = new UUTestDatabase(ctx);
 
-        ArrayList<UUColumnDefinition> schema = getTableSchema(db.getReadOnlyDatabase(), UUComplexDataModel.TableName);
+        ArrayList<UUColumnDefinition> schema = getTableSchema(db.getReadOnlyDatabase(), COMPLEX_DATA_MODEL_TABLE_NAME);
         for (UUColumnDefinition cd : schema)
         {
             UULog.debug(getClass(), "test_0004_createWithComplexDataModels",
@@ -196,6 +209,57 @@ public class UUDatabaseTests extends ApplicationTestCase<Application>
             ", notnull: " + cd.notNull + ", defaultValue: " + (cd.defaultValue != null ? cd.defaultValue.toString() : "<null>") +
             ", pkIndex: " + cd.pkIndex);
         }
+    }
+
+    @Test
+    public void test_0005_addObject() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_THREE;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        UUTestDataModel model = new UUTestDataModel();
+        model.name = "Foobar";
+        model.team = "Boston";
+        model.number = 57;
+        UUTestDataModel added = db.addObject(UUTestDataModel.class, model);
+        Assert.assertNotNull(added);
+
+        model.name = "Hello World";
+        UUTestDataModel updated = db.updateObject(UUTestDataModel.class, model);
+        Assert.assertNotNull(updated);
+    }
+
+    @Test
+    public void test_0006_objectWithPrimitiveObjectTypes() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        DataModelWithObjPrimitiveTypes model = new DataModelWithObjPrimitiveTypes();
+        model.aFloat = 57.0f;
+        model.anInt = 22;
+        model.aPrimFloat = 1001.0f;
+
+        DataModelWithObjPrimitiveTypes added = db.addObject(DataModelWithObjPrimitiveTypes.class, model);
+        Assert.assertNotNull(added);
+        Assert.assertEquals(model.aFloat, added.aFloat);
+        Assert.assertEquals(model.anInt, added.anInt);
+        Assert.assertEquals(model.aPrimFloat, added.aPrimFloat);
+
+        model.aFloat = 99.0f;
+        model.anInt = 1234;
+        model.aPrimFloat = 129.0f;
+        DataModelWithObjPrimitiveTypes updated = db.updateObject(DataModelWithObjPrimitiveTypes.class, model);
+        Assert.assertNotNull(updated);
+        Assert.assertEquals(model.aFloat, updated.aFloat);
+        Assert.assertEquals(model.anInt, updated.anInt);
+        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat);
     }
 }
 

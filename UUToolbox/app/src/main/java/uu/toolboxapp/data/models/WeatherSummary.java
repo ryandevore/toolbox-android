@@ -1,86 +1,85 @@
 package uu.toolboxapp.data.models;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 
 import uu.toolbox.core.UUDate;
 import uu.toolbox.core.UUJson;
 import uu.toolbox.core.UUJsonConvertible;
-import uu.toolbox.data.UUContentValues;
-import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModel;
-import uu.toolbox.data.UUSqlColumnType;
+import uu.toolbox.data.UUSqlColumn;
+import uu.toolbox.data.UUSqlTable;
 
-/**
- * Created by ryandevore on 9/14/16.
- */
+@UUSqlTable(tableName = "weather_summary")
 public class WeatherSummary
         implements UUJsonConvertible, UUDataModel
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private static String TableName = "weather_summary";
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Enums
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private enum Columns
-    {
-        id,
-        city,
-        sunrise,
-        sunset,
-        latitude,
-        longitude,
-        weather_main,
-        weather_description,
-        weather_icon,
-        temperature,
-        pressure,
-        humidity,
-        min_temperature,
-        max_temperature,
-        wind_speed,
-        wind_direction,
-        visibility,
-        timestamp,
-        cloud_percent
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Data elements
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @UUSqlColumn(name = "id", type = UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT)
     private Long id;
+
+    @UUSqlColumn(name = "city", type = UUSqlColumn.Type.TEXT)
     private String city;
+
+    @UUSqlColumn(name = "sunrise", type = UUSqlColumn.Type.INT_64)
     private Long sunrise;
+
+    @UUSqlColumn(name = "sunset", type = UUSqlColumn.Type.INT_64)
     private Long sunset;
+
+    @UUSqlColumn(name = "latitude", type = UUSqlColumn.Type.REAL)
     private Double latitude;
+
+    @UUSqlColumn(name = "longitude", type = UUSqlColumn.Type.REAL)
     private Double longitude;
+
+    @UUSqlColumn(name = "weather_main", type = UUSqlColumn.Type.TEXT)
     private String weatherMain;
+
+    @UUSqlColumn(name = "weather_description", type = UUSqlColumn.Type.TEXT)
     private String weatherDescription;
+
+    @UUSqlColumn(name = "weather_icon", type = UUSqlColumn.Type.TEXT)
     private String weatherIcon;
+
+    @UUSqlColumn(name = "temperature", type = UUSqlColumn.Type.REAL)
     private Float temperature;
+
+    @UUSqlColumn(name = "pressure", type = UUSqlColumn.Type.INT_32)
     private Integer pressure;
+
+    @UUSqlColumn(name = "humidity", type = UUSqlColumn.Type.INT_32)
     private Integer humidity;
+
+    @UUSqlColumn(name = "min_temperature", type = UUSqlColumn.Type.REAL)
     private Float minTemperature;
+
+    @UUSqlColumn(name = "max_temperature", type = UUSqlColumn.Type.REAL)
     private Float maxTemperature;
+
+    @UUSqlColumn(name = "wind_speed", type = UUSqlColumn.Type.REAL)
     private Float windSpeed;
+
+    @UUSqlColumn(name = "wind_direction", type = UUSqlColumn.Type.REAL)
     private Float windDirection;
+
+    @UUSqlColumn(name = "visibility", type = UUSqlColumn.Type.INT_32)
     private Integer visibility;
+
+    @UUSqlColumn(name = "timestamp", type = UUSqlColumn.Type.INT_64)
     private Long timestamp;
+
+    @UUSqlColumn(name = "cloud_percent", type = UUSqlColumn.Type.REAL)
     private Float cloudPercent;
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public Accessors
@@ -367,122 +366,5 @@ public class WeatherSummary
         {
             return super.toString();
         }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // UUDataModel Methods
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //@Override
-    public int getVersion()
-    {
-        return 1;
-    }
-
-    @NonNull
-    @Override
-    public String getTableName()
-    {
-        return TableName;
-    }
-
-    @NonNull
-    @Override
-    public HashMap<Object, Object> getColumnMap(final int version)
-    {
-        HashMap<Object, Object> map = new HashMap<>();
-
-        map.put(Columns.id, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
-        map.put(Columns.city, UUSqlColumnType.text);
-        map.put(Columns.sunrise, UUSqlColumnType.int64);
-        map.put(Columns.sunset, UUSqlColumnType.int64);
-        map.put(Columns.latitude, UUSqlColumnType.real);
-        map.put(Columns.longitude, UUSqlColumnType.real);
-        map.put(Columns.weather_main, UUSqlColumnType.text);
-        map.put(Columns.weather_description, UUSqlColumnType.text);
-        map.put(Columns.weather_icon, UUSqlColumnType.text);
-        map.put(Columns.temperature, UUSqlColumnType.real);
-        map.put(Columns.pressure, UUSqlColumnType.int32);
-        map.put(Columns.humidity, UUSqlColumnType.int32);
-        map.put(Columns.min_temperature, UUSqlColumnType.real);
-        map.put(Columns.max_temperature, UUSqlColumnType.real);
-        map.put(Columns.wind_speed, UUSqlColumnType.real);
-        map.put(Columns.wind_direction, UUSqlColumnType.real);
-        map.put(Columns.visibility, UUSqlColumnType.int32);
-        map.put(Columns.timestamp, UUSqlColumnType.int64);
-        map.put(Columns.cloud_percent, UUSqlColumnType.real);
-
-        return map;
-    }
-
-    @Override
-    public String getPrimaryKeyColumnName()
-    {
-        // Return null because ID column is defined as auto increment.
-        return null;
-    }
-
-    @Override
-    @NonNull
-    public String getPrimaryKeyWhereClause()
-    {
-        return String.format(Locale.US, "%s = ?", Columns.id);
-    }
-
-    @NonNull
-    public String[] getPrimaryKeyWhereArgs()
-    {
-        return new String[] { String.valueOf(id) };
-    }
-
-    @NonNull
-    public ContentValues getContentValues(final int version)
-    {
-        ContentValues cv = new ContentValues();
-
-        UUContentValues.putIfNotNull(cv, Columns.id, getId());
-        UUContentValues.putIfNotNull(cv, Columns.city, getCity());
-        UUContentValues.putIfNotNull(cv, Columns.sunrise, getSunrise());
-        UUContentValues.putIfNotNull(cv, Columns.sunset, getSunset());
-        UUContentValues.putIfNotNull(cv, Columns.latitude, getLatitude());
-        UUContentValues.putIfNotNull(cv, Columns.longitude, getLongitude());
-        UUContentValues.putIfNotNull(cv, Columns.weather_main, getWeatherMain());
-        UUContentValues.putIfNotNull(cv, Columns.weather_description, getWeatherDescription());
-        UUContentValues.putIfNotNull(cv, Columns.weather_icon, getWeatherIcon());
-        UUContentValues.putIfNotNull(cv, Columns.temperature, getTemperature());
-        UUContentValues.putIfNotNull(cv, Columns.pressure, getPressure());
-        UUContentValues.putIfNotNull(cv, Columns.humidity, getHumidity());
-        UUContentValues.putIfNotNull(cv, Columns.min_temperature, getMinTemperature());
-        UUContentValues.putIfNotNull(cv, Columns.max_temperature, getMaxTemperature());
-        UUContentValues.putIfNotNull(cv, Columns.wind_speed, getWindSpeed());
-        UUContentValues.putIfNotNull(cv, Columns.wind_direction, getWindDirection());
-        UUContentValues.putIfNotNull(cv, Columns.visibility, getVisibility());
-        UUContentValues.putIfNotNull(cv, Columns.timestamp, getTimestamp());
-        UUContentValues.putIfNotNull(cv, Columns.cloud_percent, getCloudPercent());
-
-        return cv;
-    }
-
-    public void fillFromCursor(@NonNull final Cursor cursor)
-    {
-        setId(UUCursor.safeGetLong(cursor, Columns.id));
-        setCity(UUCursor.safeGetString(cursor, Columns.city));
-        setSunrise(UUCursor.safeGetLong(cursor, Columns.sunrise));
-        setSunset(UUCursor.safeGetLong(cursor, Columns.sunset));
-        setLatitude(UUCursor.safeGetDouble(cursor, Columns.latitude));
-        setLongitude(UUCursor.safeGetDouble(cursor, Columns.longitude));
-        setWeatherMain(UUCursor.safeGetString(cursor, Columns.weather_main));
-        setWeatherDescription(UUCursor.safeGetString(cursor, Columns.weather_description));
-        setWeatherIcon(UUCursor.safeGetString(cursor, Columns.weather_icon));
-        setTemperature(UUCursor.safeGetFloat(cursor, Columns.temperature));
-        setPressure(UUCursor.safeGetInt(cursor, Columns.pressure));
-        setHumidity(UUCursor.safeGetInt(cursor, Columns.humidity));
-        setMinTemperature(UUCursor.safeGetFloat(cursor, Columns.min_temperature));
-        setMaxTemperature(UUCursor.safeGetFloat(cursor, Columns.max_temperature));
-        setWindSpeed(UUCursor.safeGetFloat(cursor, Columns.wind_speed));
-        setWindDirection(UUCursor.safeGetFloat(cursor, Columns.wind_direction));
-        setVisibility(UUCursor.safeGetInt(cursor, Columns.visibility));
-        setTimestamp(UUCursor.safeGetLong(cursor, Columns.timestamp));
-        setCloudPercent(UUCursor.safeGetFloat(cursor, Columns.cloud_percent));
     }
 }

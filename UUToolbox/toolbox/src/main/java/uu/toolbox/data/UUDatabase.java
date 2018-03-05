@@ -427,7 +427,8 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      */
     public synchronized <T extends UUDataModel> T addObject(final Class<T> type, T object)
     {
-    	long rowid = insertRow(object.getTableName(), object.getContentValues(getVersion()));
+        ContentValues cv = object.getContentValues(getVersion());
+    	long rowid = insertRow(object.getTableName(), cv);
     	return querySingleObject(type, "ROWID = ?", new String[] { String.valueOf(rowid) }, null);
     }
 

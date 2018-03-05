@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import uu.toolbox.logging.UULog;
 import uu.toolboxapp.R;
+import uu.toolboxapp.server.WeatherService;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -18,14 +20,7 @@ public class MainActivity extends AppCompatActivity
         /*
         WeatherService.init(getApplicationContext());
 
-        WeatherService.sharedInstance().fetchWeather("Portland", "us", new WeatherService.WeatherDelegate()
-        {
-            @Override
-            public void onComplete()
-            {
-
-            }
-        });*/
+        */
     }
 
     @Override
@@ -54,6 +49,10 @@ public class MainActivity extends AppCompatActivity
 
     public void onWeatherClicked(View view)
     {
+        WeatherService.sharedInstance().fetchWeather("Portland", "us", () ->
+        {
+            UULog.debug(getClass(), "onWeatherClicked", "Weather has been refreshed");
 
+        });
     }
 }

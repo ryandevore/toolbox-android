@@ -1,138 +1,226 @@
 package uu.toolbox.data;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import java.util.HashMap;
-
+@UUSqlTable(tableName = "uu_complex_test_model")
 public class UUComplexDataModel implements UUDataModel
 {
-    public static String TableName = "uu_complex_test_model";
-
-    private enum Columns
-    {
-        id,
-        string_nullable_nodefault,
-        string_nullable_withdefault,
-        string_nonnull_nodefault,
-        string_nonnull_withdefault,
-
-        int_nullable_nodefault,
-        int_nullable_withdefault,
-        int_nonnull_nodefault,
-        int_nonnull_withdefault,
-
-        real_nullable_nodefault,
-        real_nullable_withdefault,
-        real_nonnull_nodefault,
-        real_nonnull_withdefault,
-
-        blob_nullable_nodefault,
-        blob_nullable_withdefault,
-        blob_nonnull_nodefault,
-        blob_nonnull_withdefault
-    }
-
-
+    @UUSqlColumn(name = "id", type = UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT)
     private int id;
 
+    @UUSqlColumn(name = "string_nullable_nodefault", type = UUSqlColumn.Type.TEXT, nullable = true)
     private String stringNullableNoDefault;
+
+    @UUSqlColumn(name = "string_nullable_withdefault", type = UUSqlColumn.Type.TEXT, nullable = true, defaultValue = "Foo")
     private String stringNullableWithDefault;
+
+    @UUSqlColumn(name = "string_nonnull_nodefault", type = UUSqlColumn.Type.TEXT, nonNull = true)
     private String stringNonNullNoDefault;
+
+    @UUSqlColumn(name = "string_nonnull_withdefault", type = UUSqlColumn.Type.TEXT, nonNull = true, defaultValue = "Bar")
     private String stringNonNullWithDefault;
 
+    @UUSqlColumn(name = "int_nullable_nodefault", type = UUSqlColumn.Type.INTEGER, nullable = true)
     private int intNullableNoDefault;
+
+    @UUSqlColumn(name = "int_nullable_withdefault", type = UUSqlColumn.Type.INTEGER, nullable = true, defaultValue = "99")
     private int intNullableWithDefault;
+
+    @UUSqlColumn(name = "int_nonnull_nodefault", type = UUSqlColumn.Type.INTEGER, nonNull = true)
     private int intNonNullNoDefault;
+
+    @UUSqlColumn(name = "int_nonnull_withdefault", type = UUSqlColumn.Type.INTEGER, nonNull = true, defaultValue = "57.0")
     private int intNonNullWithDefault;
 
+    @UUSqlColumn(name = "real_nullable_nodefault", type = UUSqlColumn.Type.REAL, nullable = true)
     private double realNullableNoDefault;
+
+    @UUSqlColumn(name = "real_nullable_withdefault", type = UUSqlColumn.Type.REAL, nullable = true, defaultValue = "32.0")
     private double realNullableWithDefault;
+
+    @UUSqlColumn(name = "real_nonnull_nodefault", type = UUSqlColumn.Type.REAL, nonNull = true)
     private double realNonNullNoDefault;
+
+    @UUSqlColumn(name = "real_nonnull_withdefault", type = UUSqlColumn.Type.REAL, nonNull = true, defaultValue = "4")
     private double realNonNullWithDefault;
 
+    @UUSqlColumn(name = "blob_nullable_nodefault", type = UUSqlColumn.Type.BLOB, nullable = true)
     private byte[] blobNullableNoDefault;
+
+    @UUSqlColumn(name = "blob_nullable_withdefault", type = UUSqlColumn.Type.BLOB, nullable = true, defaultValue = "0xABCD")
     private byte[] blobNullableWithDefault;
+
+    @UUSqlColumn(name = "blob_nonnull_nodefault", type = UUSqlColumn.Type.BLOB, nonNull = true)
     private byte[] blobNonNullNoDefault;
+
+    @UUSqlColumn(name = "blob_nonnull_withdefault", type = UUSqlColumn.Type.BLOB, nonNull = true, defaultValue = "0x1234")
     private byte[] blobNonNullWithDefault;
 
-    @NonNull
-    @Override
-    public String getTableName()
+    public int getId()
     {
-        return TableName;
+        return id;
     }
 
-    @NonNull
-    @Override
-    public HashMap<Object, Object> getColumnMap(int version)
+    public void setId(int id)
     {
-        HashMap<Object, Object> map = new HashMap<>();
-
-        map.put(Columns.id, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
-
-        map.put(Columns.string_nullable_nodefault, UUSqlColumnType.text);
-        map.put(Columns.string_nullable_withdefault, UUSqlColumnType.text.withDefault("Foo"));
-        map.put(Columns.string_nonnull_nodefault, UUSqlColumnType.text.notNull());
-        map.put(Columns.string_nonnull_withdefault, UUSqlColumnType.text.notNull().withDefault("Bar"));
-
-        map.put(Columns.int_nullable_nodefault, UUSqlColumnType.integer);
-        map.put(Columns.int_nullable_withdefault, UUSqlColumnType.integer.withDefault("99"));
-        map.put(Columns.int_nonnull_nodefault, UUSqlColumnType.integer.notNull());
-        map.put(Columns.int_nonnull_withdefault, UUSqlColumnType.integer.notNull().withDefault("4"));
-
-        map.put(Columns.real_nullable_nodefault, UUSqlColumnType.real);
-        map.put(Columns.real_nullable_withdefault, UUSqlColumnType.real.withDefault("57.0"));
-        map.put(Columns.real_nonnull_nodefault, UUSqlColumnType.real.notNull());
-        map.put(Columns.real_nonnull_withdefault, UUSqlColumnType.real.notNull().withDefault("32.0"));
-
-        map.put(Columns.blob_nullable_nodefault, UUSqlColumnType.blob);
-        map.put(Columns.blob_nullable_withdefault, UUSqlColumnType.blob.withDefault("0xABCD"));
-        map.put(Columns.blob_nonnull_nodefault, UUSqlColumnType.blob.notNull());
-        map.put(Columns.blob_nonnull_withdefault, UUSqlColumnType.blob.notNull().withDefault("0x1234"));
-
-        return map;
+        this.id = id;
     }
 
-    @Nullable
-    @Override
-    public String getPrimaryKeyColumnName()
+    public String getStringNullableNoDefault()
     {
-        // Return NULL because create uses auto increment column
-        return null;
+        return stringNullableNoDefault;
     }
 
-    @NonNull
-    @Override
-    public String getPrimaryKeyWhereClause()
+    public void setStringNullableNoDefault(String stringNullableNoDefault)
     {
-        return UUSql.buildSingleColumnWhere(Columns.id);
+        this.stringNullableNoDefault = stringNullableNoDefault;
     }
 
-    @NonNull
-    @Override
-    public String[] getPrimaryKeyWhereArgs()
+    public String getStringNullableWithDefault()
     {
-        return new String[] { String.valueOf(id) };
+        return stringNullableWithDefault;
     }
 
-    @NonNull
-    @Override
-    public ContentValues getContentValues(int version)
+    public void setStringNullableWithDefault(String stringNullableWithDefault)
     {
-        ContentValues cv = new ContentValues();
-
-        UUContentValues.putIfNotNull(cv, Columns.id, id);
-
-        return cv;
+        this.stringNullableWithDefault = stringNullableWithDefault;
     }
 
-    @Override
-    public void fillFromCursor(@NonNull Cursor cursor)
+    public String getStringNonNullNoDefault()
     {
-        id = UUCursor.safeGetInt(cursor, Columns.id);
+        return stringNonNullNoDefault;
+    }
 
+    public void setStringNonNullNoDefault(String stringNonNullNoDefault)
+    {
+        this.stringNonNullNoDefault = stringNonNullNoDefault;
+    }
+
+    public String getStringNonNullWithDefault()
+    {
+        return stringNonNullWithDefault;
+    }
+
+    public void setStringNonNullWithDefault(String stringNonNullWithDefault)
+    {
+        this.stringNonNullWithDefault = stringNonNullWithDefault;
+    }
+
+    public int getIntNullableNoDefault()
+    {
+        return intNullableNoDefault;
+    }
+
+    public void setIntNullableNoDefault(int intNullableNoDefault)
+    {
+        this.intNullableNoDefault = intNullableNoDefault;
+    }
+
+    public int getIntNullableWithDefault()
+    {
+        return intNullableWithDefault;
+    }
+
+    public void setIntNullableWithDefault(int intNullableWithDefault)
+    {
+        this.intNullableWithDefault = intNullableWithDefault;
+    }
+
+    public int getIntNonNullNoDefault()
+    {
+        return intNonNullNoDefault;
+    }
+
+    public void setIntNonNullNoDefault(int intNonNullNoDefault)
+    {
+        this.intNonNullNoDefault = intNonNullNoDefault;
+    }
+
+    public int getIntNonNullWithDefault()
+    {
+        return intNonNullWithDefault;
+    }
+
+    public void setIntNonNullWithDefault(int intNonNullWithDefault)
+    {
+        this.intNonNullWithDefault = intNonNullWithDefault;
+    }
+
+    public double getRealNullableNoDefault()
+    {
+        return realNullableNoDefault;
+    }
+
+    public void setRealNullableNoDefault(double realNullableNoDefault)
+    {
+        this.realNullableNoDefault = realNullableNoDefault;
+    }
+
+    public double getRealNullableWithDefault()
+    {
+        return realNullableWithDefault;
+    }
+
+    public void setRealNullableWithDefault(double realNullableWithDefault)
+    {
+        this.realNullableWithDefault = realNullableWithDefault;
+    }
+
+    public double getRealNonNullNoDefault()
+    {
+        return realNonNullNoDefault;
+    }
+
+    public void setRealNonNullNoDefault(double realNonNullNoDefault)
+    {
+        this.realNonNullNoDefault = realNonNullNoDefault;
+    }
+
+    public double getRealNonNullWithDefault()
+    {
+        return realNonNullWithDefault;
+    }
+
+    public void setRealNonNullWithDefault(double realNonNullWithDefault)
+    {
+        this.realNonNullWithDefault = realNonNullWithDefault;
+    }
+
+    public byte[] getBlobNullableNoDefault()
+    {
+        return blobNullableNoDefault;
+    }
+
+    public void setBlobNullableNoDefault(byte[] blobNullableNoDefault)
+    {
+        this.blobNullableNoDefault = blobNullableNoDefault;
+    }
+
+    public byte[] getBlobNullableWithDefault()
+    {
+        return blobNullableWithDefault;
+    }
+
+    public void setBlobNullableWithDefault(byte[] blobNullableWithDefault)
+    {
+        this.blobNullableWithDefault = blobNullableWithDefault;
+    }
+
+    public byte[] getBlobNonNullNoDefault()
+    {
+        return blobNonNullNoDefault;
+    }
+
+    public void setBlobNonNullNoDefault(byte[] blobNonNullNoDefault)
+    {
+        this.blobNonNullNoDefault = blobNonNullNoDefault;
+    }
+
+    public byte[] getBlobNonNullWithDefault()
+    {
+        return blobNonNullWithDefault;
+    }
+
+    public void setBlobNonNullWithDefault(byte[] blobNonNullWithDefault)
+    {
+        this.blobNonNullWithDefault = blobNonNullWithDefault;
     }
 }
