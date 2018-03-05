@@ -1,6 +1,6 @@
 package uu.toolbox.data;
 
-@UUSqlTable(tableName = "uu_test_model")
+@UUSqlTable()
 public class UUTestDataModel implements UUDataModel
 {
     @UUSqlColumn(primaryKey = true)

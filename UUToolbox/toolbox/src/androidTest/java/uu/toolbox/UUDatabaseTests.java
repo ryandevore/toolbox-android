@@ -25,7 +25,7 @@ import uu.toolbox.logging.UULog;
 @RunWith(AndroidJUnit4.class)
 public class UUDatabaseTests
 {
-    private static String TEST_DATA_MODEL_TABLE_NAME = "uu_test_model";
+    private static String TEST_DATA_MODEL_TABLE_NAME = "uutest_data_model";
     private static String DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME = "uu_data_model_with_compound_key";
     private static String COMPLEX_DATA_MODEL_TABLE_NAME = "uu_complex_test_model";
 
