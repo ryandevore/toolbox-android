@@ -449,7 +449,8 @@ public interface UUDataModel
             {
                 columnType = UUSqlColumn.Type.INT_16.toString();
             }
-            else if (Byte.class == fieldType || byte.class == fieldType)
+            else if (Byte.class == fieldType || byte.class == fieldType ||
+                     Boolean.class == fieldType || boolean.class == fieldType)
             {
                 columnType = UUSqlColumn.Type.INT_8.toString();
             }
