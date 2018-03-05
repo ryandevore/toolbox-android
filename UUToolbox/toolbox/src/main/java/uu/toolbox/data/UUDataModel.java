@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
 /**
@@ -51,7 +52,7 @@ public interface UUDataModel
                 {
                     if (version >= columnAnnotation.existsInVersion())
                     {
-                        map.put(columnAnnotation.name(), buildColumnCreateType(field, columnAnnotation));
+                        map.put(columnNameForField(field), buildColumnCreateType(field, columnAnnotation));
                     }
                 }
             }
@@ -97,7 +98,7 @@ public interface UUDataModel
                             sb.append(" , " );
                         }
 
-                        sb.append(columnAnnotation.name());
+                        sb.append(columnNameForField(field));
                     }
                 }
             }
@@ -144,7 +145,7 @@ public interface UUDataModel
                             sb.append(" AND " );
                         }
 
-                        sb.append(String.format(Locale.US, "%s = ?", columnAnnotation.name()));
+                        sb.append(String.format(Locale.US, "%s = ?", columnNameForField(field)));
                     }
                 }
             }
@@ -219,7 +220,7 @@ public interface UUDataModel
                 {
                     if (version >= columnAnnotation.existsInVersion())
                     {
-                        UUContentValues.putObjectIfNotNull(cv, columnAnnotation.name(), field.get(this));
+                        UUContentValues.putObjectIfNotNull(cv, columnNameForField(field), field.get(this));
                     }
                 }
             }
@@ -303,7 +304,7 @@ public interface UUDataModel
                 UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
                 if (columnAnnotation != null)
                 {
-                    Object fieldValue = getField(cursor, columnAnnotation, field.getType());
+                    Object fieldValue = getField(cursor, columnAnnotation, field);
                     field.set(this, fieldValue);
                 }
             }
@@ -314,11 +315,12 @@ public interface UUDataModel
         }
     }
 
-    static Object getField(@NonNull final Cursor cursor, @NonNull final UUSqlColumn columnAnnotation, @NonNull final Class fieldType)
+    static Object getField(@NonNull final Cursor cursor, @NonNull final UUSqlColumn columnAnnotation, @NonNull final Field field)
     {
         try
         {
-            String column = columnAnnotation.name();
+            Class fieldType = field.getType();
+            String column = columnNameForField(field);
 
             if (fieldType == String.class)
             {
@@ -374,7 +376,8 @@ public interface UUDataModel
         return (columnAnnotation.primaryKey() || columnAnnotation.type() == UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT);
     }
 
-    static String tableNameForClass(Class<?> tableClass)
+    @NonNull
+    static String tableNameForClass(@NonNull Class<?> tableClass)
     {
         String tableName = null;
 
@@ -384,12 +387,85 @@ public interface UUDataModel
             tableName = annotation.tableName();
         }
 
-        if (tableName == null)
+        if (UUString.isEmpty(tableName))
         {
-            tableName = tableClass.getSimpleName();
+            tableName = UUString.toSnakeCase(tableClass.getSimpleName());
         }
 
         return tableName;
+    }
+
+    @NonNull
+    static String columnNameForField(@NonNull final Field field)
+    {
+        String columnName = null;
+
+        UUSqlColumn annotation = field.getAnnotation(UUSqlColumn.class);
+        if (annotation != null)
+        {
+            columnName = annotation.name();
+        }
+
+        if (UUString.isEmpty(columnName))
+        {
+            columnName = UUString.toSnakeCase(field.getName());
+        }
+
+        return columnName;
+    }
+
+    @NonNull
+    static String columnTypeForField(@NonNull final Field field)
+    {
+        String columnType = null;
+
+        UUSqlColumn annotation = field.getAnnotation(UUSqlColumn.class);
+        if (annotation != null)
+        {
+            columnType = annotation.type().toString();
+        }
+
+        if (UUString.isEmpty(columnType))
+        {
+            Class fieldType = field.getType();
+
+            if (String.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.TEXT.toString();
+            }
+            else if (Byte[].class == fieldType || byte[].class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.BLOB.toString();
+            }
+            else if (Long.class == fieldType || long.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.INT_64.toString();
+            }
+            else if (Integer.class == fieldType || int.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.INT_32.toString();
+            }
+            else if (Short.class == fieldType || short.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.INT_16.toString();
+            }
+            else if (Byte.class == fieldType || byte.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.INT_8.toString();
+            }
+            else if (Double.class == fieldType || double.class == fieldType ||
+                     Float.class == fieldType || float.class == fieldType)
+            {
+                columnType = UUSqlColumn.Type.REAL.toString();
+            }
+        }
+
+        if (UUString.isEmpty(columnType))
+        {
+            columnType = UUSqlColumn.Type.TEXT.toString();
+        }
+
+        return columnType;
     }
 
     @NonNull
@@ -401,7 +477,7 @@ public interface UUDataModel
         {
             field.setAccessible(true);
 
-            sb.append(columnAnnotation.type());
+            sb.append(columnTypeForField(field));
 
             if (columnAnnotation.nullable())
             {

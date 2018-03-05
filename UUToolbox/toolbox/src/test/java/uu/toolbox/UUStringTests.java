@@ -1,8 +1,12 @@
 package uu.toolbox;
 
+import android.support.v4.util.Pair;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import uu.toolbox.core.UUString;
 
@@ -25,5 +29,26 @@ public class UUStringTests
         String check2 = UUString.byteToAsciiString(buffer).trim();// .replace("\0", "");
 
         Assert.assertEquals("Expect conversion to and from bytes with extra zeros yields the same input", input, check2);
+    }
+
+    @Test
+    public void toSnakeCaseTest()
+    {
+        ArrayList<Pair<String, String>> testData = new ArrayList<>();
+        testData.add(new Pair<>("foo", "foo"));
+        testData.add(new Pair<>("Foo", "foo"));
+        testData.add(new Pair<>("fooBar", "foo_bar"));
+        testData.add(new Pair<>("FooBar", "foo_bar"));
+        testData.add(new Pair<>("FOoBar", "foo_bar"));
+        testData.add(new Pair<>("ThisIsCamelCase", "this_is_camel_case"));
+
+        for (Pair<String,String> td : testData)
+        {
+            String input = td.first;
+            String expected = td.second;
+            String actual = UUString.toSnakeCase(input);
+            Assert.assertEquals(expected, actual);
+
+        }
     }
 }

@@ -19,7 +19,8 @@ public @interface UUSqlColumn
         INTEGER("INTEGER"),
         REAL("REAL"),
         BLOB("BLOB"),
-        INTEGER_PRIMARY_KEY_AUTOINCREMENT("INTEGER PRIMARY KEY AUTOINCREMENT");
+        INTEGER_PRIMARY_KEY_AUTOINCREMENT("INTEGER PRIMARY KEY AUTOINCREMENT"),
+        INFER_FROM_FIELD_TYPE("");
 
         private String value;
 
@@ -35,8 +36,8 @@ public @interface UUSqlColumn
         }
     }
 
-    String name();
-    Type type() default Type.TEXT;
+    String name() default "";
+    Type type() default Type.INFER_FROM_FIELD_TYPE;
     boolean nullable() default false;
     boolean nonNull() default false;
     String defaultValue() default "";
