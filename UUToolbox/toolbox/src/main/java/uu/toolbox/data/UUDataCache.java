@@ -1,8 +1,6 @@
 package uu.toolbox.data;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -350,79 +348,17 @@ public class UUDataCache implements UUDataCacheProtocol
     }
 
 
+    @UUSqlTable(tableName = "uu_data_cache_meta_data")
     public static class UUDataCacheMetaData implements UUDataModel
     {
-        private static final String TABLE_NAME = "uu_data_cache_meta_data";
-
-        private static final String NAME_COLUMN = "name";
-        private static final String TIMESTAMP_COLUMN = "timestamp";
-        private static final String META_DATA_COLUMN = "meta_data";
-
+        @UUSqlColumn(name = "name", type = UUSqlColumn.Type.TEXT, primaryKey = true)
         private String name;
+
+        @UUSqlColumn(name = "timestamp", type = UUSqlColumn.Type.REAL)
         private long timestamp;
+
+        @UUSqlColumn(name = "meta_data", type = UUSqlColumn.Type.TEXT)
         private String metaData;
-
-        @NonNull
-        @Override
-        public String getTableName()
-        {
-            return TABLE_NAME;
-        }
-
-        @NonNull
-        @Override
-        public HashMap<Object, Object> getColumnMap(final int version)
-        {
-            HashMap<Object, Object> map = new HashMap<>();
-
-            map.put(NAME_COLUMN, UUSqlColumnType.text);
-            map.put(TIMESTAMP_COLUMN, UUSqlColumnType.int64);
-            map.put(META_DATA_COLUMN, UUSqlColumnType.text);
-
-            return map;
-        }
-
-        @Nullable
-        @Override
-        public String getPrimaryKeyColumnName()
-        {
-            return NAME_COLUMN;
-        }
-
-        @NonNull
-        @Override
-        public String getPrimaryKeyWhereClause()
-        {
-            return String.format(Locale.US, "%s = ?", NAME_COLUMN);
-        }
-
-        @NonNull
-        @Override
-        public String[] getPrimaryKeyWhereArgs()
-        {
-            return new String[] { name };
-        }
-
-        @NonNull
-        @Override
-        public ContentValues getContentValues(final int version)
-        {
-            ContentValues cv = new ContentValues();
-
-            UUContentValues.putIfNotNull(cv, NAME_COLUMN, name);
-            UUContentValues.putIfNotNull(cv, TIMESTAMP_COLUMN, timestamp);
-            UUContentValues.putIfNotNull(cv, META_DATA_COLUMN, metaData);
-
-            return cv;
-        }
-
-        @Override
-        public void fillFromCursor(@NonNull Cursor cursor)
-        {
-            name = UUCursor.safeGetString(cursor, NAME_COLUMN);
-            timestamp = UUCursor.safeGetLong(cursor, TIMESTAMP_COLUMN);
-            metaData = UUCursor.safeGetString(cursor, META_DATA_COLUMN);
-        }
 
         @NonNull
         private HashMap<String, Object> explodeMetaData()
@@ -477,7 +413,7 @@ public class UUDataCache implements UUDataCacheProtocol
         @NonNull
         private HashMap<String, Object> getMetaData(@NonNull final String key)
         {
-            String where = String.format(Locale.US, "%s = ?", UUDataCacheMetaData.NAME_COLUMN);
+            String where = String.format(Locale.US, "%s = ?", "name");
             String[] whereArgs = new String[] { key };
 
             HashMap<String, Object> result = new HashMap<>();

@@ -17,7 +17,7 @@ import uu.toolbox.data.UUContentValues;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModel;
 import uu.toolbox.data.UUSql;
-import uu.toolbox.data.UUSqlColumnType;
+import uu.toolbox.data.UUSqlColumn;
 
 public class UUSqlTests
 {
@@ -27,10 +27,10 @@ public class UUSqlTests
         String tableName = "uu_test_table";
 
         HashMap<Object, Object> map = new LinkedHashMap<>();
-        map.put("id", UUSqlColumnType.integer);
-        map.put("name", UUSqlColumnType.text);
-        map.put("photo", UUSqlColumnType.blob);
-        map.put("timestamp", UUSqlColumnType.real);
+        map.put("id", UUSqlColumn.Type.INTEGER);
+        map.put("name", UUSqlColumn.Type.TEXT);
+        map.put("photo", UUSqlColumn.Type.BLOB);
+        map.put("timestamp", UUSqlColumn.Type.REAL);
 
         String sql = UUSql.buildCreateSql(tableName, map, null);
         Assert.assertNotNull("Expect buildCreateSql to generate non null string", sql);
@@ -45,10 +45,10 @@ public class UUSqlTests
         String tableName = "uu_test_table";
 
         HashMap<Object, Object> map = new LinkedHashMap<>();
-        map.put("id", UUSqlColumnType.integer);
-        map.put("name", UUSqlColumnType.text);
-        map.put("photo", UUSqlColumnType.blob);
-        map.put("timestamp", UUSqlColumnType.real);
+        map.put("id", UUSqlColumn.Type.INTEGER);
+        map.put("name", UUSqlColumn.Type.TEXT);
+        map.put("photo", UUSqlColumn.Type.BLOB);
+        map.put("timestamp", UUSqlColumn.Type.REAL);
 
         String sql = UUSql.buildCreateSql(tableName, map, "id");
         Assert.assertNotNull("Expect buildCreateSql to generate non null string", sql);
@@ -267,14 +267,14 @@ public class UUSqlTests
 
             if (version >= VERSION_ONE)
             {
-                map.put(ID_COLUMN, UUSqlColumnType.integerPrimaryKeyAutoIncrement);
-                map.put(NAME_COLUMN, UUSqlColumnType.text);
-                map.put(TEAM_COLUMN, UUSqlColumnType.text);
+                map.put(ID_COLUMN, UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT);
+                map.put(NAME_COLUMN, UUSqlColumn.Type.TEXT);
+                map.put(TEAM_COLUMN, UUSqlColumn.Type.TEXT);
             }
 
             if (version >= VERSION_TWO)
             {
-                map.put(NUMBER_COLUMN, UUSqlColumnType.integer);
+                map.put(NUMBER_COLUMN, UUSqlColumn.Type.INTEGER);
             }
 
             return map;
