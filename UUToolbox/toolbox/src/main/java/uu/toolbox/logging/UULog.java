@@ -23,6 +23,7 @@ public class UULog
     public static final boolean LOGGING_ENABLED = true;
     private static final String NEW_LINE = "\n";
     private static final String LOG_TAG = "UULog";
+    private static final int LINE_LENGTH = 4000;
 
     private static UUWorkerThread workerThread = new UUWorkerThread();
 
@@ -264,16 +265,20 @@ public class UULog
             int expectedToWrite = logLine.length();
             int totalWritten = 0;
 
+
             while (totalWritten < expectedToWrite)
             {
-                totalWritten += Log.println(level, tag, logLine.substring(totalWritten));
+                String chunk = logLine.substring(totalWritten, Math.min(totalWritten + LINE_LENGTH, logLine.length()));
+                int bytesWritten = Log.println(level, tag, chunk);
 
                 // On some devices, logging seems to fail and return zero.  In this case, we have to just
                 // abort and let the app keep running.
-                if (totalWritten <= 0)
+                if (bytesWritten <= 0)
                 {
                     break;
                 }
+
+                totalWritten += chunk.length();
             }
         }
         catch (Exception ex)
