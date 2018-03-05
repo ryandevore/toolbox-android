@@ -15,7 +15,18 @@ public interface UUDatabaseDefinition
 
 	ArrayList<UUDataModel> getDataModels(int version);
 
-	void handlePostOpen(SQLiteDatabase db, int version);
-	void handlePostCreate(SQLiteDatabase db, int version);
-	void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
+	default void handlePostOpen(SQLiteDatabase db, int version)
+	{
+
+	}
+
+	default void handlePostCreate(SQLiteDatabase db, int version)
+	{
+
+	}
+
+	default void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+	{
+
+	}
 }

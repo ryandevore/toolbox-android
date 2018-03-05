@@ -1,7 +1,6 @@
 package uu.toolbox.data;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -61,23 +60,5 @@ public class UUTestDatabase extends UUDatabase
         }
 
         return list;
-    }
-
-    @Override
-    public void handlePostOpen(SQLiteDatabase db, int version)
-    {
-
-    }
-
-    @Override
-    public void handlePostCreate(SQLiteDatabase db, int version)
-    {
-
-    }
-
-    @Override
-    public void handlePostUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-    {
-
     }
 }
