@@ -338,7 +338,7 @@ public class UUString
     @NonNull
     public static String toSnakeCase(@NonNull final String string)
     {
-        String regex = "(\\p{Ll})(\\p{Lu})";////"([A-Z][a-z]+)";
+        String regex = "(\\p{Ll})(\\p{Lu})";
         String replacement = "$1_$2";
 
         return string.replaceAll(regex, replacement).toLowerCase();
