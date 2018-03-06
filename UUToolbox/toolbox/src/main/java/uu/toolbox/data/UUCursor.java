@@ -13,12 +13,23 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public final class UUCursor
 {
-    public static Short safeGetShort(final Cursor cursor, final Object column)
+    public static short safeGetShort(final Cursor cursor, final Object column)
     {
-        return safeGetShort(cursor, column, null);
+        return safeGetShort(cursor, column, (short)0);
     }
 
-    public static Short safeGetShort(final Cursor cursor, final Object column, final Short defaultValue)
+    public static short safeGetShort(final Cursor cursor, final Object column, final short defaultValue)
+    {
+        Short objResult = safeGetShortObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Short safeGetShortObject(final Cursor cursor, final Object column)
+    {
+        return safeGetShortObject(cursor, column, null);
+    }
+
+    public static Short safeGetShortObject(final Cursor cursor, final Object column, final Short defaultValue)
     {
         Short result = defaultValue;
 
@@ -34,12 +45,23 @@ public final class UUCursor
         return result;
     }
 
-    public static Integer safeGetInt(final Cursor cursor, final Object column)
+    public static int safeGetInt(final Cursor cursor, final Object column)
     {
-        return safeGetInt(cursor, column, null);
+        return safeGetInt(cursor, column, 0);
     }
 
-    public static Integer safeGetInt(final Cursor cursor, final Object column, final Integer defaultValue)
+    public static int safeGetInt(final Cursor cursor, final Object column, final int defaultValue)
+    {
+        Integer objResult = safeGetIntObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Integer safeGetIntObject(final Cursor cursor, final Object column)
+    {
+        return safeGetIntObject(cursor, column, null);
+    }
+
+    public static Integer safeGetIntObject(final Cursor cursor, final Object column, final Integer defaultValue)
     {
         Integer result = defaultValue;
 
@@ -55,12 +77,23 @@ public final class UUCursor
         return result;
     }
 
-    public static Long safeGetLong(final Cursor cursor, final Object column)
+    public static long safeGetLong(final Cursor cursor, final Object column)
     {
-        return safeGetLong(cursor, column, null);
+        return safeGetLong(cursor, column, 0L);
     }
 
-    public static Long safeGetLong(final Cursor cursor, final Object column, final Long defaultValue)
+    public static long safeGetLong(final Cursor cursor, final Object column, final long defaultValue)
+    {
+        Long objResult = safeGetLongObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Long safeGetLongObject(final Cursor cursor, final Object column)
+    {
+        return safeGetLongObject(cursor, column, null);
+    }
+
+    public static Long safeGetLongObject(final Cursor cursor, final Object column, final Long defaultValue)
     {
         Long result = defaultValue;
 
@@ -76,12 +109,23 @@ public final class UUCursor
         return result;
     }
 
-    public static Boolean safeGetBoolean(final Cursor cursor, final Object column)
+    public static boolean safeGetBoolean(final Cursor cursor, final Object column)
     {
-        return safeGetBoolean(cursor, column, null);
+        return safeGetBoolean(cursor, column, false);
     }
 
-    public static Boolean safeGetBoolean(final Cursor cursor, final Object column, final Boolean defaultValue)
+    public static boolean safeGetBoolean(final Cursor cursor, final Object column, final boolean defaultValue)
+    {
+        Boolean objResult = safeGetBooleanObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Boolean safeGetBooleanObject(final Cursor cursor, final Object column)
+    {
+        return safeGetBooleanObject(cursor, column, null);
+    }
+
+    public static Boolean safeGetBooleanObject(final Cursor cursor, final Object column, final Boolean defaultValue)
     {
         Boolean result = defaultValue;
 
@@ -97,12 +141,23 @@ public final class UUCursor
         return result;
     }
 
-    public static Float safeGetFloat(final Cursor cursor, final Object column)
+    public static float safeGetFloat(final Cursor cursor, final Object column)
     {
-        return safeGetFloat(cursor, column, null);
+        return safeGetFloat(cursor, column, 0.0f);
     }
 
-    public static Float safeGetFloat(final Cursor cursor, final Object column, final Float defaultValue)
+    public static float safeGetFloat(final Cursor cursor, final Object column, final float defaultValue)
+    {
+        Float objResult = safeGetFloatObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Float safeGetFloatObject(final Cursor cursor, final Object column)
+    {
+        return safeGetFloatObject(cursor, column, null);
+    }
+
+    public static Float safeGetFloatObject(final Cursor cursor, final Object column, final Float defaultValue)
     {
         Float result = defaultValue;
 
@@ -118,12 +173,23 @@ public final class UUCursor
         return result;
     }
 
-    public static Double safeGetDouble(final Cursor cursor, final Object column)
+    public static double safeGetDouble(final Cursor cursor, final Object column)
     {
-        return safeGetDouble(cursor, column, null);
+        return safeGetDouble(cursor, column, (double)0.0f);
     }
 
-    public static Double safeGetDouble(final Cursor cursor, final Object column, final Double defaultValue)
+    public static double safeGetDouble(final Cursor cursor, final Object column, final Double defaultValue)
+    {
+        Double objResult = safeGetDoubleObject(cursor, column, null);
+        return (objResult != null ? objResult : defaultValue);
+    }
+
+    public static Double safeGetDoubleObject(final Cursor cursor, final Object column)
+    {
+        return safeGetDoubleObject(cursor, column, null);
+    }
+
+    public static Double safeGetDoubleObject(final Cursor cursor, final Object column, final Double defaultValue)
     {
         Double result = defaultValue;
 
@@ -185,11 +251,31 @@ public final class UUCursor
      * Safely gets a column value based on the cursor field type
      *
      * @param cursor a database cursor
+     * @param column column name to get
+     * @param defaultValue the default value
+     *
+     * @return an Object of type String, Long, Double, byte[], or null
+     */
+//    @Nullable
+//    public static Object safeGet(
+//            @NonNull final Cursor cursor,
+//            @NonNull final Object column,
+//            @Nullable final Object defaultValue)
+//    {
+//        int index = cursor.getColumnIndex(column.toString());
+//        return safeGet(cursor, index, defaultValue);
+//    }
+
+    /**
+     * Safely gets a column value based on the cursor field type
+     *
+     * @param cursor a database cursor
      * @param index index to get
      * @param defaultValue the default value
      *
      * @return an Object of type String, Long, Double, byte[], or null
      */
+
     @Nullable
     public static Object safeGet(
         @NonNull final Cursor cursor,
@@ -247,5 +333,113 @@ public final class UUCursor
         }
 
         return result;
+    }
+
+    @Nullable
+    public static <T> Object safeGet(
+            @NonNull Class<T> fieldType,
+            @NonNull final Cursor cursor,
+            @NonNull final Object column,
+            @Nullable final T defaultValue)
+    {
+        try
+        {
+            if (fieldType == long.class)
+            {
+                return safeGetLong(cursor, column, defaultValue != null ? long.class.cast(defaultValue) : 0L);
+            }
+            else if (fieldType == int.class)
+            {
+                return safeGetInt(cursor, column, defaultValue != null ? int.class.cast(defaultValue) : 0);
+            }
+            else if (fieldType == short.class)
+            {
+                return safeGetShort(cursor, column, defaultValue != null ? short.class.cast(defaultValue) : (short)0);
+            }
+            else if (fieldType == byte.class)
+            {
+                int val = safeGetInt(cursor, column, defaultValue != null ? int.class.cast(defaultValue) : 0);
+                return (byte)val;
+            }
+            else if (fieldType == float.class)
+            {
+                return safeGetFloat(cursor, column, defaultValue != null ? float.class.cast(defaultValue) : 0.0f);
+            }
+            else if (fieldType == double.class)
+            {
+                return safeGetDouble(cursor, column, defaultValue != null ? double.class.cast(defaultValue) : (double)0.0f);
+            }
+            else if (fieldType == boolean.class)
+            {
+                return safeGetBoolean(cursor, column, defaultValue != null ? boolean.class.cast(defaultValue) : false);
+            }
+            else if (fieldType == char.class)
+            {
+                int val = safeGetInt(cursor, column, defaultValue != null ? int.class.cast(defaultValue) : 0);
+                return (char)((byte)val);
+            }
+            else if (fieldType == Long.class)
+            {
+                return safeGetLongObject(cursor, column, (Long)defaultValue);
+            }
+            else if (fieldType == Integer.class)
+            {
+                return safeGetIntObject(cursor, column, (Integer) defaultValue);
+            }
+            else if (fieldType == Short.class)
+            {
+                return safeGetShortObject(cursor, column, (Short)defaultValue);
+            }
+            else if (fieldType == Byte.class)
+            {
+                int val = safeGetInt(cursor, column, defaultValue != null ? int.class.cast(defaultValue) : 0);
+                return (byte)val;
+            }
+            else if (fieldType == Float.class)
+            {
+                return safeGetFloatObject(cursor, column, (Float)defaultValue);
+            }
+            else if (fieldType == Double.class)
+            {
+                return safeGetDoubleObject(cursor, column, (Double)defaultValue);
+            }
+            else if (fieldType == Boolean.class)
+            {
+                return safeGetBooleanObject(cursor, column, (Boolean) defaultValue);
+            }
+            else if (fieldType == Character.class)
+            {
+                int val = safeGetInt(cursor, column, defaultValue != null ? int.class.cast(defaultValue) : 0);
+                return (char)((byte)val);
+            }
+            else if (fieldType == String.class)
+            {
+                return UUCursor.safeGetString(cursor, column);
+            }
+            else if (Byte[].class == fieldType)
+            {
+                byte[] val = UUCursor.safeGetBlob(cursor, column);
+                if (val != null)
+                {
+                    Byte[] tmp = new Byte[val.length];
+                    for (int i = 0; i < tmp.length; i++)
+                    {
+                        tmp[i] = val[i];
+                    }
+
+                    return tmp;
+                }
+            }
+            else if (byte[].class == fieldType)
+            {
+                return UUCursor.safeGetBlob(cursor, column, (byte[])defaultValue);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUDataModel.class, "getField", ex);
+        }
+
+        return defaultValue;
     }
 }

@@ -6,8 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +15,7 @@ import org.junit.runners.MethodSorters;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import uu.toolbox.data.AllColumnTypesDataModel;
 import uu.toolbox.data.DataModelWithObjPrimitiveTypes;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModelWithCompoundKey;
@@ -253,7 +253,7 @@ public class UUDatabaseTests
         Assert.assertNotNull(added);
         Assert.assertEquals(model.aFloat, added.aFloat);
         Assert.assertEquals(model.anInt, added.anInt);
-        Assert.assertEquals(model.aPrimFloat, added.aPrimFloat);
+        Assert.assertEquals(model.aPrimFloat, added.aPrimFloat, 0);
 
         model.aFloat = 99.0f;
         model.anInt = 1234;
@@ -262,7 +262,162 @@ public class UUDatabaseTests
         Assert.assertNotNull(updated);
         Assert.assertEquals(model.aFloat, updated.aFloat);
         Assert.assertEquals(model.anInt, updated.anInt);
-        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat);
+        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat, 0);
+    }
+
+    @Test
+    public void test_0007_querySingleColumnValues() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        AllColumnTypesDataModel model = AllColumnTypesDataModel.random();
+        AllColumnTypesDataModel inserted = db.insertObject(AllColumnTypesDataModel.class, model);
+        Assert.assertNotNull(inserted);
+        AllColumnTypesDataModel.assertEquals(model, inserted);
+
+        //db.querySingleIntCell("SELECT ")
+
+        int intResult;
+        long longResult;
+        float floatResult;
+        double doubleResult;
+        String stringResult;
+        byte[] binaryResult;
+
+        intResult = db.querySingleIntCell("SELECT byte_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.byteObject.intValue(), intResult);
+
+        intResult = db.querySingleIntCell("SELECT byte_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.bytePrimitive, intResult);
+
+        intResult = db.querySingleIntCell("SELECT short_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.shortObject.intValue(), intResult);
+
+        intResult = db.querySingleIntCell("SELECT short_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.shortPrimitive, intResult);
+
+        intResult = db.querySingleIntCell("SELECT int_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.intObject.intValue(), intResult);
+
+        intResult = db.querySingleIntCell("SELECT int_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.intPrimitive, intResult);
+
+        longResult = db.querySingleLongCell("SELECT long_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.longObject.longValue(), longResult);
+
+        longResult = db.querySingleLongCell("SELECT long_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.longPrimitive, longResult);
+
+        floatResult = db.querySingleFloatCell("SELECT float_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.floatObject, floatResult, 0);
+
+        floatResult = db.querySingleFloatCell("SELECT float_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.floatPrimitive, floatResult, 0);
+
+        doubleResult = db.querySingleDoubleCell("SELECT double_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.doubleObject, doubleResult, 0);
+
+        doubleResult = db.querySingleDoubleCell("SELECT double_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.doublePrimitive, doubleResult, 0);
+
+        intResult = db.querySingleIntCell("SELECT character_object FROM all_columns", null, 0);
+        Assert.assertEquals(model.characterObject.charValue(), (char)intResult);
+
+        intResult = db.querySingleIntCell("SELECT character_primitive FROM all_columns", null, 0);
+        Assert.assertEquals(model.characterPrimitive, (char)intResult);
+
+        stringResult = db.querySingleStringCell("SELECT string_object FROM all_columns", null, null);
+        Assert.assertEquals(model.stringObject, stringResult);
+
+        //binaryResult = db.querySingleBlobCell("SELECT byte_array_object FROM all_columns", null, null);
+        //Assert.assertArrayEquals(model.byteArrayObject, binaryResult);
+
+        binaryResult = db.querySingleBlobCell("SELECT byte_array_primitive FROM all_columns", null, null);
+        Assert.assertArrayEquals(model.byteArrayPrimitive, binaryResult);
+
+        /*
+        @UUSqlColumn()
+        public Byte byteObject;
+
+        @UUSqlColumn()
+        public byte bytePrimitive;
+
+        @UUSqlColumn()
+        public Short shortObject;
+
+        @UUSqlColumn()
+        public short shortPrimitive;
+
+        @UUSqlColumn()
+        public Integer intObject;
+
+        @UUSqlColumn()
+        public int intPrimitive;
+
+        @UUSqlColumn()
+        public Long longObject;
+
+        @UUSqlColumn()
+        public long longPrimitive;
+
+        @UUSqlColumn()
+        public Double doubleObject;
+
+        @UUSqlColumn()
+        public double doublePrimitive;
+
+        @UUSqlColumn()
+        public Float floatObject;
+
+        @UUSqlColumn()
+        public float floatPrimitive;
+
+        @UUSqlColumn()
+        public Boolean booleanObject;
+
+        @UUSqlColumn()
+        public boolean booleanPrimitive;
+
+        @UUSqlColumn()
+        public Character characterObject;
+
+        @UUSqlColumn()
+        public char characterPrimitive;
+
+        @UUSqlColumn()
+        public Byte[] byteArrayObject;
+
+        @UUSqlColumn()
+        public byte[] byteArrayPrimitive;
+
+        @UUSqlColumn()
+        public String stringObject;*/
+
+
+
+//        DataModelWithObjPrimitiveTypes model = new DataModelWithObjPrimitiveTypes();
+//        model.aFloat = 57.0f;
+//        model.anInt = 22;
+//        model.aPrimFloat = 1001.0f;
+//
+//        DataModelWithObjPrimitiveTypes added = db.insertObject(DataModelWithObjPrimitiveTypes.class, model);
+//        Assert.assertNotNull(added);
+//        Assert.assertEquals(model.aFloat, added.aFloat);
+//        Assert.assertEquals(model.anInt, added.anInt);
+//        Assert.assertEquals(model.aPrimFloat, added.aPrimFloat);
+//
+//        model.aFloat = 99.0f;
+//        model.anInt = 1234;
+//        model.aPrimFloat = 129.0f;
+//        DataModelWithObjPrimitiveTypes updated = db.updateObject(DataModelWithObjPrimitiveTypes.class, model);
+//        Assert.assertNotNull(updated);
+//        Assert.assertEquals(model.aFloat, updated.aFloat);
+//        Assert.assertEquals(model.anInt, updated.anInt);
+//        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat);
     }
 }
 

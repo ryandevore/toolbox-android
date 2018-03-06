@@ -10,7 +10,6 @@ import android.util.Pair;
 import java.util.ArrayList;
 
 import uu.toolbox.core.UUCloseable;
-import uu.toolbox.core.UUObject;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
@@ -665,7 +664,7 @@ public abstract class UUDatabase
      * @param defaultValue the default value to return if the result is null
      * @return a result
      */
-    @Nullable
+   /* @Nullable
     public synchronized <T> T querySingleCell(
             @NonNull Class<T> resultClass,
             @NonNull final String sql,
@@ -684,7 +683,7 @@ public abstract class UUDatabase
 
             if (c.moveToFirst())
             {
-                Object objectResult = UUCursor.safeGet(c, 0, null);
+                Object objectResult = UUCursor.safeGet(resultClass, c, 0, defaultValue);
                 result = UUObject.safeCast(resultClass, objectResult);
             }
         }
@@ -704,7 +703,7 @@ public abstract class UUDatabase
         }
 
         return result;
-    }
+    }*/
 
     /**
      * Runs a query expecting a single integer cell as the result
@@ -720,7 +719,34 @@ public abstract class UUDatabase
             @Nullable final String[] selectionArgs,
             @Nullable final String defaultValue)
     {
-        return querySingleCell(String.class, sql, selectionArgs, defaultValue);
+        //return querySingleCell(String.class, sql, selectionArgs, defaultValue);
+
+        Cursor c = null;
+        String result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getString(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleStringCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
     }
 
     /**
@@ -736,8 +762,35 @@ public abstract class UUDatabase
             @Nullable final String[] selectionArgs,
             final int defaultValue)
     {
-        Integer result = querySingleCell(Integer.class, sql, selectionArgs, null);
-        return (result != null ? result : defaultValue);
+        //Integer result = querySingleCell(Integer.class, sql, selectionArgs, null);
+        //return (result != null ? result : defaultValue);
+
+        Cursor c = null;
+        int result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getInt(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleIntCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
     }
 
     /**
@@ -753,8 +806,35 @@ public abstract class UUDatabase
             @Nullable final String[] selectionArgs,
             final long defaultValue)
     {
-        Long result = querySingleCell(Long.class, sql, selectionArgs, null);
-        return (result != null ? result : defaultValue);
+        //Long result = querySingleCell(Long.class, sql, selectionArgs, null);
+        //return (result != null ? result : defaultValue);
+
+        Cursor c = null;
+        long result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getLong(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleLongCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
     }
 
     /**
@@ -770,8 +850,79 @@ public abstract class UUDatabase
             @Nullable final String[] selectionArgs,
             final float defaultValue)
     {
-        Float result = querySingleCell(Float.class, sql, selectionArgs, null);
-        return (result != null ? result : defaultValue);
+//        Float result = querySingleCell(Float.class, sql, selectionArgs, null);
+//        return (result != null ? result : defaultValue);
+
+        Cursor c = null;
+        float result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getFloat(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleFloatCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
+    }
+
+    /**
+     * Runs a query expecting a single double cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    public synchronized double querySingleDoubleCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            final double defaultValue)
+    {
+        //        Float result = querySingleCell(Double.class, sql, selectionArgs, null);
+        //        return (result != null ? result : defaultValue);
+
+        Cursor c = null;
+        double result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getDouble(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleDoubleCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
     }
 
     /**
@@ -788,7 +939,34 @@ public abstract class UUDatabase
             @Nullable final String[] selectionArgs,
             @Nullable final byte[] defaultValue)
     {
-        return querySingleCell(byte[].class, sql, selectionArgs, null);
+        //return querySingleCell(byte[].class, sql, selectionArgs, null);
+
+        Cursor c = null;
+        byte[] result = defaultValue;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                result = c.getBlob(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleBlobCell", ex);
+            result = defaultValue;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return result;
     }
 
     /**

@@ -156,6 +156,21 @@ public final class UUContentValues
      * @param key the key
      * @param value the value
      */
+    public static void putIfNotNull(final ContentValues cv, final Object key, final Character value)
+    {
+        if (cv != null && key != null && value != null)
+        {
+            cv.put(key.toString(), (byte)value.charValue());
+        }
+    }
+
+    /**
+     * Sets a value if both the key and value are not null
+     *
+     * @param cv destination content values
+     * @param key the key
+     * @param value the value
+     */
     public static void putObjectIfNotNull(final ContentValues cv, final Object key, final Object value)
     {
         if (cv != null && key != null && value != null)
@@ -194,9 +209,24 @@ public final class UUContentValues
             {
                 UUContentValues.putIfNotNull(cv, key, (Boolean)value);
             }
-            else if (fieldType == Byte[].class || fieldType == byte[].class)
+            else if (fieldType == byte[].class)
             {
                 UUContentValues.putIfNotNull(cv, key, (byte[])value);
+            }
+            else if (fieldType == Byte[].class)
+            {
+                Byte[] val = (Byte[])value;
+                byte[] tmp = new byte[val.length];
+                for (int i = 0; i < tmp.length; i++)
+                {
+                    tmp[i] = val[i];
+                }
+
+                UUContentValues.putIfNotNull(cv, key, tmp);
+            }
+            else if (fieldType == Character.class || fieldType == char.class)
+            {
+                UUContentValues.putIfNotNull(cv, key, (Character)value);
             }
             else
             {

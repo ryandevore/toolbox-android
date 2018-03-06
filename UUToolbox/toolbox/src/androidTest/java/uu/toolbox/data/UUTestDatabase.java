@@ -11,21 +11,7 @@ public class UUTestDatabase extends UUDefaultDatabase
         super(context, new DbDef());
     }
 
-
-
     public static final String NAME = "uu_test_db";
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // UUDatabaseDefinition
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-//    @Override
-//    public int getVersion()
-//    {
-//        return CURRENT_VERSION;
-//    }
-//
 
 
     @UUSqlDatabase(name = NAME, models =
@@ -33,7 +19,8 @@ public class UUTestDatabase extends UUDefaultDatabase
         UUTestDataModel.class,
         UUDataModelWithCompoundKey.class,
         UUComplexDataModel.class,
-        DataModelWithObjPrimitiveTypes.class
+        DataModelWithObjPrimitiveTypes.class,
+        AllColumnTypesDataModel.class,
     })
     public static class DbDef implements UUDatabaseDefinition
     {
@@ -49,43 +36,5 @@ public class UUTestDatabase extends UUDefaultDatabase
         {
             return CURRENT_VERSION;
         }
-
-        /*
-        public String getDatabaseName()
-        {
-            return NAME;
-        }
-
-        public int getVersion()
-        {
-            return CURRENT_VERSION;
-        }
-
-        public ArrayList<UUDataModel> getDataModels(int version)
-        {
-            ArrayList<UUDataModel> list = new ArrayList<>();
-
-            if (version >= VERSION_ONE)
-            {
-                list.add(new UUTestDataModel());
-            }
-
-            if (version >= VERSION_TWO)
-            {
-                list.add(new UUDataModelWithCompoundKey());
-            }
-
-            if (version >= VERSION_THREE)
-            {
-                list.add(new UUComplexDataModel());
-            }
-
-            if (version >= VERSION_FOUR)
-            {
-                list.add(new DataModelWithObjPrimitiveTypes());
-            }
-
-            return list;
-        }*/
     }
 }

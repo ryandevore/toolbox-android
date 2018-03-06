@@ -249,8 +249,8 @@ public interface UUDataModel
                 UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
                 if (columnAnnotation != null)
                 {
-                    Object fieldValue = getField(cursor, columnAnnotation, field);
-                    field.set(this, fieldValue);
+                    Object fieldValue = getField(cursor, field);
+                    setField(this, field, fieldValue);
                 }
             }
         }
@@ -260,56 +260,122 @@ public interface UUDataModel
         }
     }
 
-    static Object getField(@NonNull final Cursor cursor, @NonNull final UUSqlColumn columnAnnotation, @NonNull final Field field)
+    static Object getField(@NonNull final Cursor cursor, @NonNull final Field field)
     {
         try
         {
-            Class fieldType = field.getType();
+            Class<?> fieldType = field.getType();
             String column = columnNameForField(field);
+            //return UUCursor.safeGet(cursor, column, null);
+            return UUCursor.safeGet(fieldType, cursor, column, null);
 
-            if (fieldType == String.class)
+            /*
+            if (fieldType == long.class)
             {
-                return UUCursor.safeGetString(cursor, column);
+                return UUCursor.safeGetLong(cursor, column, 0L);
             }
-            else if (fieldType == Long.class || fieldType == long.class)
+            else if (fieldType == int.class)
+            {
+                return UUCursor.safeGetInt(cursor, column,0);
+            }
+            else if (fieldType == short.class)
+            {
+                return UUCursor.safeGetShort(cursor, column,(short)0);
+            }
+            else if (fieldType == byte.class)
+            {
+                return (byte)(int)(UUCursor.safeGetInt(cursor, column,0));
+            }
+            else if (fieldType == float.class)
+            {
+                return UUCursor.safeGetFloat(cursor, column, 0.0f);
+            }
+            else if (fieldType == double.class)
+            {
+                return UUCursor.safeGetDouble(cursor, column, (double)0.0f);
+            }
+            else if (fieldType == boolean.class)
+            {
+                return UUCursor.safeGetBoolean(cursor, column, false);
+            }
+            else if (fieldType == char.class)
+            {
+                return (char)(byte)(int)UUCursor.safeGetInt(cursor, column, 0);
+            }
+            else if (fieldType == Long.class)
             {
                 return UUCursor.safeGetLong(cursor, column);
             }
-            else if (fieldType == Integer.class || fieldType == int.class)
+            else if (fieldType == Integer.class)
             {
                 return UUCursor.safeGetInt(cursor, column);
             }
-            else if (fieldType == Short.class || fieldType == short.class)
+            else if (fieldType == Short.class)
             {
                 return UUCursor.safeGetShort(cursor, column);
             }
-            else if (fieldType == Byte.class || fieldType == byte.class)
+            else if (fieldType == Byte.class)
             {
-                return UUCursor.safeGetInt(cursor, column);
+                return (byte)(int)(UUCursor.safeGetInt(cursor, column,0));
             }
-            else if (fieldType == Float.class || fieldType == float.class)
+            else if (fieldType == Float.class)
             {
                 return UUCursor.safeGetFloat(cursor, column);
             }
-            else if (fieldType == Double.class || fieldType == Double.class)
+            else if (fieldType == Double.class)
             {
                 return UUCursor.safeGetDouble(cursor, column);
             }
-            else if (fieldType == Boolean.class || fieldType == boolean.class)
+            else if (fieldType == Boolean.class)
             {
                 return UUCursor.safeGetBoolean(cursor, column);
             }
-            else if (fieldType == Byte[].class || fieldType == byte[].class)
+            else if (fieldType == Character.class)
+            {
+                return (char)(byte)(int)UUCursor.safeGetInt(cursor, column, 0);
+            }
+            else if (String.class == fieldType)
+            {
+                return UUCursor.safeGetString(cursor, column);
+            }
+            else if (Byte[].class == fieldType)
+            {
+                byte[] val = UUCursor.safeGetBlob(cursor, column);
+                if (val != null)
+                {
+
+                    Byte[] tmp = new Byte[val.length];
+                    for (int i = 0; i < tmp.length; i++)
+                    {
+                        tmp[i] = val[i];
+                    }
+
+                    return tmp;
+                }
+            }
+            else if (byte[].class == fieldType)
             {
                 return UUCursor.safeGetBlob(cursor, column);
-            }
+            }*/
         }
         catch (Exception ex)
         {
-            UULog.debug(UUDataModel.class, "putField", ex);
+            UULog.debug(UUDataModel.class, "getField", "Field: " + field.getName() + ", Column: " + columnNameForField(field), ex);
         }
 
         return null;
+    }
+
+    static void setField(@NonNull final Object object, @NonNull final Field field, @Nullable final Object value)
+    {
+        try
+        {
+            field.set(object, value);
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUDataModel.class, "setField", "Field: " + field.getName() + ", Column: " + columnNameForField(field), ex);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
