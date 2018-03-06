@@ -1,7 +1,6 @@
 package uu.toolbox.data;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -405,10 +404,15 @@ public class UUDataCache implements UUDataCacheProtocol
 
     private static class UUDataCacheDb extends UUDefaultDatabase
     {
-        private static final String DB_NAME = "UUDataCacheDb";
-        private static final int DB_VERSION_ONE = 1;
+//        private static final String DB_NAME = "UUDataCacheDb";
+//        private static final int DB_VERSION_ONE = 1;
+//
+//        private static final int DB_VERSION = DB_VERSION_ONE;
 
-        private static final int DB_VERSION = DB_VERSION_ONE;
+        UUDataCacheDb(@NonNull final Context context)
+        {
+            super(context, new UUDataCacheDbSchema());
+        }
 
         @NonNull
         private HashMap<String, Object> getMetaData(@NonNull final String key)
@@ -439,7 +443,8 @@ public class UUDataCache implements UUDataCacheProtocol
 
         private void clearAllMetaData()
         {
-            for (UUDataModel dm : getDataModels(getVersion()))
+            UUDatabaseDefinition schema = getDatabaseDefinition();
+            for (UUDataModel dm : schema.getDataModels(schema.getVersion()))
             {
                 truncateTable(dm.getTableName());
             }
@@ -449,6 +454,7 @@ public class UUDataCache implements UUDataCacheProtocol
         // UUDatabaseDefinition
         ////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /*
         private UUDataCacheDb(@NonNull final Context context)
         {
             super(context);
@@ -507,6 +513,12 @@ public class UUDataCache implements UUDataCacheProtocol
             ArrayList<UUDataModel> list = new ArrayList<>();
             list.add(new UUDataCacheMetaData());
             return list;
-        }
+        }*/
+    }
+
+    @UUSqlDatabase(name = "UUDataCacheDb", models = { UUDataCacheMetaData.class })
+    private static class UUDataCacheDbSchema implements UUDatabaseDefinition
+    {
+
     }
 }

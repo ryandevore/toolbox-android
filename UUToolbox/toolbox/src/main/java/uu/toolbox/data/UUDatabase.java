@@ -21,22 +21,24 @@ import uu.toolbox.logging.UULog;
  *  
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
-public abstract class UUDatabase implements UUDatabaseDefinition
+public abstract class UUDatabase
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Private Variables
     ////////////////////////////////////////////////////////////////////////////////////////////////
     
-    private Context applicationContext;
+    private final Context applicationContext;
     private UUSQLiteDatabase database;
+    private final UUDatabaseDefinition databaseDefinition;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Construction
     ////////////////////////////////////////////////////////////////////////////////////////////////
     
-    protected UUDatabase(@NonNull final Context context)
+    protected UUDatabase(@NonNull final Context context, @NonNull final UUDatabaseDefinition databaseDefinition)
     {
         applicationContext = context.getApplicationContext();
+        this.databaseDefinition = databaseDefinition;
     }
 
     public Context getApplicationContext()
@@ -76,6 +78,18 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         return database;
     }
 
+    @NonNull
+    public UUDatabaseDefinition getDatabaseDefinition()
+    {
+        return databaseDefinition;
+    }
+
+    @NonNull
+    public String getDatabaseName()
+    {
+        return databaseDefinition.getDatabaseName();
+    }
+
 
     @NonNull
     protected abstract UUSQLiteDatabase openDatabase();
@@ -84,10 +98,10 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     {
         try
         {
-            int version = getVersion();
+            int version = db.getVersion();
 
             ArrayList<String> lines = new ArrayList<>();
-            UUSql.appendCreateLines(lines, this, version);
+            UUSql.appendCreateLines(lines, databaseDefinition, version);
 
             db.beginTransaction();
 
@@ -128,7 +142,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         try
         {
             ArrayList<String> lines = new ArrayList<>();
-            UUSql.appendUpgradeLines(lines, this, oldVersion, newVersion);
+            UUSql.appendUpgradeLines(lines, databaseDefinition, oldVersion, newVersion);
 
             db.beginTransaction();
 

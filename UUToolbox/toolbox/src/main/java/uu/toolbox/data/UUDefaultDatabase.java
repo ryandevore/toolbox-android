@@ -9,16 +9,16 @@ import android.support.annotation.NonNull;
 
 public abstract class UUDefaultDatabase extends UUDatabase
 {
-    protected UUDefaultDatabase(@NonNull final Context context)
+    protected UUDefaultDatabase(@NonNull final Context context, @NonNull final UUDatabaseDefinition databaseDefinition)
     {
-        super(context);
+        super(context, databaseDefinition);
     }
 
     @NonNull
     @Override
     protected UUSQLiteDatabase openDatabase()
     {
-        OpenHelper helper = new OpenHelper(getApplicationContext(), this);
+        OpenHelper helper = new OpenHelper(getApplicationContext(), getDatabaseDefinition());
         SQLiteDatabase db = helper.getWritableDatabase();
         return new Database(db);
     }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import uu.toolbox.data.UUDatabase;
+import uu.toolbox.data.UUDatabaseDefinition;
 import uu.toolbox.data.UUDefaultDatabase;
 import uu.toolbox.data.UUSqlDatabase;
 import uu.toolbox.logging.UULog;
@@ -12,18 +13,14 @@ import uu.toolboxapp.data.models.WeatherSummary;
 /**
  * Sample usage of UUDatabase
  */
-@UUSqlDatabase(name = AppDatabase.DB_NAME, version = AppDatabase.DB_VERSION, models =
-{
-        WeatherSummary.class
-})
 public class AppDatabase extends UUDefaultDatabase
 {
     private static AppDatabase theSharedDatabase;
 
-    static final String DB_NAME = "UUSampleDb";
-    private static final int DB_VERSION_ONE = 1;
+    //static final String DB_NAME = "UUSampleDb";
+    //private static final int DB_VERSION_ONE = 1;
 
-    static final int DB_VERSION = DB_VERSION_ONE;
+    //static final int DB_VERSION = DB_VERSION_ONE;
 
     public static AppDatabase sharedInstance()
     {
@@ -46,7 +43,7 @@ public class AppDatabase extends UUDefaultDatabase
 
     public AppDatabase(@NonNull final Context context)
     {
-        super(context);
+        super(context, new AppDatabaseSchema());
     }
 
     public void addWeatherSummary(final WeatherSummary summary)
@@ -55,6 +52,11 @@ public class AppDatabase extends UUDefaultDatabase
     }
 
 
+    @UUSqlDatabase(name = "UUSampleDb", models = { WeatherSummary.class })
+    private static class AppDatabaseSchema implements UUDatabaseDefinition
+    {
+
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // UUDatabaseDefinition
