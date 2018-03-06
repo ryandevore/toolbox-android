@@ -1,6 +1,6 @@
 package uu.toolbox.data;
 
-@UUSqlTable(tableName = "uu_complex_test_model")
+@UUSqlTable(tableName = "uu_complex_test_model", existsInVersion = 3)
 public class UUComplexDataModel implements UUDataModel
 {
     @UUSqlColumn(name = "id", type = UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT)

@@ -2,15 +2,16 @@ package uu.toolbox;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import junit.framework.Assert;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -18,11 +19,13 @@ import java.util.Locale;
 import uu.toolbox.data.DataModelWithObjPrimitiveTypes;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModelWithCompoundKey;
+import uu.toolbox.data.UUSQLiteDatabase;
 import uu.toolbox.data.UUTestDataModel;
 import uu.toolbox.data.UUTestDatabase;
 import uu.toolbox.logging.UULog;
 
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UUDatabaseTests
 {
     private static String TEST_DATA_MODEL_TABLE_NAME = "uutest_data_model";
@@ -50,7 +53,7 @@ public class UUDatabaseTests
     }
 
     private ArrayList<UUColumnDefinition> getTableSchema(
-            @NonNull final SQLiteDatabase db,
+            @NonNull final UUSQLiteDatabase db,
             @NonNull final String tableName)
     {
         String sql = String.format(Locale.US, "PRAGMA table_info(%s);", tableName);
@@ -182,13 +185,13 @@ public class UUDatabaseTests
         m.c2 = "two";
         m.data = "This is some data";
 
-        UUDataModelWithCompoundKey added = db.addObject(UUDataModelWithCompoundKey.class, m);
+        UUDataModelWithCompoundKey added = db.insertObject(UUDataModelWithCompoundKey.class, m);
         Assert.assertNotNull("Expect add to succeed when object does not exist");
         Assert.assertEquals(m.c1, added.c1);
         Assert.assertEquals(m.c2, added.c2);
         Assert.assertEquals(m.data, added.data);
 
-        UUDataModelWithCompoundKey added2 = db.addObject(UUDataModelWithCompoundKey.class, m);
+        UUDataModelWithCompoundKey added2 = db.insertObject(UUDataModelWithCompoundKey.class, m);
         Assert.assertNull("Expect add to fail when object exists", added2);
     }
 
@@ -224,7 +227,7 @@ public class UUDatabaseTests
         model.name = "Foobar";
         model.team = "Boston";
         model.number = 57;
-        UUTestDataModel added = db.addObject(UUTestDataModel.class, model);
+        UUTestDataModel added = db.insertObject(UUTestDataModel.class, model);
         Assert.assertNotNull(added);
 
         model.name = "Hello World";
@@ -246,7 +249,7 @@ public class UUDatabaseTests
         model.anInt = 22;
         model.aPrimFloat = 1001.0f;
 
-        DataModelWithObjPrimitiveTypes added = db.addObject(DataModelWithObjPrimitiveTypes.class, model);
+        DataModelWithObjPrimitiveTypes added = db.insertObject(DataModelWithObjPrimitiveTypes.class, model);
         Assert.assertNotNull(added);
         Assert.assertEquals(model.aFloat, added.aFloat);
         Assert.assertEquals(model.anInt, added.anInt);

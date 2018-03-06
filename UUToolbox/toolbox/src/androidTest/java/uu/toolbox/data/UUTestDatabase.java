@@ -3,9 +3,14 @@ package uu.toolbox.data;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
-
-public class UUTestDatabase extends UUDatabase
+@UUSqlDatabase(name = "uu_test_db", version = 4, models =
+{
+    UUTestDataModel.class,
+    UUDataModelWithCompoundKey.class,
+    UUComplexDataModel.class,
+    DataModelWithObjPrimitiveTypes.class
+})
+public class UUTestDatabase extends UUDefaultDatabase
 {
     public UUTestDatabase(@NonNull final Context context)
     {
@@ -21,44 +26,58 @@ public class UUTestDatabase extends UUDatabase
 
     public static String NAME = "uu_test_db";
 
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // UUDatabaseDefinition
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public String getDatabaseName()
-    {
-        return NAME;
-    }
-
+    @Override
     public int getVersion()
     {
         return CURRENT_VERSION;
     }
 
-    public ArrayList<UUDataModel> getDataModels(int version)
+
+
+    /*
+    static class DbDef implements UUDatabaseDefinition
     {
-        ArrayList<UUDataModel> list = new ArrayList<>();
 
-        if (version >= VERSION_ONE)
+        public String getDatabaseName()
         {
-            list.add(new UUTestDataModel());
+            return NAME;
         }
 
-        if (version >= VERSION_TWO)
+        public int getVersion()
         {
-            list.add(new UUDataModelWithCompoundKey());
+            return CURRENT_VERSION;
         }
 
-        if (version >= VERSION_THREE)
+        public ArrayList<UUDataModel> getDataModels(int version)
         {
-            list.add(new UUComplexDataModel());
-        }
+            ArrayList<UUDataModel> list = new ArrayList<>();
 
-        if (version >= VERSION_FOUR)
-        {
-            list.add(new DataModelWithObjPrimitiveTypes());
-        }
+            if (version >= VERSION_ONE)
+            {
+                list.add(new UUTestDataModel());
+            }
 
-        return list;
-    }
+            if (version >= VERSION_TWO)
+            {
+                list.add(new UUDataModelWithCompoundKey());
+            }
+
+            if (version >= VERSION_THREE)
+            {
+                list.add(new UUComplexDataModel());
+            }
+
+            if (version >= VERSION_FOUR)
+            {
+                list.add(new DataModelWithObjPrimitiveTypes());
+            }
+
+            return list;
+        }
+    }*/
 }
