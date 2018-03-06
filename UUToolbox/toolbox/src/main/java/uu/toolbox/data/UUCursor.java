@@ -1,6 +1,11 @@
 package uu.toolbox.data;
 
 import android.database.Cursor;
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import uu.toolbox.logging.UULog;
 
 /**
  * A set of helper methods for the Cursor class
@@ -171,6 +176,74 @@ public final class UUCursor
             {
                 result = cursor.getString(index);
             }
+        }
+
+        return result;
+    }
+
+    /**
+     * Safely gets a column value based on the cursor field type
+     *
+     * @param cursor a database cursor
+     * @param index index to get
+     * @param defaultValue the default value
+     *
+     * @return an Object of type String, Long, Double, byte[], or null
+     */
+    @Nullable
+    public static Object safeGet(
+        @NonNull final Cursor cursor,
+        @IntRange(from=0) final int index,
+        @Nullable final Object defaultValue)
+    {
+        Object result;
+
+        try
+        {
+            int colType = cursor.getType(index);
+            switch (colType)
+            {
+                case Cursor.FIELD_TYPE_INTEGER:
+                {
+                    result = cursor.getLong(index);
+                    break;
+                }
+
+                case Cursor.FIELD_TYPE_FLOAT:
+                {
+                    result = cursor.getDouble(index);
+                    break;
+                }
+
+                case Cursor.FIELD_TYPE_STRING:
+                {
+                    result = cursor.getString(index);
+                    break;
+                }
+
+                case Cursor.FIELD_TYPE_NULL:
+                {
+                    result = null;
+                    break;
+                }
+
+                case Cursor.FIELD_TYPE_BLOB:
+                {
+                    result = cursor.getBlob(index);
+                    break;
+                }
+
+                default:
+                {
+                    result = defaultValue;
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUCursor.class, "safeGet", ex);
+            result = defaultValue;
         }
 
         return result;
