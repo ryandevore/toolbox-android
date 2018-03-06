@@ -3,97 +3,177 @@ package uu.toolbox.data;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import java.util.ArrayList;
 
+import uu.toolbox.core.UUCloseable;
+import uu.toolbox.core.UUObject;
 import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
 /**
- * UUBaseDatabase
+ * UUDatabase
  * 
- * Useful Utilities - A simple base class for Android SQL Lite databases.
+ * Useful Utilities - Extension methods for SQLiteDatabase
  *  
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public abstract class UUDatabase implements UUDatabaseDefinition
 {
-	///////////////////////////////////////////////////////////////////////////////////////////////
-    // Member Variables 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-    private SQLiteDatabase database;
-    protected Context applicationContext;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Variables
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    private Context applicationContext;
+    private UUSQLiteDatabase database;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Construction
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    protected UUDatabase(@NonNull final Context context)
+    {
+        applicationContext = context.getApplicationContext();
+    }
+
+    public Context getApplicationContext()
+    {
+        return applicationContext;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Database Lifecyle
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void destroy()
     {
-        closeDatabase(database);
+        safeClose(getReadWriteDatabase());
+        safeDeleteDatabase();
+        database = null;
+        openDatabase();
+    }
 
+    public UUSQLiteDatabase getReadOnlyDatabase()
+    {
+        if (database == null)
+        {
+            database = openDatabase();
+        }
+
+        return database;
+    }
+
+    public UUSQLiteDatabase getReadWriteDatabase()
+    {
+        if (database == null)
+        {
+            database = openDatabase();
+        }
+
+        return database;
+    }
+
+
+    @NonNull
+    protected abstract UUSQLiteDatabase openDatabase();
+
+    protected void handleCreate(@NonNull UUSQLiteDatabase db)
+    {
         try
         {
-            applicationContext.deleteDatabase(getDatabaseName());
+            int version = getVersion();
+
+            ArrayList<String> lines = new ArrayList<>();
+            UUSql.appendCreateLines(lines, this, version);
+
+            db.beginTransaction();
+
+            for (String line : lines)
+            {
+                UULog.debug(getClass(), "handleCreate", line);
+                db.execSQL(line, null);
+            }
+
+            handlePostCreate(db, version);
+
+            db.setTransactionSuccessful();
         }
         catch (Exception ex)
         {
-            UULog.error(UUDatabase.class, "destroy", ex);
+            logException("handleCreate", ex);
         }
         finally
         {
-            openDatabase(applicationContext);
+            safeEndTransaction(db);
         }
     }
 
-    private void openDatabase(@NonNull final Context context)
+    protected void handleOpen(@NonNull UUSQLiteDatabase db)
     {
         try
         {
-            UUDatabaseHelper databaseHelper = new UUDatabaseHelper(context, this);
-            database = databaseHelper.getWritableDatabase();
+            handlePostOpen(db, db.getVersion());
         }
         catch (Exception ex)
         {
-            UULog.error(UUDatabase.class, "openDatabase", ex);
+            logException("handleOpen", ex);
         }
     }
 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-    // Construction 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-
-    public UUDatabase(@NonNull final Context context)
+    protected void handleMigrate(@NonNull final UUSQLiteDatabase db, final int oldVersion, final int newVersion)
     {
-        applicationContext = context.getApplicationContext();
-        openDatabase(context);
+        try
+        {
+            ArrayList<String> lines = new ArrayList<>();
+            UUSql.appendUpgradeLines(lines, this, oldVersion, newVersion);
+
+            db.beginTransaction();
+
+            for (String line : lines)
+            {
+                UULog.debug(getClass(), "handleMigrate", line);
+                db.execSQL(line, null);
+            }
+
+            handlePostUpgrade(db, oldVersion, newVersion);
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
+        {
+            logException("handleMigrate", ex);
+        }
+        finally
+        {
+            safeEndTransaction(db);
+        }
     }
 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-    // Public Methods 
-	///////////////////////////////////////////////////////////////////////////////////////////////
+    protected void handlePostOpen(@NonNull UUSQLiteDatabase db, int version)
+    {
 
-	/**
-	 * Returns a read only copy of the database
-	 * 
-	 * @return a SQLiteDatabase instance
-	 */
-	public SQLiteDatabase getReadOnlyDatabase()
-	{
-		return database;
-	}
-	
-	/**
-	 * Returns a read write copy of the database
-	 * 
-	 * @return a SQLiteDatabase instance
-	 */
-	public SQLiteDatabase getReadWriteDatabase()
-	{
-		return database;
-	}
+    }
+
+    protected void handlePostCreate(@NonNull UUSQLiteDatabase db, int version)
+    {
+
+    }
+
+    protected void handlePostUpgrade(@NonNull UUSQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+    // UUDataModel Methods
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Queries the database for a set of objects
-     * 
+     *
      * @param type row object type
      * @param selection where clause
      * @param selectionArgs bound where arguments
@@ -101,20 +181,25 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      * @param limit limit clause
      * @return a List of 
      */
-    public synchronized <T extends UUDataModel> ArrayList<T> queryMultipleObjects(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy, final String limit)
+    @NonNull
+    public synchronized <T extends UUDataModel> ArrayList<T> queryMultipleObjects(
+        @NonNull final Class<T> type,
+        @Nullable final String selection,
+        @Nullable String[] selectionArgs,
+        @Nullable String orderBy,
+        @Nullable String limit)
     {
     	ArrayList<T> results = new ArrayList<>();
-    	
-    	SQLiteDatabase db;
+
 		Cursor c = null;
 		
     	try
     	{
-		    db = getReadOnlyDatabase();
-		   
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
 		    T dataModel = type.newInstance();
 
-		    c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel, getVersion()), selection, selectionArgs, null, null, orderBy, limit);
+		    c = db.query(dataModel.getTableName(), UUSql.getColumnNames(dataModel, db.getVersion()), selection, selectionArgs, null, null, orderBy, limit);
 		    
 		    while (c.moveToNext())
 		    {
@@ -129,7 +214,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     	}
     	finally
     	{
-    		closeCursor(c);
+            UUCloseable.safeClose(c);
     	}
     	
     	return results;
@@ -137,22 +222,26 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     
     /**
      * Queries the database for a set of objects
-     * 
+     *
      * @param type row object type
      * @param rawSqlQuery The sql query
      * @param selectionArgs bound where arguments
      * @return a List of objects of type T
      */
-    public synchronized <T extends UUDataModel> ArrayList<T> rawQueryMultipleObjects(final Class<T> type, final String rawSqlQuery, final String[] selectionArgs)
+    @NonNull
+    public synchronized <T extends UUDataModel> ArrayList<T> rawQueryMultipleObjects(
+        @NonNull final Class<T> type,
+        @NonNull final String rawSqlQuery,
+        @Nullable final String[] selectionArgs)
     {
     	ArrayList<T> results = new ArrayList<>();
-    	
-    	SQLiteDatabase db;
+
 		Cursor c = null;
 		
     	try
     	{
-		    db = getReadOnlyDatabase();
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
 		    c = db.rawQuery(rawSqlQuery, selectionArgs);
 		    
 		    while (c.moveToNext())
@@ -168,7 +257,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     	}
     	finally
     	{
-    		closeCursor(c);
+            UUCloseable.safeClose(c);
     	}
     	
     	return results;
@@ -176,282 +265,71 @@ public abstract class UUDatabase implements UUDatabaseDefinition
     
     /**
      * Queries the database for a single object
-     * 
+     *
      * @param type row object type
      * @param selection where clause
      * @param selectionArgs bound where arguments
      * @param orderBy order by clause
      * @return a List of 
      */
-    public synchronized <T extends UUDataModel> T querySingleObject(final Class<T> type, final String selection, final String[] selectionArgs, final String orderBy)
+    @Nullable
+    public synchronized <T extends UUDataModel> T querySingleObject(
+        @NonNull final Class<T> type,
+        @Nullable final String selection,
+        @Nullable final String[] selectionArgs,
+        @Nullable final String orderBy)
     {
     	ArrayList<T> list = queryMultipleObjects(type, selection, selectionArgs, orderBy, "1");
-    	if (list != null && list.size() == 1)
+    	if (list.size() == 1)
     	{
     		return list.get(0);
     	}
 
     	return null;
     }
-    
+
     /**
-     * Runs a query expecting a single integer cell as the result
+     * Inserts an object and then queries it
      *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized String querySingleStringCell(final String sql, final String defaultValue)
-    {
-    	SQLiteDatabase db;
-    	Cursor c = null;
-    	String result = defaultValue;
-                    
-    	try
-    	{
-    		db = getReadOnlyDatabase();
-    		
-    		logSql(sql);
-    		c = db.rawQuery(sql, null);
-    		
-    		if (c.moveToFirst())
-    		{
-    			result = c.getString(0);
-    		}
-    	}
-	    catch (Exception ex)
-	    {
-	    	logException("querySingleStringCell", ex);
-	    	result = defaultValue;
-	    }
-	    finally
-	    {
-	    	closeCursor(c);
-	    }
-	    
-	    return result;
-    }
-    
-    /**
-     * Runs a query expecting a single integer cell as the result
-     *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized int querySingleIntCell(final String sql, final int defaultValue)
-    {
-    	SQLiteDatabase db;
-    	Cursor c = null;
-    	int result = defaultValue;
-                    
-    	try
-    	{
-    		db = getReadOnlyDatabase();
-    		
-    		logSql(sql);
-    		c = db.rawQuery(sql, null);
-
-    		if (c.moveToFirst())
-    		{
-    			result = c.getInt(0);
-    		}
-    	}
-	    catch (Exception ex)
-	    {
-	    	logException("querySingleIntCell", ex);
-	    	result = defaultValue;
-	    }
-	    finally
-	    {
-	    	closeCursor(c);
-	    }
-	    
-	    return result;
-    }
-
-    /**
-     * Runs a query expecting a single integer cell as the result
-     *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized long querySingleLongCell(final String sql, final long defaultValue)
-    {
-        SQLiteDatabase db;
-        Cursor c = null;
-        long result = defaultValue;
-
-        try
-        {
-            db = getReadOnlyDatabase();
-
-            logSql(sql);
-            c = db.rawQuery(sql, null);
-
-            if (c.moveToFirst())
-            {
-                result = c.getLong(0);
-            }
-        }
-        catch (Exception ex)
-        {
-            logException("querySingleLongCell", ex);
-            result = defaultValue;
-        }
-        finally
-        {
-            closeCursor(c);
-        }
-
-        return result;
-    }
-    
-    /**
-     * Runs a query expecting a single float cell as the result
-     *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized float querySingleFloatCell(final String sql, final float defaultValue)
-    {
-    	SQLiteDatabase db;
-    	Cursor c = null;
-    	float result = defaultValue;
-                    
-    	try
-    	{
-    		db = getReadOnlyDatabase();
-    		
-    		logSql(sql);
-    		c = db.rawQuery(sql, null);
-    		
-    		if (c.moveToFirst())
-    		{
-    			result = c.getFloat(0);
-    		}
-    	}
-	    catch (Exception ex)
-	    {
-	    	logException("querySingleFloatCell", ex);
-	    	result = defaultValue;
-	    }
-	    finally
-	    {
-	    	closeCursor(c);
-	    }
-	    
-	    return result;
-    }
-
-    /**
-     * Runs a query expecting a single float cell as the result
-     *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized byte[] querySingleBlobCell(final String sql, final byte[] defaultValue)
-    {
-        SQLiteDatabase db;
-        Cursor c = null;
-        byte[] result = defaultValue;
-
-        try
-        {
-            db = getReadOnlyDatabase();
-
-            logSql(sql);
-            c = db.rawQuery(sql, null);
-
-            if (c.moveToFirst())
-            {
-                result = c.getBlob(0);
-            }
-        }
-        catch (Exception ex)
-        {
-            logException("querySingleBlobCell", ex);
-            result = defaultValue;
-        }
-        finally
-        {
-            closeCursor(c);
-        }
-
-        return result;
-    }
-
-    /**
-     * Runs a query expecting a single column of strings
-     *
-     * @param sql the sql to run
-     * @return a result
-     */
-    public synchronized ArrayList<String> listSingleStringColumn(final String sql, final String[] args)
-    {
-        SQLiteDatabase db;
-        Cursor c = null;
-        ArrayList<String> results = null;
-
-        try
-        {
-            db = getReadOnlyDatabase();
-
-            logSql(sql);
-            c = db.rawQuery(sql, args);
-
-            results = new ArrayList<>();
-
-            while (c.moveToNext())
-            {
-                String val = c.getString(0);
-                results.add(val);
-            }
-        }
-        catch (Exception ex)
-        {
-            logException("listSingleStringColumn", ex);
-        }
-        finally
-        {
-            closeCursor(c);
-        }
-
-        return results;
-    }
-    
-    /**
-     * Inserts an object
-     * 
      * @param type row object type
      * @param object the object to update
      * @return an object of type T
      */
-    public synchronized <T extends UUDataModel> T addObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> T insertObject(
+        @NonNull final Class<T> type,
+        @NonNull T object)
     {
-        ContentValues cv = object.getContentValues(getVersion());
-    	long rowid = insertRow(object.getTableName(), cv);
+        UUSQLiteDatabase db = getReadOnlyDatabase();
+        ContentValues cv = object.getContentValues(db.getVersion());
+    	long rowid = insert(object.getTableName(), cv);
     	return querySingleObject(type, "ROWID = ?", new String[] { String.valueOf(rowid) }, null);
     }
 
     /**
      * Inserts or Updates an object
-     * 
+     *
      * @param type row object type
      * @param object the object to update
      * @return an object of type T
      */
-    public synchronized <T extends UUDataModel> T updateObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> T updateObject(
+        @NonNull final Class<T> type,
+        @NonNull T object)
     {
     	String whereClause = object.getPrimaryKeyWhereClause();
     	String[] whereArgs = object.getPrimaryKeyWhereArgs();
 
+
+    	// TODO: Optimize this with an exists query
         T lookup = querySingleObject(type, whereClause, whereArgs, null);
         if (lookup == null)
         {
-            return addObject(type, object);
+            return insertObject(type, object);
         }
         else
         {
-            updateRow(object.getTableName(), object.getContentValues(getVersion()), whereClause, whereArgs);
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+            update(object.getTableName(), object.getContentValues(db.getVersion()), whereClause, whereArgs);
             return querySingleObject(type, whereClause, whereArgs, null);
         }
     }
@@ -463,49 +341,13 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      * @param object the object to update
      *
      */
-    public synchronized <T extends UUDataModel> void deleteObject(final Class<T> type, T object)
+    public synchronized <T extends UUDataModel> void deleteObject(
+            @NonNull final Class<T> type,
+            @NonNull T object)
     {
         String whereClause = object.getPrimaryKeyWhereClause();
         String[] whereArgs = object.getPrimaryKeyWhereArgs();
         delete(object.getTableName(), whereClause, whereArgs);
-    }
-    
-    /**
-     * WARNING - This method will delete all rows from all tables
-     */
-    public synchronized void resetDatabase()
-    {
-    	try
-        {
-            ArrayList<String> tables = listTableNames();
-			for (String table : tables)
-			{
-                // This is a special android table that we will leave alone.
-                if ("android_metadata".equalsIgnoreCase(table))
-                {
-                    continue;
-                }
-
-				truncateTable(table);
-			}
-        }
-        catch (Exception ex)
-        {
-        	logException("resetDatabase", ex);
-        }
-    }
-
-    /**
-     * WARNING - This method will delete all rows from the table
-     *
-     * @param tableName the table name
-     */
-    public synchronized void resetTable(final String tableName)
-    {
-        if (tableName != null)
-        {
-            truncateTable(tableName);
-        }
     }
 
     /**
@@ -515,18 +357,21 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      * @param list records to insert
      * @param <T> model type
      */
-    public synchronized <T extends UUDataModel> void bulkInsert(final Class<T> type, ArrayList<T> list)
+    public synchronized <T extends UUDataModel> void bulkInsert(
+            @NonNull final Class<T> type,
+            @NonNull final ArrayList<T> list)
     {
-        SQLiteDatabase db = null;
+        UUSQLiteDatabase db = null;
 
         try
         {
             db = getReadWriteDatabase();
+
             db.beginTransaction();
 
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues(getVersion()));
+                db.insert(row.getTableName(), null, row.getContentValues(db.getVersion()));
             }
 
             db.setTransactionSuccessful();
@@ -548,13 +393,16 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      * @param list the list of new data rows to insert.
      * @param <T> the data model type, a class that implements the UUDataModel interface.
      */
-    public synchronized <T extends UUDataModel> void bulkReplace(final Class<T> type, ArrayList<T> list)
+    public synchronized <T extends UUDataModel> void bulkReplace(
+            @NonNull final Class<T> type,
+            @NonNull ArrayList<T> list)
     {
-        SQLiteDatabase db = null;
+        UUSQLiteDatabase db = null;
 
         try
         {
             db = getReadWriteDatabase();
+
             db.beginTransaction();
 
             UUDataModel dataModel = type.newInstance();
@@ -562,7 +410,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues(getVersion()));
+                db.insert(row.getTableName(), null, row.getContentValues(db.getVersion()));
             }
 
             db.setTransactionSuccessful();
@@ -577,306 +425,72 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
     }
 
-    public ArrayList<String> listTableNames()
-    {
-        String sql = "SELECT name FROM sqlite_master WHERE type='table';";
-        return listSingleStringColumn(sql, null);
-    }
-    
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// Protected Helper Methods 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-
     /**
-     * Safely closes a cursor object
-     * 
-     * @param cursor the cursor to close
+     * Delete's all records from a table based on the model class table name
+     *
      */
-    protected void closeCursor(final Cursor cursor)
+    public <T extends UUDataModel> void truncateTable(
+            @NonNull final Class<T> type)
     {
-        try
-        {
-            if (cursor != null && !cursor.isClosed())
-            {
-            	cursor.close();
-            }
-        }
-        catch (Exception ex)
-        {
-        	logException("closeCursor", ex);
-        }
-    }
-    
-    /**
-     * Safely closes a database object
-     * 
-     * @param database the database to close
-     */
-    protected void closeDatabase(final SQLiteDatabase database)
-    {
-        try
-        {
-            if (database != null)
-            {
-                database.close();
-            }
-        }
-        catch (Exception ex)
-        {
-            logException("closeDatabase", ex);
-        }
-    }
-    
-    /**
-     * Delete's all records from a table
-     */
-    protected void truncateTable(final String tableName)
-    {
-    	SQLiteDatabase db;
-                    
-    	try
-    	{
-    		db = getReadWriteDatabase();
-    		db.delete(tableName, null, null);
-    	}
-	    catch (Exception ex)
-	    {
-	    	logException("truncateTable", ex);
-	    }
-    }
-
-    /**
-     * Delete's all records from a table
-     */
-    protected <T extends UUDataModel> void truncateTable(final Class<T> type)
-    {
-        if (type != null)
-        {
-            try
-            {
-                truncateTable(type.newInstance().getTableName());
-            }
-            catch (Exception ex)
-            {
-                logException("truncateTable", ex);
-            }
-        }
-    }
-
-    public <T extends UUDataModel> int countObjects(@NonNull final Class<T> type)
-    {
-        return countRecordsInTable(UUDataModel.tableNameForClass(type));
-    }
-    
-    /**
-     * Count of all records in a table
-     */
-    protected int countRecordsInTable(final String tableName)
-    {
-    	return countRecordsInTable(tableName, null);
-    }
-    
-    /**
-     * Count of all records in a table matching the specified where clause.  If
-     * the where clause is null then the query will count all rows in the table
-     */
-    protected synchronized int countRecordsInTable(final String tableName, final String where)
-    {
-        return countRecordsInTable(tableName, where, null);
+        truncateTable(UUDataModel.tableNameForClass(type));
     }
 
     /**
      * Count of all records in a table matching the specified where clause.  If
      * the where clause is null then the query will count all rows in the table
+     *
+     * @param type modelClass to derive table Nnme from
+     * @param where SQL WHERE clause
+     * @param whereArgs bound where arguments
+     * @return an integer count of records matching the query
      */
-    protected synchronized int countRecordsInTable(final String tableName, final String where, final String[] whereArgs)
+    public <T extends UUDataModel> int count(
+            @NonNull final Class<T> type,
+            @Nullable final String where,
+            @Nullable final String[] whereArgs)
     {
-        SQLiteDatabase db;
-        Cursor c = null;
-        int count = 0;
-
-        try
-        {
-            db = getReadOnlyDatabase();
-
-            String sql = "SELECT COUNT(*) FROM " + tableName;
-            if (where != null && where.length() > 0)
-            {
-                sql += " WHERE " + where;
-            }
-
-            logSql(sql);
-            c = db.rawQuery(sql, whereArgs);
-
-            if (c.moveToFirst())
-            {
-                count = c.getInt(0);
-            }
-        }
-        catch (Exception ex)
-        {
-            logException("countRecordsInTable", ex);
-        }
-        finally
-        {
-            closeCursor(c);
-        }
-
-        return count;
+        return count(UUDataModel.tableNameForClass(type), where, whereArgs);
     }
-    
+
     /**
-     * Inserts a new table row
-     * 
-     * @param tableName name of the table
-     * @param cv list of columns to update
-     * 
-     * @return the row id that was updated
+     *
+     * Logs all records in a table
+     *
+     * @param type model type to derive the table name from
+     * @param <T> a class that implements UUDataModel
      */
-    protected synchronized long insertRow(final String tableName, final ContentValues cv)
+    public <T extends UUDataModel> void logTable(@NonNull final Class<T> type)
     {
-        SQLiteDatabase db;
-        long rowid;
-        
-        try
-        {
-            db = getReadWriteDatabase();
-            rowid = insertRow(db, tableName, cv);
-        }
-        catch (Exception ex)
-        {
-        	logException("insertRow", ex);
-        	rowid = -1;
-        }
-        
-        return rowid;
+        logTable(UUDataModel.tableNameForClass(type));
     }
-    
-    /**
-     * Inserts a new table row
-     * 
-     * @param db the database to use
-     * @param tableName name of the table
-     * @param cv list of columns to update
-     * 
-     * @return the row id that was updated
-     */
-    protected synchronized long insertRow(final SQLiteDatabase db, final String tableName, final ContentValues cv)
-    {
-        long rowid;
-        
-        try
-        {
-            //Log.d(LOG_TAG, cv.toString());
-            rowid = db.insert(tableName, null, cv);
-            //Log.d(LOG_TAG, "insertRow added rowid=" + rowid);
-            
-            if (rowid == -1)
-            {
-            	UULog.warn(getClass(), "insertRow", "DB insert returned -1, this indicates an error!");
-            }
-        }
-        catch (Exception ex)
-        {
-        	logException("insertRow", ex);
-        	rowid = -1;
-        }
-        
-        return rowid;
-    }
-    
-    /**
-     * Inserts or Updates a table row
-     * 
-     * @param tableName name of the table
-     * @param cv list of columns to update
-     * 
-     * @return the row id that was updated
-     */
-    protected synchronized long insertOrReplaceRow(final String tableName, final ContentValues cv)
-    {
-        SQLiteDatabase db;
-        long rowid;
-        
-        try
-        {
-            db = getReadWriteDatabase();
-            rowid = db.replace(tableName, null, cv);
 
-            if (rowid == -1)
-            {
-                UULog.warn(getClass(), "insertOrReplaceRow", "DB replace returned -1, this indicates an error!");
-            }
-        }
-        catch (Exception ex)
-        {
-        	logException("insertOrReplaceRow", ex);
-        	rowid = -1;
-        }
-        
-        return rowid;
-    }
-    
-    /**
-     * Inserts or Updates a table row
-     * 
-     * @param tableName name of the table
-     * @param cv list of columns to update
-     * @param whereClause the where clause
-     * @param whereArgs args 
-     * 
-     */
-    protected synchronized void updateRow(
-    		final String tableName, 
-    		final ContentValues cv,
-    		final String whereClause,
-    		final String[] whereArgs)
-    {
-        SQLiteDatabase db;
-
-        try
-        {
-            db = getReadWriteDatabase();
-            db.update(tableName, cv, whereClause, whereArgs);
-        }
-        catch (Exception ex)
-        {
-        	logException("updateRow", ex);
-        }
-    }
-    
-    /**
-     * Executes some raw SQL
-     * 
-     * @param sql the sql statement
-     */
-    protected void execSql(final String sql)
-    {
-    	SQLiteDatabase db;
-        
-        try
-        {
-            db = getReadWriteDatabase();
-            db.execSQL(sql);
-        }
-        catch (Exception ex)
-        {
-        	logException("execSql", ex);
-        }
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ExecSql Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Executes some raw SQL
      *
      * @param sql the sql statement
      */
-    protected void execSql(final String sql, final Object[] bindArgs)
+    public void execSql(@NonNull final String sql)
     {
-        SQLiteDatabase db;
+        execSql(sql, null);
+    }
 
+    /**
+     * Executes some raw SQL
+     *
+     * @param sql the sql statement
+     * @param bindArgs the sql bind arguments
+     */
+    public synchronized void execSql(
+            @NonNull final String sql,
+            @Nullable final Object[] bindArgs)
+    {
         try
         {
-            db = getReadWriteDatabase();
+            UUSQLiteDatabase db = getReadWriteDatabase();
             db.execSQL(sql, bindArgs);
         }
         catch (Exception ex)
@@ -890,156 +504,462 @@ public abstract class UUDatabase implements UUDatabaseDefinition
      *
      * @param lines the sql statements
      */
-    protected void execSqlLines(final ArrayList<String> lines)
+    public synchronized void execSqlLines(
+            @NonNull final ArrayList<Pair<String, Object[]>> lines)
     {
-        SQLiteDatabase db = null;
+        UUSQLiteDatabase db = null;
 
         try
         {
             db = getReadWriteDatabase();
+
             db.beginTransaction();
 
-            for (String sql : lines)
+            for (Pair<String, Object[]> args : lines)
             {
-                execSql(sql);
+                execSql(args.first, args.second);
             }
 
             db.setTransactionSuccessful();
         }
         catch (Exception ex)
         {
-            logException("execSql", ex);
+            logException("execSqlLines", ex);
         }
         finally
         {
             safeEndTransaction(db);
         }
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // SQL Modify Methods (Insert, Update, Replace)
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Inserts a new table row
+     *
+     * @param tableName name of the table
+     * @param cv list of columns to update
+     *
+     * @return the row id that was updated
+     */
+    public synchronized long insert(
+            @NonNull final String tableName,
+            @NonNull final ContentValues cv)
+    {
+        long rowid;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadWriteDatabase();
+            rowid = db.insert(tableName, null, cv);
+
+            if (rowid == -1)
+            {
+                UULog.warn(UUDatabase.class, "insert", "DB insert returned -1, this indicates an error!");
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("insert", ex);
+            rowid = -1;
+        }
+
+        return rowid;
+    }
+
+    /**
+     * Inserts or Updates a table row
+     *
+     * @param tableName name of the table
+     * @param cv list of columns to update
+     *
+     * @return the row id that was updated
+     */
+    public synchronized long replace(
+            @NonNull final String tableName,
+            @NonNull final ContentValues cv)
+    {
+        long rowid;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadWriteDatabase();
+            rowid = db.replace(tableName, null, cv);
+
+            if (rowid == -1)
+            {
+                UULog.warn(UUDatabase.class, "replace", "DB replace returned -1, this indicates an error!");
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("replace", ex);
+            rowid = -1;
+        }
+
+        return rowid;
+    }
+
+    /**
+     * Updates a table row
+     *
+     * @param tableName name of the table
+     * @param cv list of columns to update
+     * @param whereClause the where clause
+     * @param whereArgs args
+     *
+     */
+    public synchronized void update(
+            @NonNull final String tableName,
+            @NonNull final ContentValues cv,
+            @Nullable final String whereClause,
+            @Nullable final String[] whereArgs)
+    {
+        try
+        {
+            UUSQLiteDatabase db = getReadWriteDatabase();
+            db.update(tableName, cv, whereClause, whereArgs);
+        }
+        catch (Exception ex)
+        {
+            logException("update", ex);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Query Multiple Row Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Query Single Row Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Query Single Cell Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Runs a query expecting a single cell as the result
+     *
+     * @param resultClass The class of the expected result.  Only valid values are String, byte[]
+     *                    or primitive's
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    @Nullable
+    public synchronized <T> T querySingleCell(
+            @NonNull Class<T> resultClass,
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            @Nullable final T defaultValue)
+    {
+        Cursor c = null;
+        T result = null;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, selectionArgs);
+
+            if (c.moveToFirst())
+            {
+                Object objectResult = UUCursor.safeGet(c, 0, null);
+                result = UUObject.safeCast(resultClass, objectResult);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("querySingleCell", ex);
+            result = null;
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        if (result == null)
+        {
+            result = defaultValue;
+        }
+
+        return result;
+    }
+
+    /**
+     * Runs a query expecting a single integer cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    @Nullable
+    public synchronized String querySingleStringCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            @Nullable final String defaultValue)
+    {
+        return querySingleCell(String.class, sql, selectionArgs, defaultValue);
+    }
+
+    /**
+     * Runs a query expecting a single integer cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    public synchronized int querySingleIntCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            final int defaultValue)
+    {
+        Integer result = querySingleCell(Integer.class, sql, selectionArgs, null);
+        return (result != null ? result : defaultValue);
+    }
+
+    /**
+     * Runs a query expecting a single long cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    public synchronized long querySingleLongCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            final long defaultValue)
+    {
+        Long result = querySingleCell(Long.class, sql, selectionArgs, null);
+        return (result != null ? result : defaultValue);
+    }
+
+    /**
+     * Runs a query expecting a single float cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    public synchronized float querySingleFloatCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            final float defaultValue)
+    {
+        Float result = querySingleCell(Float.class, sql, selectionArgs, null);
+        return (result != null ? result : defaultValue);
+    }
+
+    /**
+     * Runs a query expecting a single float cell as the result
+     *
+     * @param sql the sql to run
+     * @param selectionArgs bound where arguments
+     * @param defaultValue the default value to return if the result is null
+     * @return a result
+     */
+    @Nullable
+    public synchronized byte[] querySingleBlobCell(
+            @NonNull final String sql,
+            @Nullable final String[] selectionArgs,
+            @Nullable final byte[] defaultValue)
+    {
+        return querySingleCell(byte[].class, sql, selectionArgs, null);
+    }
+
+    /**
+     * Count of all records in a table matching the specified where clause.  If
+     * the where clause is null then the query will count all rows in the table
+     *
+     * @param tableName tableName
+     * @param where SQL WHERE clause
+     * @param whereArgs bound where arguments
+     * @return an integer count of records matching the query
+     */
+    public int count(
+            @NonNull final String tableName,
+            @Nullable final String where,
+            @Nullable final String[] whereArgs)
+    {
+        String sql = UUSql.buildCountSql(tableName, where);
+        return querySingleIntCell(sql, whereArgs, 0);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Query Single Column Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Runs a query expecting a single column of strings
+     *
+     * @param sql the sql to run
+     * @return a result
+     */
+    @NonNull
+    public synchronized ArrayList<String> listSingleStringColumn(
+            @NonNull final String sql,
+            @Nullable final String[] args)
+    {
+        Cursor c = null;
+        ArrayList<String> results = new ArrayList<>();
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            logSql(sql);
+            c = db.rawQuery(sql, args);
+
+            while (c.moveToNext())
+            {
+                String val = c.getString(0);
+                results.add(val);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("listSingleStringColumn", ex);
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return results;
+    }
+
+    /**
+     * Lists all table names in a SQLiteDatabase
+     *
+     * @return a list of table names
+     */
+    @NonNull
+    public ArrayList<String> listTableNames()
+    {
+        String sql = "SELECT name FROM sqlite_master WHERE type='table';";
+        return listSingleStringColumn(sql, null);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Delete Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Deletes a table row
-     * 
+     *
      * @param tableName name of the table
      * @param whereClause WHERE clause to use when deleting
      * @param whereArgs bound arguments applied to ?'s in the whereClause
      */
-    protected synchronized void delete(final String tableName, final String whereClause, final String[] whereArgs)
+    public synchronized void delete(
+            @NonNull final String tableName,
+            @Nullable final String whereClause,
+            @Nullable final String[] whereArgs)
     {
-    	SQLiteDatabase db = null;
-        
+        UUSQLiteDatabase db = null;
+
         try
         {
-            db = getReadWriteDatabase();                
+            db = getReadWriteDatabase();
+
             db.beginTransaction();
             db.delete(tableName, whereClause, whereArgs);
             db.setTransactionSuccessful();
         }
         catch (Exception ex)
         {
-        	logException("delete", ex);
+            logException("delete", ex);
         }
         finally
         {
-        	safeEndTransaction(db);
+            safeEndTransaction(db);
         }
     }
-    
+
     /**
-     * Safely ends a DB transaction
-     * @param db the database to end a transaction on
+     *
+     * Delete's all records from a table
+     *
+     * @param tableName the table to truncate
+     *
      */
-    protected void safeEndTransaction(final SQLiteDatabase db)
+    public void truncateTable(@NonNull final String tableName)
     {
-    	try
+        delete(tableName, null, null);
+    }
+
+    /**
+     * WARNING - This method will delete all rows from all tables
+     *
+     */
+    public synchronized void resetDatabase()
+    {
+        try
         {
-    		if (db != null)
-    		{
-    			db.endTransaction();
-    		}
+            ArrayList<String> tables = listTableNames();
+            for (String table : tables)
+            {
+                // This is a special android table that we will leave alone.
+                if ("android_metadata".equalsIgnoreCase(table))
+                {
+                    continue;
+                }
+
+                truncateTable(table);
+            }
         }
         catch (Exception ex)
         {
-        	logException("safeEndTransaction", ex);
+            logException("resetDatabase", ex);
         }
     }
-    
-    /**
-     * Logs a line of SQL
-     * 
-     * @param sql the sql statement to log
-     */
-    protected void logSql(final String sql)
-    {
-    	UULog.debug(getClass(), "logSql", sql);
-    }
-    
-    /**
-     * Logs an exception
-     * 
-     * @param methodName an explanatory message to go along with the exception
-     * @param exception the caught exception
-     */
-    protected void logException(final String methodName, final Exception exception)
-    {
-        UULog.error(getClass(), methodName, exception);
-    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Table Logging Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Formats a SQLite limit clause from an offset and limit number
      *
-     * @param offset the offset
-     * @param limit the limit
-     * @return a string that can be passed as the limit param to android db calls
+     * Logs all records in a table
+     *
+      * @param tableName table name to query
      */
-    protected String formatLimitClause(final long offset, final long limit)
-    {
-        StringBuilder sb = new StringBuilder();
-        if (offset != -1)
-        {
-            sb.append(offset);
-        }
-
-        if (sb.length() > 0)
-        {
-            sb.append(",");
-            sb.append(limit);
-        }
-        else if (limit > 0)
-        {
-            sb.append(limit);
-        }
-
-        return sb.toString();
-    }
-
-    public <T extends UUDataModel> void logTable(final Class<T> type)
-    {
-        if (type != null)
-        {
-            try
-            {
-                logTable(UUDataModel.tableNameForClass(type));
-            }
-            catch (Exception ex)
-            {
-                logException("logTable", ex);
-            }
-        }
-    }
-
-    public void logTable(final String tableName)
+    public void logTable(@NonNull final String tableName)
     {
         logTable(tableName, null, null, null);
     }
 
-    public void logTable(final String tableName, final String[] columns, final String where, final String[] whereArgs)
+    /**
+     *
+     * Logs all records matching the given query
+     *
+     * @param tableName table name to query
+     * @param columns the columns to select
+     * @param where the SQL Where clause to use
+     * @param whereArgs SQL Where bound arguments
+     */
+    public synchronized void logTable(
+        @NonNull final String tableName,
+        @Nullable final String[] columns,
+        @Nullable final String where,
+        @Nullable final String[] whereArgs)
     {
-        SQLiteDatabase db;
         Cursor c = null;
 
         try
         {
-            db = getReadOnlyDatabase();
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
             c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
             logQueryResults(c);
         }
@@ -1049,10 +969,15 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
         finally
         {
-            closeCursor(c);
+            UUCloseable.safeClose(c);
         }
     }
 
+    /**
+     * Logs the results of a query
+     *
+     * @param c a cursor obtained from a SQL command
+     */
     public void logQueryResults(@NonNull final Cursor c)
     {
         try
@@ -1074,7 +999,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
                         sb.append(", ");
                     }
 
-                    UULog.debug(getClass(), "logQueryResults", sb.toString());
+                    UULog.debug(UUDatabase.class, "logQueryResults", sb.toString());
                 }
 
                 first = false;
@@ -1083,56 +1008,24 @@ public abstract class UUDatabase implements UUDatabaseDefinition
 
                 for (int i = 0; i < columnCount; i++)
                 {
-                    int colType = c.getType(i);
-                    switch (colType)
+                    Object val = UUCursor.safeGet(c, i, null);
+                    if (val == null)
                     {
-                        case Cursor.FIELD_TYPE_INTEGER:
-                        {
-                            long val = c.getLong(i);
-                            sb.append(val);
-                            break;
-                        }
-
-                        case Cursor.FIELD_TYPE_FLOAT:
-                        {
-                            double val = c.getDouble(i);
-                            sb.append(val);
-                            break;
-                        }
-
-                        case Cursor.FIELD_TYPE_STRING:
-                        {
-                            String val = c.getString(i);
-                            sb.append(val);
-                            break;
-                        }
-
-                        case Cursor.FIELD_TYPE_NULL:
-                        {
-                            sb.append("<null>");
-                            break;
-                        }
-
-                        case Cursor.FIELD_TYPE_BLOB:
-                        {
-                            byte[] val = c.getBlob(i);
-                            sb.append(UUString.byteToHex(val));
-                            break;
-                        }
-
-                        default:
-                        {
-                            sb.append("? (");
-                            sb.append(colType);
-                            sb.append(") ");
-                            break;
-                        }
+                        sb.append("<null>");
+                    }
+                    else if (val instanceof byte[])
+                    {
+                        sb.append(UUString.byteToHex((byte[])val));
+                    }
+                    else
+                    {
+                        sb.append(val.toString());
                     }
 
                     sb.append(", ");
                 }
 
-                UULog.debug(getClass(), "logQueryResults", sb.toString());
+                UULog.debug(UUDataModel.class, "logQueryResults", sb.toString());
 
             }
         }
@@ -1140,9 +1033,77 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             logException("logQueryResults", ex);
         }
-        finally
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Helper Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Safely ends a DB transaction
+     *
+     * @param db the database to end a transaction on
+     */
+    public void safeEndTransaction(@Nullable final UUSQLiteDatabase db)
+    {
+        try
         {
-            closeCursor(c);
+            if (db != null)
+            {
+                db.endTransaction();
+            }
         }
+        catch (Exception ex)
+        {
+            UULog.error(UUDatabase.class,"safeEndTransaction", ex);
+        }
+    }
+
+    public void safeClose(@Nullable final UUSQLiteDatabase db)
+    {
+        try
+        {
+            if (db != null)
+            {
+                db.close();
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUCloseable.class, "safeClose", ex);
+        }
+    }
+
+    private void safeDeleteDatabase()
+    {
+        try
+        {
+            applicationContext.deleteDatabase(getDatabaseName());
+        }
+        catch (Exception ex)
+        {
+            logException("safeDeleteDatabase", ex);
+        }
+    }
+
+    /**
+     * Logs a line of SQL
+     *
+     * @param sql the sql statement to log
+     */
+    private void logSql(final String sql)
+    {
+        UULog.debug(getClass(), "logSql", sql);
+    }
+
+    /**
+     * Logs an exception
+     *
+     * @param methodName an explanatory message to go along with the exception
+     * @param exception the caught exception
+     */
+    private void logException(final String methodName, final Exception exception)
+    {
+        UULog.error(getClass(), methodName, exception);
     }
 }

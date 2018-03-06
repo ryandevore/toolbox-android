@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
 
-public abstract class UUDefaultDatabase extends UUDatabaseV2
+public abstract class UUDefaultDatabase extends UUDatabase
 {
     protected UUDefaultDatabase(@NonNull final Context context)
     {
