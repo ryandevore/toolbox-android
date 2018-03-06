@@ -663,11 +663,15 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         }
     }
 
+    public <T extends UUDataModel> int countObjects(@NonNull final Class<T> type)
+    {
+        return countRecordsInTable(UUDataModel.tableNameForClass(type));
+    }
     
     /**
      * Count of all records in a table
      */
-    protected int numberOfRecordsInTable(final String tableName)
+    protected int countRecordsInTable(final String tableName)
     {
     	return countRecordsInTable(tableName, null);
     }
@@ -1014,7 +1018,7 @@ public abstract class UUDatabase implements UUDatabaseDefinition
         {
             try
             {
-                logTable(type.newInstance().getTableName());
+                logTable(UUDataModel.tableNameForClass(type));
             }
             catch (Exception ex)
             {
