@@ -31,12 +31,12 @@ public class UUTestDatabase extends UUDefaultDatabase
     // UUDatabaseDefinition
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public int getVersion()
-    {
-        return CURRENT_VERSION;
-    }
-
+//    @Override
+//    public int getVersion()
+//    {
+//        return CURRENT_VERSION;
+//    }
+//
 
 
     /*
