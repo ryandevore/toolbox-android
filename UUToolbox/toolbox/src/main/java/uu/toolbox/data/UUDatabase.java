@@ -98,7 +98,7 @@ public abstract class UUDatabase
     {
         try
         {
-            int version = db.getVersion();
+            int version = databaseDefinition.getVersion();
 
             ArrayList<String> lines = new ArrayList<>();
             UUSql.appendCreateLines(lines, databaseDefinition, version);
