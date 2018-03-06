@@ -1,27 +1,29 @@
 package uu.toolboxapp.data;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
-
-import uu.toolbox.data.UUDataModel;
 import uu.toolbox.data.UUDatabase;
+import uu.toolbox.data.UUDefaultDatabase;
+import uu.toolbox.data.UUSqlDatabase;
 import uu.toolbox.logging.UULog;
 import uu.toolboxapp.data.models.WeatherSummary;
 
 /**
  * Sample usage of UUDatabase
  */
-public class AppDatabase extends UUDatabase
+@UUSqlDatabase(name = AppDatabase.DB_NAME, version = AppDatabase.DB_VERSION, models =
+{
+        WeatherSummary.class
+})
+public class AppDatabase extends UUDefaultDatabase
 {
     private static AppDatabase theSharedDatabase;
 
-    private static final String DB_NAME = "UUSampleDb";
+    static final String DB_NAME = "UUSampleDb";
     private static final int DB_VERSION_ONE = 1;
 
-    private static final int DB_VERSION = DB_VERSION_ONE;
+    static final int DB_VERSION = DB_VERSION_ONE;
 
     public static AppDatabase sharedInstance()
     {
@@ -58,6 +60,7 @@ public class AppDatabase extends UUDatabase
     // UUDatabaseDefinition
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /*
     public String getDatabaseName()
     {
         return DB_NAME;
@@ -110,5 +113,5 @@ public class AppDatabase extends UUDatabase
         ArrayList<UUDataModel> list = new ArrayList<>();
         list.add(new WeatherSummary());
         return list;
-    }
+    }*/
 }

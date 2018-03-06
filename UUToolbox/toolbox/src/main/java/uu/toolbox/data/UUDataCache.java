@@ -403,7 +403,7 @@ public class UUDataCache implements UUDataCacheProtocol
         }
     }
 
-    private static class UUDataCacheDb extends UUDatabase
+    private static class UUDataCacheDb extends UUDefaultDatabase
     {
         private static final String DB_NAME = "UUDataCacheDb";
         private static final int DB_VERSION_ONE = 1;
