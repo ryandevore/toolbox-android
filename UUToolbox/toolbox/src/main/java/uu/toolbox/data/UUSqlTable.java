@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface UUSqlTable
 {
     String tableName() default "";
+    int existsInVersion() default 1;
 }
