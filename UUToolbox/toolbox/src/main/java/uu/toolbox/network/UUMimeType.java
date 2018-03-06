@@ -7,7 +7,7 @@ public enum UUMimeType
 {
     ApplicationJson("application/json"),
     TextJson("text/json"),
-    ApplicationOctetStream("appliction/octet-stream");
+    ApplicationOctetStream("application/octet-stream");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     private String stringVal;
