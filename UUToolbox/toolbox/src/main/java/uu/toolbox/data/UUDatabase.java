@@ -1105,7 +1105,7 @@ public abstract class UUDatabase
      *
      * @param sql the sql statement to log
      */
-    private void logSql(final String sql)
+    protected void logSql(final String sql)
     {
         UULog.debug(getClass(), "logSql", sql);
     }
@@ -1116,7 +1116,7 @@ public abstract class UUDatabase
      * @param methodName an explanatory message to go along with the exception
      * @param exception the caught exception
      */
-    private void logException(final String methodName, final Exception exception)
+    protected void logException(final String methodName, final Exception exception)
     {
         UULog.error(getClass(), methodName, exception);
     }
