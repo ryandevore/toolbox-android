@@ -104,7 +104,7 @@ public class UUDatabaseTests
     public void test_0000_initialCreate()
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_ONE;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_ONE;
         ctx.deleteDatabase(UUTestDatabase.NAME);
 
 
@@ -135,7 +135,7 @@ public class UUDatabaseTests
     public void test_0001_upgradeToVersionTwo() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_TWO;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_TWO;
 
         UUTestDatabase db = new UUTestDatabase(ctx);
 
@@ -157,7 +157,7 @@ public class UUDatabaseTests
     public void test_0002_downgradeToVersionOne() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_ONE;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_ONE;
 
         UUTestDatabase db = new UUTestDatabase(ctx);
 
@@ -175,7 +175,7 @@ public class UUDatabaseTests
     public void test_0003_addObjectTwice() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_TWO;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_TWO;
         ctx.deleteDatabase(UUTestDatabase.NAME);
 
         UUTestDatabase db = new UUTestDatabase(ctx);
@@ -199,7 +199,7 @@ public class UUDatabaseTests
     public void test_0004_createWithComplexDataModels() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_THREE;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_THREE;
         ctx.deleteDatabase(UUTestDatabase.NAME);
 
         UUTestDatabase db = new UUTestDatabase(ctx);
@@ -218,7 +218,7 @@ public class UUDatabaseTests
     public void test_0005_addObject() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_THREE;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_THREE;
         ctx.deleteDatabase(UUTestDatabase.NAME);
 
         UUTestDatabase db = new UUTestDatabase(ctx);
@@ -239,7 +239,7 @@ public class UUDatabaseTests
     public void test_0006_objectWithPrimitiveObjectTypes() throws Exception
     {
         Context ctx = getContext();
-        UUTestDatabase.CURRENT_VERSION = UUTestDatabase.VERSION_FOUR;
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
         ctx.deleteDatabase(UUTestDatabase.NAME);
 
         UUTestDatabase db = new UUTestDatabase(ctx);
