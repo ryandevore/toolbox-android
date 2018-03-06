@@ -233,61 +233,6 @@ public interface UUDataModel
         return cv;
     }
 
-    /*
-    static void putField(@NonNull final ContentValues cv, @NonNull final String name, @NonNull final Object object, @NonNull final Field field)
-    {
-        try
-        {
-            Class fieldType = field.getType();
-            Object fieldValue = field.get(object);
-
-            if (fieldType == String.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, (String)field.get(object));
-            }
-            else if (fieldType == Long.class || fieldType == long.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getLong(object));
-            }
-            else if (fieldType == Integer.class || fieldType == int.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getInt(object));
-            }
-            else if (fieldType == Short.class || fieldType == short.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getShort(object));
-            }
-            else if (fieldType == Byte.class || fieldType == byte.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getByte(object));
-            }
-            else if (fieldType == Float.class || fieldType == float.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getFloat(object));
-            }
-            else if (fieldType == Double.class || fieldType == Double.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getFloat(object));
-            }
-            else if (fieldType == Boolean.class || fieldType == boolean.class)
-            {
-                UUContentValues.putIfNotNull(cv, name, field.getBoolean(object));
-            }
-            else if (fieldType == Byte[].class || fieldType == byte[].class)
-            {
-                UUContentValues.putIfNotNull(cv, name, (byte[])field.get(object));
-            }
-            else
-            {
-                UULog.debug(UUDataModel.class, "putField", "Field Type " + fieldType + " cannot be coerced into SQLite type!");
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.debug(UUDataModel.class, "putField", ex);
-        }
-    }*/
-
     /**
      * Fills data in this object from a SQLite cursor
      * @param cursor the cursor to fill from
