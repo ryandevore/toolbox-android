@@ -1,6 +1,7 @@
 package uu.toolbox.data;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -248,5 +249,56 @@ public final class UUSql
         {
             UUSql.appendUpgradeTableSql(list, migratedModel, fromVersion, toVersion);
         }
+    }
+
+
+
+
+    @NonNull
+    public static String buildWhereClause(@Nullable final String where)
+    {
+        if (UUString.isNotEmpty(where))
+        {
+            return " WHERE " + where;
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    @NonNull
+    public static String buildCountSql(@NonNull final String tableName, @Nullable final String where)
+    {
+        return "SELECT COUNT(*) FROM " + tableName + buildWhereClause(where);
+    }
+
+    /**
+     * Formats a SQLite limit clause from an offset and limit number
+     *
+     * @param offset the offset
+     * @param limit the limit
+     * @return a string that can be passed as the limit param to android db calls
+     */
+    @NonNull
+    public static String formatLimitClause(final long offset, final long limit)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (offset != -1)
+        {
+            sb.append(offset);
+        }
+
+        if (sb.length() > 0)
+        {
+            sb.append(",");
+            sb.append(limit);
+        }
+        else if (limit > 0)
+        {
+            sb.append(limit);
+        }
+
+        return sb.toString();
     }
 }
