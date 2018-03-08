@@ -49,12 +49,16 @@ public abstract class UUDatabase
     // Database Lifecyle
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void destroy()
+    public void closeDatabase()
     {
-        safeClose(getReadWriteDatabase());
-        safeDeleteDatabase();
+        safeClose(database);
         database = null;
-        openDatabase();
+    }
+
+    public void deleteDatabase()
+    {
+        closeDatabase();
+        safeDeleteDatabase();
     }
 
     public UUSQLiteDatabase getReadOnlyDatabase()
