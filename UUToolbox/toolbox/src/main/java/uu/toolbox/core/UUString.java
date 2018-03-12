@@ -190,14 +190,69 @@ public class UUString
     }
 
     @NonNull
-    public static String byteToBase64String(@Nullable final byte[] data)
+    public static String encodeAsBase64String(@Nullable final byte[] data)
+    {
+        return encodeAsBase64String(data, Base64.NO_WRAP);
+    }
+
+    @NonNull
+    public static String encodeAsBase64String(@Nullable final byte[] data, int base64options)
     {
         if (data == null)
         {
             return "";
         }
 
-        return Base64.encodeToString(data, Base64.NO_WRAP);
+        try
+        {
+            return Base64.encodeToString(data, base64options);
+        }
+        catch (Exception ex)
+        {
+            return "";
+        }
+    }
+
+    @NonNull
+    public static String decodeFromBase64ToUtf8String(@Nullable final String data)
+    {
+        return decodeFromBase64ToString(data, Base64.NO_WRAP, CHARSET_UTF8);
+    }
+
+    @NonNull
+    public static String decodeFromBase64ToUtf8String(@Nullable final String data, int base64options)
+    {
+        return decodeFromBase64ToString(data, base64options, CHARSET_UTF8);
+    }
+
+    @Nullable
+    public static byte[] decodeFromBase64(@Nullable final String data, int base64options)
+    {
+        if (data == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Base64.decode(data, base64options);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
+    @NonNull
+    public static String decodeFromBase64ToString(@Nullable final String data, int base64options, @NonNull final String stringEncoding)
+    {
+        byte[] decoded = decodeFromBase64(data, base64options);
+        if (decoded == null)
+        {
+            return "";
+        }
+
+        return byteToString(decoded, stringEncoding);
     }
 
     /**
@@ -333,6 +388,18 @@ public class UUString
         }
 
         return result;
+    }
+
+    /**
+     * Wrapper to return a String or an empty string
+     *
+     * @param string the object
+     *
+     * @return a non null string
+     */
+    public static @NonNull String safeString(final @Nullable String string)
+    {
+        return (string != null ? string : "");
     }
 
     @NonNull
