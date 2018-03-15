@@ -19,8 +19,10 @@ public class UUTestDatabase extends UUDefaultDatabase
         UUTestDataModel.class,
         UUDataModelWithCompoundKey.class,
         UUComplexDataModel.class,
-        DataModelWithObjPrimitiveTypes.class,
-        AllColumnTypesDataModel.class,
+        UUDataModelWithObjPrimitiveTypes.class,
+        UUAllColumnTypesDataModel.class,
+        UUAutoIncrementPrimIntDataModel.class,
+        UUAutoIncrementObjIntDataModel.class
     })
     public static class DbDef implements UUDatabaseDefinition
     {

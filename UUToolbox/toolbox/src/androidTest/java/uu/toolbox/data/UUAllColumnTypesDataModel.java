@@ -5,7 +5,7 @@ import org.junit.Assert;
 import uu.toolbox.core.UURandom;
 
 @UUSqlTable(tableName = "all_columns", existsInVersion = 4)
-public class AllColumnTypesDataModel implements UUDataModel
+public class UUAllColumnTypesDataModel implements UUDataModel
 {
     @UUSqlColumn()
     public Byte byteObject;
@@ -65,9 +65,9 @@ public class AllColumnTypesDataModel implements UUDataModel
     public String stringObject;
 
 
-    public static AllColumnTypesDataModel random()
+    public static UUAllColumnTypesDataModel random()
     {
-        AllColumnTypesDataModel o = new AllColumnTypesDataModel();
+        UUAllColumnTypesDataModel o = new UUAllColumnTypesDataModel();
         o.byteObject = UURandom.randomByte();
         o.bytePrimitive = UURandom.randomByte();
         o.shortObject = UURandom.randomShort();
@@ -90,7 +90,7 @@ public class AllColumnTypesDataModel implements UUDataModel
         return o;
     }
 
-    public static void assertEquals(AllColumnTypesDataModel obj, AllColumnTypesDataModel other)
+    public static void assertEquals(UUAllColumnTypesDataModel obj, UUAllColumnTypesDataModel other)
     {
         Assert.assertNotNull(obj);
         Assert.assertNotNull(other);

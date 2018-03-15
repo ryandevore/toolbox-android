@@ -1,7 +1,7 @@
 package uu.toolbox.data;
 
 @UUSqlTable(tableName = "uu_object_primitives", existsInVersion = 4)
-public class DataModelWithObjPrimitiveTypes implements UUDataModel
+public class UUDataModelWithObjPrimitiveTypes implements UUDataModel
 {
     @UUSqlColumn(name = "MyInt", type = UUSqlColumn.Type.INT_32)
     public Integer anInt;

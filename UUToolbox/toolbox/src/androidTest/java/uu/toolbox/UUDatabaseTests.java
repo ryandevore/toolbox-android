@@ -15,10 +15,13 @@ import org.junit.runners.MethodSorters;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import uu.toolbox.data.AllColumnTypesDataModel;
-import uu.toolbox.data.DataModelWithObjPrimitiveTypes;
+import uu.toolbox.data.UUAllColumnTypesDataModel;
+import uu.toolbox.data.UUAutoIncrementObjIntDataModel;
+import uu.toolbox.data.UUAutoIncrementPrimIntDataModel;
 import uu.toolbox.data.UUCursor;
 import uu.toolbox.data.UUDataModelWithCompoundKey;
+import uu.toolbox.data.UUDataModelWithObjPrimitiveTypes;
+import uu.toolbox.data.UUDatabase;
 import uu.toolbox.data.UUSQLiteDatabase;
 import uu.toolbox.data.UUTestDataModel;
 import uu.toolbox.data.UUTestDatabase;
@@ -28,9 +31,9 @@ import uu.toolbox.logging.UULog;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UUDatabaseTests
 {
-    private static String TEST_DATA_MODEL_TABLE_NAME = "uutest_data_model";
-    private static String DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME = "uu_data_model_with_compound_key";
-    private static String COMPLEX_DATA_MODEL_TABLE_NAME = "uu_complex_test_model";
+    private static final String TEST_DATA_MODEL_TABLE_NAME = "uutest_data_model";
+    private static final String DATA_MODEL_WITH_COMPOUND_KEY_TABLE_NAME = "uu_data_model_with_compound_key";
+    private static final String COMPLEX_DATA_MODEL_TABLE_NAME = "uu_complex_test_model";
 
     static class UUColumnDefinition
     {
@@ -244,12 +247,12 @@ public class UUDatabaseTests
 
         UUTestDatabase db = new UUTestDatabase(ctx);
 
-        DataModelWithObjPrimitiveTypes model = new DataModelWithObjPrimitiveTypes();
+        UUDataModelWithObjPrimitiveTypes model = new UUDataModelWithObjPrimitiveTypes();
         model.aFloat = 57.0f;
         model.anInt = 22;
         model.aPrimFloat = 1001.0f;
 
-        DataModelWithObjPrimitiveTypes added = db.insertObject(DataModelWithObjPrimitiveTypes.class, model);
+        UUDataModelWithObjPrimitiveTypes added = db.insertObject(UUDataModelWithObjPrimitiveTypes.class, model);
         Assert.assertNotNull(added);
         Assert.assertEquals(model.aFloat, added.aFloat);
         Assert.assertEquals(model.anInt, added.anInt);
@@ -258,7 +261,7 @@ public class UUDatabaseTests
         model.aFloat = 99.0f;
         model.anInt = 1234;
         model.aPrimFloat = 129.0f;
-        DataModelWithObjPrimitiveTypes updated = db.updateObject(DataModelWithObjPrimitiveTypes.class, model);
+        UUDataModelWithObjPrimitiveTypes updated = db.updateObject(UUDataModelWithObjPrimitiveTypes.class, model);
         Assert.assertNotNull(updated);
         Assert.assertEquals(model.aFloat, updated.aFloat);
         Assert.assertEquals(model.anInt, updated.anInt);
@@ -274,10 +277,10 @@ public class UUDatabaseTests
 
         UUTestDatabase db = new UUTestDatabase(ctx);
 
-        AllColumnTypesDataModel model = AllColumnTypesDataModel.random();
-        AllColumnTypesDataModel inserted = db.insertObject(AllColumnTypesDataModel.class, model);
+        UUAllColumnTypesDataModel model = UUAllColumnTypesDataModel.random();
+        UUAllColumnTypesDataModel inserted = db.insertObject(UUAllColumnTypesDataModel.class, model);
         Assert.assertNotNull(inserted);
-        AllColumnTypesDataModel.assertEquals(model, inserted);
+        UUAllColumnTypesDataModel.assertEquals(model, inserted);
 
         //db.querySingleIntCell("SELECT ")
 
@@ -419,6 +422,66 @@ public class UUDatabaseTests
 //        Assert.assertEquals(model.anInt, updated.anInt);
 //        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat);
     }
+
+    @Test
+    public void test_0008_testAutoIncrementId_PrimitiveInt() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        for (int i = 1; i < 20; i++)
+        {
+            insertAutoIncrementPrimIntObject(db, i);
+        }
+    }
+
+    @Test
+    public void test_0009_testAutoIncrementId_ObjectInt() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        for (int i = 1; i < 20; i++)
+        {
+            insertAutoIncrementObjIntObject(db, i);
+        }
+    }
+
+    private void insertAutoIncrementPrimIntObject(@NonNull final UUDatabase db, int expectedId)
+    {
+        UUAutoIncrementPrimIntDataModel model = UUAutoIncrementPrimIntDataModel.random();
+        model.id = 0;
+
+        UUAutoIncrementPrimIntDataModel inserted = db.insertObject(UUAutoIncrementPrimIntDataModel.class, model);
+        Assert.assertEquals(expectedId, inserted.id);
+        model.id = expectedId;
+        UUAutoIncrementPrimIntDataModel.assertEquals(model, inserted);
+
+        int count = db.count(UUAutoIncrementPrimIntDataModel.class, null, null);
+        Assert.assertEquals(expectedId, count);
+    }
+
+    private void insertAutoIncrementObjIntObject(@NonNull final UUDatabase db, int expectedId)
+    {
+        UUAutoIncrementObjIntDataModel model = UUAutoIncrementObjIntDataModel.random();
+        model.id = null;
+
+        UUAutoIncrementObjIntDataModel inserted = db.insertObject(UUAutoIncrementObjIntDataModel.class, model);
+        Assert.assertNotNull(inserted.id);
+        Assert.assertEquals(expectedId, (int)inserted.id);
+        model.id = expectedId;
+        UUAutoIncrementObjIntDataModel.assertEquals(model, inserted);
+
+        int count = db.count(UUAutoIncrementObjIntDataModel.class, null, null);
+        Assert.assertEquals(expectedId, count);
+    }
+
 }
 
 
