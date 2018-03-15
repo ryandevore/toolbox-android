@@ -220,7 +220,11 @@ public interface UUDataModel
                 {
                     if (version >= columnAnnotation.existsInVersion())
                     {
-                        UUContentValues.putObjectIfNotNull(cv, columnNameForField(field), field.get(this));
+                        Object fieldVal = field.get(this);
+                        if (shouldPutColumn(columnAnnotation, fieldVal))
+                        {
+                            UUContentValues.putObjectIfNotNull(cv, columnNameForField(field), fieldVal);
+                        }
                     }
                 }
             }
@@ -295,6 +299,23 @@ public interface UUDataModel
     static boolean isPrimaryKeyColumn(@NonNull final UUSqlColumn columnAnnotation)
     {
         return (columnAnnotation.primaryKey() || columnAnnotation.type() == UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT);
+    }
+
+    static boolean shouldPutColumn(@NonNull final UUSqlColumn columnAnnotation, @Nullable final Object fieldValue)
+    {
+        if (columnAnnotation.type() != UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT)
+        {
+            return true;
+        }
+
+        if (fieldValue == null)
+        {
+            return false;
+        }
+
+        // If anything other than zero is present in the data model, then put it into the content
+        // values of the query.
+        return !("0".equalsIgnoreCase(fieldValue.toString()));
     }
 
     @NonNull
