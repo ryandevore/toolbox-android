@@ -8,11 +8,11 @@ import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Map;
 
 import uu.toolbox.core.UUCloseable;
+import uu.toolbox.core.UUListDelegate;
 import uu.toolbox.core.UUString;
+import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
 
 /**
@@ -204,9 +204,9 @@ public abstract class UUDatabase
     public synchronized <T extends UUDataModel> ArrayList<T> queryMultipleObjects(
         @NonNull final Class<T> type,
         @Nullable final String selection,
-        @Nullable String[] selectionArgs,
-        @Nullable String orderBy,
-        @Nullable String limit)
+        @Nullable final String[] selectionArgs,
+        @Nullable final String orderBy,
+        @Nullable final String limit)
     {
     	ArrayList<T> results = new ArrayList<>();
 
@@ -237,6 +237,33 @@ public abstract class UUDatabase
     	}
     	
     	return results;
+    }
+
+    /**
+     * Queries the database for a set of objects.  Query is performed on a background thread
+     * and results are delivered asynchronously to the caller
+     *
+     * @param type data model type
+     * @param selection SQL Where clause
+     * @param selectionArgs Bound arguments for SQL Where clause
+     * @param orderBy SQL order by clause
+     * @param limit SQL limit clause
+     * @param delegate return delegate
+     * @param <T> type of data model class
+     */
+    public <T extends UUDataModel> void queryMultipleObjects(
+            @NonNull final Class<T> type,
+            @Nullable final String selection,
+            @Nullable final String[] selectionArgs,
+            @Nullable final String orderBy,
+            @Nullable final String limit,
+            @NonNull final UUListDelegate<T> delegate)
+    {
+        UUThread.runOnBackgroundThread(() ->
+        {
+            ArrayList<T> results = queryMultipleObjects(type, selection, selectionArgs, orderBy, limit);
+            UUListDelegate.safeInvoke(delegate, results);
+        });
     }
     
     /**
@@ -325,7 +352,7 @@ public abstract class UUDatabase
     }
 
     /**
-     * Inserts or Updates an object based on the primary key
+     * Inserts or Updates an object
      *
      * @param type row object type
      * @param object the object to update
@@ -337,46 +364,11 @@ public abstract class UUDatabase
     {
     	String whereClause = object.getPrimaryKeyWhereClause();
     	String[] whereArgs = object.getPrimaryKeyWhereArgs();
-        return updateObject(type, object, whereClause, whereArgs);
-    }
 
-    /**
-     * Inserts or Updates an object with a non primary key
-     *
-     * @param type row object type
-     * @param object the object to update
-     * @param columnName the column to use for the where clause
-     * @param argument the single argument to bind for the where clause
-     * @return an object of type T
-     */
-    public synchronized <T extends UUDataModel> T updateObjectWithParam(
-            @NonNull final Class<T> type,
-            @NonNull T object,
-            @NonNull Object columnName,
-            @NonNull Object argument)
-    {
-        String whereClause = String.format(Locale.US, "%s = ?", columnName);
-        String[] whereArgs = { argument.toString() };
-        return updateObject(type, object, whereClause, whereArgs);
-    }
 
-    /**
-     * Inserts or Updates an object with an arbitrary where clause.
-     *
-     * @param type row object type
-     * @param object the object to update
-     * @param whereArgs the where clause to use for the update
-     * @param whereClause the bound where arguments to use for the update
-     * @return an object of type T
-     */
-    public synchronized <T extends UUDataModel> T updateObject(
-            @NonNull final Class<T> type,
-            @NonNull T object,
-            @NonNull String whereClause,
-            @NonNull String[] whereArgs)
-    {
-        int count = count(type, whereClause, whereArgs);
-        if (count == 0)
+    	// TODO: Optimize this with an exists query
+        T lookup = querySingleObject(type, whereClause, whereArgs, null);
+        if (lookup == null)
         {
             return insertObject(type, object);
         }
@@ -607,8 +599,6 @@ public abstract class UUDatabase
         try
         {
             UUSQLiteDatabase db = getReadWriteDatabase();
-
-            logContentValues("insert", cv);
             rowid = db.insert(tableName, null, cv);
 
             if (rowid == -1)
@@ -642,8 +632,6 @@ public abstract class UUDatabase
         try
         {
             UUSQLiteDatabase db = getReadWriteDatabase();
-
-            logContentValues("replace", cv);
             rowid = db.replace(tableName, null, cv);
 
             if (rowid == -1)
@@ -678,8 +666,6 @@ public abstract class UUDatabase
         try
         {
             UUSQLiteDatabase db = getReadWriteDatabase();
-
-            logContentValues("update", cv);
             db.update(tableName, cv, whereClause, whereArgs);
         }
         catch (Exception ex)
@@ -1330,7 +1316,7 @@ public abstract class UUDatabase
      *
      * @param sql the sql statement to log
      */
-    protected void logSql(@NonNull final String sql)
+    protected void logSql(final String sql)
     {
         UULog.debug(getClass(), "logSql", sql);
     }
@@ -1341,16 +1327,8 @@ public abstract class UUDatabase
      * @param methodName an explanatory message to go along with the exception
      * @param exception the caught exception
      */
-    protected void logException(@NonNull final String methodName, @NonNull final Exception exception)
+    protected void logException(final String methodName, final Exception exception)
     {
         UULog.error(getClass(), methodName, exception);
-    }
-
-    protected void logContentValues(@NonNull final String methodName, @NonNull final ContentValues cv)
-    {
-        for (Map.Entry<String,Object> e : cv.valueSet())
-        {
-            UULog.debug(getClass(), methodName, e.getKey() + ": " + e.getValue());
-        }
     }
 }
