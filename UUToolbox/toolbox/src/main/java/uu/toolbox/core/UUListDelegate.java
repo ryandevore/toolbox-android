@@ -1,5 +1,6 @@
 package uu.toolbox.core;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -15,9 +16,9 @@ import uu.toolbox.logging.UULog;
  */
 public interface UUListDelegate<T>
 {
-    void onCompleted(@Nullable final ArrayList<T> list);
+    void onCompleted(@NonNull final ArrayList<T> list);
 
-    static <T extends Object> void safeInvoke(@Nullable final UUListDelegate<T> delegate, @Nullable final ArrayList<T> list)
+    static <T extends Object> void safeInvoke(@Nullable final UUListDelegate<T> delegate, @NonNull final ArrayList<T> list)
     {
         try
         {
