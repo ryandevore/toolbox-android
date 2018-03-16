@@ -365,8 +365,46 @@ public final class UURandom
     }
 
     @VisibleForTesting
+    public static String randomLetters(int maxLength)
+    {
+        int length = UURandom.randomInt(maxLength);
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() < length)
+        {
+            char c = (char)UURandom.randomByte();
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+            {
+                sb.append(c);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    @VisibleForTesting
     public static String randomString(int maxLength)
     {
         return new String(randomCharArray(maxLength));
+    }
+
+    @VisibleForTesting
+    public static String randomWord(int maxLength)
+    {
+        return randomLetters(maxLength);
+    }
+
+    @VisibleForTesting
+    public static String randomWords(int maxNumberOfWords, int maxWordLength)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        int words = randomInt(maxNumberOfWords);
+        for (int i = 0; i < words; i++)
+        {
+            sb.append(randomWord(maxWordLength));
+            sb.append(" ");
+        }
+
+        return sb.toString();
     }
 }
