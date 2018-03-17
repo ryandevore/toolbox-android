@@ -12,7 +12,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import uu.toolbox.core.UUCloseable;
+import uu.toolbox.core.UUListDelegate;
 import uu.toolbox.core.UUString;
+import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
 
 /**
@@ -237,6 +239,33 @@ public abstract class UUDatabase
     	}
     	
     	return results;
+    }
+
+    /**
+     * Queries the database for a set of objects.  Query is performed on a background thread
+     * and results are delivered asynchronously to the caller
+     *
+     * @param type data model type
+     * @param selection SQL Where clause
+     * @param selectionArgs Bound arguments for SQL Where clause
+     * @param orderBy SQL order by clause
+     * @param limit SQL limit clause
+     * @param delegate return delegate
+     * @param <T> type of data model class
+     */
+    public <T extends UUDataModel> void queryMultipleObjects(
+            @NonNull final Class<T> type,
+            @Nullable final String selection,
+            @Nullable final String[] selectionArgs,
+            @Nullable final String orderBy,
+            @Nullable final String limit,
+            @NonNull final UUListDelegate<T> delegate)
+    {
+        UUThread.runOnBackgroundThread(() ->
+        {
+            ArrayList<T> results = queryMultipleObjects(type, selection, selectionArgs, orderBy, limit);
+            UUListDelegate.safeInvoke(delegate, results);
+        });
     }
     
     /**
@@ -1189,7 +1218,7 @@ public abstract class UUDatabase
      */
     public synchronized void logTable(
         @NonNull final String tableName,
-        @Nullable final String[] columns,
+        @Nullable String[] columns,
         @Nullable final String where,
         @Nullable final String[] whereArgs)
     {
@@ -1198,6 +1227,11 @@ public abstract class UUDatabase
         try
         {
             UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            if (columns == null)
+            {
+                columns = new String[] { "rowid", "*" };
+            }
 
             c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
             logQueryResults(c);
