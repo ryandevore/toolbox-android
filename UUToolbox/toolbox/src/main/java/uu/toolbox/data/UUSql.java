@@ -31,6 +31,14 @@ public final class UUSql
         boolean first = true;
         for (Object col : columnDefs.keySet())
         {
+            // Super special case.  SQLite has a built in rowid, so if a model defines a column
+            // named 'rowid', we skip creating our own column.  This allows the data model to
+            // query the built in SQLite rowid rather than an arbitrary user created column.
+            if ("rowid" == col)
+            {
+                continue;
+            }
+
             sb.append(first ? "" : ", ");
             Object dataType = columnDefs.get(col);
             sb.append(col.toString());
