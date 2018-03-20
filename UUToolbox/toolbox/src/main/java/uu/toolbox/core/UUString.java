@@ -141,6 +141,55 @@ public class UUString
     }
 
     /**
+     * Safely creates a Base64 string from an array of bytes
+     *
+     * @param data the byte array
+     * @param base64Options Base64 flags to encode with
+     * @return a string or null if an exception is caught
+     */
+    @Nullable
+    public static String byteToBase64String(@Nullable final byte[] data, final int base64Options)
+    {
+        if (data == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Base64.encodeToString(data, base64Options);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Safely creates a Base64 string from an array of bytes, using Base64.NO_WRAP options
+     *
+     * @param data the byte array
+     * @return a string or null if an exception is caught
+     */
+    @Nullable
+    public static String byteToBase64String(@Nullable final byte[] data)
+    {
+        if (data == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Base64.encodeToString(data, Base64.NO_WRAP);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
+    /**
      * Safely creates a byte[] from a string
      *
      * @param input the string
@@ -189,28 +238,40 @@ public class UUString
         return stringToByte(input, CHARSET_ISO_8859_1);
     }
 
-    @NonNull
-    public static String encodeAsBase64String(@Nullable final byte[] data)
+    /**
+     * Safelye decodes a base 64 into its byte[] representation
+     *
+     * @param input the input string
+     * @return a byte[] or null if an exception is caught
+     */
+    @Nullable
+    public static byte[] stringToBase64Bytes(@Nullable final String input, final int base64Options)
     {
-        return encodeAsBase64String(data, Base64.NO_WRAP);
-    }
-
-    @NonNull
-    public static String encodeAsBase64String(@Nullable final byte[] data, int base64options)
-    {
-        if (data == null)
+        if (input == null)
         {
-            return "";
+            return null;
         }
 
         try
         {
-            return Base64.encodeToString(data, base64options);
+            return Base64.decode(input, base64Options);
         }
         catch (Exception ex)
         {
-            return "";
+            return null;
         }
+    }
+
+    /**
+     * Safelye decodes a base 64 into its byte[] representation using Base64.NO_WRAP option
+     *
+     * @param input the input string
+     * @return a byte[] or null if an exception is caught
+     */
+    @Nullable
+    public static byte[] stringToBase64Bytes(@Nullable final String input)
+    {
+        return stringToBase64Bytes(input, Base64.NO_WRAP);
     }
 
     @NonNull
@@ -225,28 +286,10 @@ public class UUString
         return decodeFromBase64ToString(data, base64options, CHARSET_UTF8);
     }
 
-    @Nullable
-    public static byte[] decodeFromBase64(@Nullable final String data, int base64options)
-    {
-        if (data == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Base64.decode(data, base64options);
-        }
-        catch (Exception ex)
-        {
-            return null;
-        }
-    }
-
     @NonNull
     public static String decodeFromBase64ToString(@Nullable final String data, int base64options, @NonNull final String stringEncoding)
     {
-        byte[] decoded = decodeFromBase64(data, base64options);
+        byte[] decoded = stringToBase64Bytes(data, base64options);
         if (decoded == null)
         {
             return "";
