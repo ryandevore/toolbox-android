@@ -111,6 +111,65 @@ public class UUKeyValueModelTests
         soSingleObjectTest(false, Boolean.class);
     }
 
+    @Test
+    public void test_0009_testMultiple() throws Exception
+    {
+        UUDatabase db = new TestDb(getContext());
+        db.deleteDatabase();
+
+        UUKeyValueModel one = new UUKeyValueModel("one", "Hello");
+        UUKeyValueModel two = new UUKeyValueModel("two", "World");
+        UUKeyValueModel three = new UUKeyValueModel("three", "Useful Utilities!");
+
+        db.insertObject(UUKeyValueModel.class, one);
+        Assert.assertEquals(1, db.count(UUKeyValueModel.class));
+
+        db.insertObject(UUKeyValueModel.class, two);
+        Assert.assertEquals(2, db.count(UUKeyValueModel.class));
+
+        db.insertObject(UUKeyValueModel.class, three);
+        Assert.assertEquals(3, db.count(UUKeyValueModel.class));
+
+        UUKeyValueModel oneFetch = db.querySingleObject(UUKeyValueModel.class, one.getPrimaryKeyWhereClause(), one.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNotNull(oneFetch);
+        Assert.assertNotNull(oneFetch.getKey());
+        Assert.assertNotNull(oneFetch.getValue());
+        Assert.assertEquals(one.getKey(), oneFetch.getKey());
+        Assert.assertEquals(one.getValue(), oneFetch.getValue());
+
+        UUKeyValueModel twoFetch = db.querySingleObject(UUKeyValueModel.class, two.getPrimaryKeyWhereClause(), two.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNotNull(twoFetch);
+        Assert.assertNotNull(twoFetch.getKey());
+        Assert.assertNotNull(twoFetch.getValue());
+        Assert.assertEquals(two.getKey(), twoFetch.getKey());
+        Assert.assertEquals(two.getValue(), twoFetch.getValue());
+
+        UUKeyValueModel threeFetch = db.querySingleObject(UUKeyValueModel.class, three.getPrimaryKeyWhereClause(), three.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNotNull(threeFetch);
+        Assert.assertNotNull(threeFetch.getKey());
+        Assert.assertNotNull(threeFetch.getValue());
+        Assert.assertEquals(three.getKey(), threeFetch.getKey());
+        Assert.assertEquals(three.getValue(), threeFetch.getValue());
+
+        db.deleteObject(UUKeyValueModel.class, one);
+        Assert.assertEquals(2, db.count(UUKeyValueModel.class));
+
+        db.deleteObject(UUKeyValueModel.class, two);
+        Assert.assertEquals(1, db.count(UUKeyValueModel.class));
+
+        db.deleteObject(UUKeyValueModel.class, three);
+        Assert.assertEquals(0, db.count(UUKeyValueModel.class));
+
+        oneFetch = db.querySingleObject(UUKeyValueModel.class, one.getPrimaryKeyWhereClause(), one.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNull(oneFetch);
+
+        twoFetch = db.querySingleObject(UUKeyValueModel.class, two.getPrimaryKeyWhereClause(), two.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNull(twoFetch);
+
+        threeFetch = db.querySingleObject(UUKeyValueModel.class, three.getPrimaryKeyWhereClause(), three.getPrimaryKeyWhereArgs(), null);
+        Assert.assertNull(threeFetch);
+    }
+
     private void soSingleObjectTest(@NonNull Object value, @NonNull Class<?> expectedType) throws Exception
     {
         UUDatabase db = new TestDb(getContext());

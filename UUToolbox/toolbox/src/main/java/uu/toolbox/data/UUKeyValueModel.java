@@ -19,7 +19,7 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class UUKeyValueModel implements UUDataModel
 {
-    @UUSqlColumn()
+    @UUSqlColumn(primaryKey = true)
     private String key;
 
     @UUSqlColumn()
@@ -28,6 +28,17 @@ public class UUKeyValueModel implements UUDataModel
 
     @UUSqlColumn()
     private Object value;
+
+    public UUKeyValueModel()
+    {
+
+    }
+
+    public UUKeyValueModel(@NonNull final String key, @Nullable final Object value)
+    {
+        this.key = key;
+        this.value = value;
+    }
 
     @Nullable
     private String valueClass()
