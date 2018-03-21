@@ -536,6 +536,17 @@ public abstract class UUDatabase
     }
 
     /**
+     * Count of all records in a table.
+     *
+     * @param type modelClass to derive table Nnme from
+     * @return an integer count of records matching the query
+     */
+    public <T extends UUDataModel> int count(@NonNull final Class<T> type)
+    {
+        return count(type, null, null);
+    }
+
+    /**
      *
      * Logs all records in a table
      *
