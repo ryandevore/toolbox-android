@@ -111,6 +111,19 @@ public class UUHttpRequest
         }
     }
 
+    public void setQueryPathArguments(@Nullable final Object[] queryPathArguments)
+    {
+        this.queryPathArguments.clear();
+
+        if (queryPathArguments != null)
+        {
+            for (Object o : queryPathArguments)
+            {
+                addQueryPathArgument(o);
+            }
+        }
+    }
+
     public void addQueryPathArgument(@NonNull final Object arg)
     {
         queryPathArguments.add(arg);
