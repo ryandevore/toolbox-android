@@ -1,4 +1,4 @@
-package uu.toolbox;
+package uu.toolbox.core;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

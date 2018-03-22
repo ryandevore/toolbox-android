@@ -1,9 +1,13 @@
 package uu.toolbox.network;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.net.ssl.SSLSocketFactory;
@@ -13,32 +17,47 @@ import uu.toolbox.core.UUJson;
 /**
  * UUHttpRequest
  *
- * Useful Utilities - Wrapper to encapsulate all request params needed for a UUHttpClient request.
- *
+ * Useful Utilities - Wrapper to encapsulate all request params needed for a UUHttp request.
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class UUHttpRequest
 {
-    protected String _url;
-    protected UUHttpMethod httpMethod;
-    protected HashMap<String, String> _queryArguments;
-    protected HashMap<String, String> _headerFields;
-    protected int _timeout;
-    protected String _contentType;
-    protected byte[] _body;
-    protected Proxy _proxy;
-    protected SSLSocketFactory _sslSocketFactory;
-    protected  boolean _processMimeTypes = true;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Data Members
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private String url;
+    private UUHttpMethod httpMethod = UUHttpMethod.GET;
+    private final HashMap<Object, Object> queryArguments = new HashMap<>();
+    private final HashMap<Object, Object> headerFields = new HashMap<>();
+    private final ArrayList<Object> queryPathArguments = new ArrayList<>();
+    private int timeout;
+    private Object contentType;
+    private byte[] body;
+    private Proxy proxy;
+    private SSLSocketFactory sslSocketFactory;
+    private boolean processMimeTypes = true;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Construction
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    public UUHttpRequest(@NonNull final String url, @NonNull final UUHttpMethod httpMethod)
+    {
+        this.url = url;
+        this.httpMethod = httpMethod;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Public Gettors and Settors
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     public String getURL()
     {
-        return _url;
+        return url;
     }
 
     public void setURL(final String url)
     {
-        _url = url;
+        this.url = url;
     }
 
     public UUHttpMethod getHttpMethod()
@@ -51,150 +70,189 @@ public class UUHttpRequest
         this.httpMethod = httpMethod;
     }
 
-    public HashMap<String, String> getQueryArguments()
+    @NonNull
+    public HashMap<Object, Object> getQueryArguments()
     {
-        return _queryArguments;
+        return queryArguments;
     }
 
-    public void setQueryArguments(final HashMap<String, String> queryArguments)
+    public void setQueryArguments(@Nullable final HashMap<Object, Object> queryArguments)
     {
-        _queryArguments = queryArguments;
+        this.queryArguments.clear();
+
+        if (queryArguments != null)
+        {
+            this.queryArguments.putAll(queryArguments);
+        }
     }
 
-    public HashMap<String, String> getHeaderFields()
+    public void addQueryArgument(@NonNull final Object arg, @NonNull final Object value)
     {
-        return _headerFields;
+        queryArguments.put(arg, value);
     }
 
-    public void setHeaderFields(final HashMap<String, String> headerFields)
+    @NonNull
+    public ArrayList<Object> getQueryPathArguments()
     {
-        _headerFields = headerFields;
+        return queryPathArguments;
+    }
+
+    public void setQueryPathArguments(@Nullable final ArrayList<Object> queryPathArguments)
+    {
+        this.queryPathArguments.clear();
+
+        if (queryPathArguments != null)
+        {
+            this.queryPathArguments.addAll(queryPathArguments);
+        }
+    }
+
+    public void addQueryPathArgument(@NonNull final Object arg)
+    {
+        queryPathArguments.add(arg);
+    }
+
+    @NonNull
+    public HashMap<Object, Object> getHeaderFields()
+    {
+        return headerFields;
+    }
+
+    public void setHeaderFields(@Nullable final HashMap<Object, Object> headerFields)
+    {
+        this.headerFields.clear();
+
+        if (headerFields != null)
+        {
+            this.headerFields.putAll(headerFields);
+        }
+    }
+
+    public void addHeaderField(@NonNull final Object key, @NonNull final Object value)
+    {
+        headerFields.put(key, value);
     }
 
     public int getTimeout()
     {
-        return _timeout;
+        return timeout;
     }
 
     public void setTimeout(final int timeout)
     {
-        _timeout = timeout;
+        this.timeout = timeout;
     }
 
-    public String getContentType()
+    public Object getContentType()
     {
-        return _contentType;
+        return contentType;
     }
 
-    public void setContentType(final String contentType)
+    public void setContentType(final Object contentType)
     {
-        _contentType = contentType;
+        this.contentType = contentType;
     }
 
     public byte[] getBody()
     {
-        return _body;
+        return body;
     }
 
     public void setBody(final byte[] body)
     {
-        _body = body;
+        this.body = body;
     }
 
-    public Proxy getProxy() { return _proxy; }
+    public Proxy getProxy()
+    {
+        return proxy;
+    }
 
-    public void setProxy(final Proxy proxy) { _proxy = proxy; }
+    public void setProxy(final Proxy proxy)
+    {
+        this.proxy = proxy;
+    }
 
     public SSLSocketFactory getSocketFactory()
     {
-        return _sslSocketFactory;
+        return sslSocketFactory;
     }
 
     public void setSocketFactory(final SSLSocketFactory socketFactory)
     {
-        _sslSocketFactory = socketFactory;
+        sslSocketFactory = socketFactory;
     }
 
     public boolean getProcessMimeTypes()
     {
-        return _processMimeTypes;
+        return processMimeTypes;
     }
 
     public void setProcessMimeTypes(final boolean processMimeTypes)
     {
-        _processMimeTypes = processMimeTypes;
+        this.processMimeTypes = processMimeTypes;
     }
 
-    public static UUHttpRequest get(final String url, final HashMap<String, String> queryArguments)
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Static convenience constructors
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static UUHttpRequest get(final String url, @Nullable final HashMap<Object, Object> queryArguments)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.GET);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.GET);
         req.setQueryArguments(queryArguments);
         return req;
     }
 
-    public static UUHttpRequest delete(final String url, final HashMap<String, String> queryArguments)
+    public static UUHttpRequest delete(final String url, @Nullable final HashMap<Object, Object> queryArguments)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.DELETE);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.DELETE);
         req.setQueryArguments(queryArguments);
         return req;
     }
 
-    public static UUHttpRequest post(final String url, final HashMap<String, String> queryArguments, final byte[] body, final String contentType)
+    public static UUHttpRequest post(final String url, @Nullable final HashMap<Object, Object> queryArguments, @Nullable final byte[] body, @Nullable final Object contentType)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.POST);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.POST);
         req.setQueryArguments(queryArguments);
         req.setBody(body);
         req.setContentType(contentType);
         return req;
     }
 
-    public static UUHttpRequest put(final String url, final HashMap<String, String> queryArguments, final byte[] body, final String contentType)
+    public static UUHttpRequest put(final String url, @Nullable final HashMap<Object, Object> queryArguments, @Nullable final byte[] body, @Nullable final Object contentType)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.PUT);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.PUT);
         req.setQueryArguments(queryArguments);
         req.setBody(body);
         req.setContentType(contentType);
         return req;
     }
 
-    public static UUHttpRequest jsonPost(final String url, final HashMap<String, String> queryArguments, final JSONObject body)
+    public static UUHttpRequest jsonPost(final String url, @Nullable final HashMap<Object, Object> queryArguments, @NonNull final JSONObject body)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.POST);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.POST);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
-        req.setContentType(UUMimeType.ApplicationJson.stringVal());
+        req.setContentType(UUMimeType.ApplicationJson);
         return req;
     }
 
-    public static UUHttpRequest jsonPut(final String url, final HashMap<String, String> queryArguments, final JSONObject body)
+    public static UUHttpRequest jsonPut(final String url, @Nullable final HashMap<Object, Object> queryArguments, @NonNull final JSONObject body)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.PUT);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.PUT);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
-        req.setContentType(UUMimeType.ApplicationJson.stringVal());
+        req.setContentType(UUMimeType.ApplicationJson);
         return req;
     }
 
-    public static UUHttpRequest jsonPost(final String url, final HashMap<String, String> queryArguments, final JSONArray body)
+    public static UUHttpRequest jsonPost(final String url, @Nullable final HashMap<Object, Object> queryArguments, @NonNull final JSONArray body)
     {
-        UUHttpRequest req = new UUHttpRequest();
-        req.setURL(url);
-        req.setHttpMethod(UUHttpMethod.POST);
+        UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.POST);
         req.setQueryArguments(queryArguments);
         req.setBody(UUJson.safeSerializeJson(body, UUContentEncoding.UTF8.toString()));
-        req.setContentType(UUMimeType.ApplicationJson.stringVal());
+        req.setContentType(UUMimeType.ApplicationJson);
         return req;
     }
 }

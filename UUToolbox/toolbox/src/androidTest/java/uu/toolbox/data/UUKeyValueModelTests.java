@@ -1,4 +1,4 @@
-package uu.toolbox;
+package uu.toolbox.data;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -13,11 +13,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import uu.toolbox.core.UURandom;
-import uu.toolbox.data.UUDatabase;
-import uu.toolbox.data.UUDatabaseDefinition;
-import uu.toolbox.data.UUDefaultDatabase;
-import uu.toolbox.data.UUKeyValueModel;
-import uu.toolbox.data.UUSqlDatabase;
 
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

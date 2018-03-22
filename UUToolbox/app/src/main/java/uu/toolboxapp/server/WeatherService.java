@@ -58,15 +58,13 @@ public class WeatherService
         {
             String url = baseUrl;
 
-            HashMap<String, String> queryArguments = new HashMap<>();
+            HashMap<Object, Object> queryArguments = new HashMap<>();
             queryArguments.put("q", city + "," + country);
             queryArguments.put("APPID", apiKey);
 
-            UUHttpRequest request = new UUHttpRequest();
-            request.setURL(url);
-            request.setHttpMethod(UUHttpMethod.GET);
+            UUHttpRequest request = new UUHttpRequest(url, UUHttpMethod.GET);
             request.setQueryArguments(queryArguments);
-            request.setContentType(UUMimeType.ApplicationJson.stringVal());
+            request.setContentType(UUMimeType.ApplicationJson);
             request.setTimeout(30000); // 30 seconds
 
             UUHttp.execute(request, new UUHttpDelegate()

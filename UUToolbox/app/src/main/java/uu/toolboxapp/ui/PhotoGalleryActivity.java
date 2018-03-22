@@ -23,13 +23,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import uu.toolbox.core.UUJson;
 import uu.toolbox.data.UUDataCache;
 import uu.toolbox.logging.UULog;
 import uu.toolbox.network.UUHttp;
 import uu.toolbox.network.UUHttpDelegate;
+import uu.toolbox.network.UUHttpMethod;
 import uu.toolbox.network.UUHttpRequest;
 import uu.toolbox.network.UUHttpResponse;
 import uu.toolbox.network.UURemoteData;
@@ -98,20 +98,15 @@ public class PhotoGalleryActivity extends AppCompatActivity
         {
             String url = "https://api.shutterstock.com/v2/images/search";
 
-            HashMap<String, String> args = new HashMap<>();
-            args.put("page", "1");
-            args.put("per_page", "500");
-            args.put("query", "forst");
-
-            UUHttpRequest req = UUHttpRequest.get(url, args);
+            UUHttpRequest req = new UUHttpRequest(url, UUHttpMethod.GET);
+            req.addQueryArgument("page", "1");
+            req.addQueryArgument("per_page", "500");
+            req.addQueryArgument("query", "forest");
 
             String username = "d4a89-1400b-04251-4faee-f7a23-12271:61764-d9c3c-8a832-a7bdf-098e4-0b382";
             byte[] usernameData = username.getBytes("UTF-8");
             String usernameEncoded = Base64.encodeToString(usernameData, Base64.NO_WRAP);
-
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Basic " + usernameEncoded);
-            req.setHeaderFields(headers);
+            req.addHeaderField("Authorization", "Basic " + usernameEncoded);
 
             UUHttp.execute(req, new UUHttpDelegate()
             {

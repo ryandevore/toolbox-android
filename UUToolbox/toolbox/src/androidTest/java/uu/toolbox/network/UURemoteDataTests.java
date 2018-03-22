@@ -1,4 +1,4 @@
-package uu.toolbox;
+package uu.toolbox.network;
 
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
 import uu.toolbox.data.UUDataCache;
-import uu.toolbox.network.UURemoteData;
 
 public class UURemoteDataTests extends ApplicationTestCase<Application>
 {

@@ -1,9 +1,14 @@
-package uu.toolbox;
+package uu.toolbox.data;
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,40 +16,28 @@ import java.util.HashMap;
 import uu.toolbox.core.UUDate;
 import uu.toolbox.core.UURandom;
 import uu.toolbox.core.UUThread;
-import uu.toolbox.data.UUDataCache;
-import uu.toolbox.data.UUDataCacheProtocol;
 
-public class UUDataCacheTests extends ApplicationTestCase<Application>
+@RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class UUDataCacheTests
 {
     private static final String TEST_FILE = "test_file.dat";
     private static final String TEST_FILE_SANITIZED = "test-file-dat";
 
     private static UUDataCache dataCache;
 
-    public UUDataCacheTests()
+    @Before
+    public void setUp() throws Exception
     {
-        super(Application.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-
         if (dataCache == null)
         {
-            UUDataCache.init(getContext().getApplicationContext());
+            UUDataCache.init(InstrumentationRegistry.getContext().getApplicationContext());
             dataCache = UUDataCache.sharedInstance();
             dataCache.clearCache();
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
+    @Test
     public void test_0000_getFromCacheWhenNotExist() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -55,6 +48,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertNull("Expect data to be null", contents);
     }
 
+    @Test
     public void test_0001_getSetFromCache() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -65,9 +59,10 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         byte[] contents = dc.getData(TEST_FILE);
         Assert.assertNotNull("Expect data to not be null", contents);
 
-        UUAssert.assertSameArray("Expect to read same bytes that were written", contents, data);
+        Assert.assertArrayEquals("Expect to read same bytes that were written", contents, data);
     }
 
+    @Test
     public void test_0002_listKeysAfterWriting() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -80,6 +75,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertEquals("Expect key to be our test file", TEST_FILE_SANITIZED, key);
     }
 
+    @Test
     public void test_0003_removeFromCache() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -94,6 +90,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertNull("Expect data after deleting to be null", contentsAfterDelete);
     }
 
+    @Test
     public void test_0004_doesDataExist() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -107,12 +104,13 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         byte[] contents = dc.getData(TEST_FILE);
         Assert.assertNotNull("Expect data to not be null", contents);
 
-        UUAssert.assertSameArray("Expect to read same bytes that were written", contents, data);
+        Assert.assertArrayEquals("Expect to read same bytes that were written", contents, data);
 
         exists = dc.doesDataExist(TEST_FILE);
         Assert.assertTrue("Expect item to exist in cache after writing", exists);
     }
 
+    @Test
     public void test_0005_getMetaDataAfterWriting() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -128,6 +126,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertTrue("Expect one key to be the only key", metaData.keySet().contains(UUDataCache.MetaData.Timestamp));
     }
 
+    @Test
     public void test_0006_testIsDataExpired() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -154,6 +153,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertNull("Except data not to exist when expired", fetch);
     }
 
+    @Test
     public void test_0007_testWithUnsafeFileNameKey() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -178,6 +178,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
 
     }
 
+    @Test
     public void test_0008_testClearCache() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();
@@ -198,6 +199,7 @@ public class UUDataCacheTests extends ApplicationTestCase<Application>
         Assert.assertEquals(0, keys.size());
     }
 
+    @Test
     public void test_0009_testPurgeIfExpired() throws Exception
     {
         UUDataCacheProtocol dc = UUDataCache.sharedInstance();

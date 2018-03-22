@@ -1,4 +1,4 @@
-package uu.toolbox;
+package uu.toolbox.data;
 
 import android.content.Context;
 import android.database.Cursor;

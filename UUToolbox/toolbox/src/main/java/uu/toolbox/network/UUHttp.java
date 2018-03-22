@@ -1,6 +1,8 @@
 package uu.toolbox.network;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONObject;
 
@@ -13,6 +15,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +44,11 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings({"unused", "UnnecessaryToStringCall", "WeakerAccess"})
 public final class UUHttp
 {
+    @NonNull
     public static UUHttpTask get(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.get(url, queryArguments);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -52,10 +56,11 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     public static UUHttpTask delete(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.delete(url, queryArguments);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -63,12 +68,13 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     public static UUHttpTask post(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final byte[] body,
-            final String contentType,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @Nullable final byte[] body,
+            @Nullable final Object contentType,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.post(url, queryArguments, body, contentType);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -76,12 +82,13 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     public static UUHttpTask put(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final byte[] body,
-            final String contentType,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @Nullable final byte[] body,
+            @Nullable final Object contentType,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.put(url, queryArguments, body, contentType);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -89,11 +96,12 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     public static UUHttpTask jsonPost(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final JSONObject body,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @NonNull final JSONObject body,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.jsonPost(url, queryArguments, body);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -101,11 +109,12 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     public static UUHttpTask jsonPut(
-            final String url,
-            final HashMap<String, String> queryArguments,
-            final JSONObject body,
-            final UUHttpDelegate delegate)
+            @NonNull final String url,
+            @Nullable final HashMap<Object, Object> queryArguments,
+            @NonNull final JSONObject body,
+            @NonNull final UUHttpDelegate delegate)
     {
         UUHttpRequest request = UUHttpRequest.jsonPut(url, queryArguments, body);
         UUHttpTask task = new UUHttpTask(delegate);
@@ -113,16 +122,18 @@ public final class UUHttp
         return task;
     }
 
+    @NonNull
     @SuppressWarnings("UnusedReturnValue")
-    public static UUHttpTask execute(final UUHttpRequest request, final UUHttpDelegate delegate)
+    public static UUHttpTask execute(@NonNull final UUHttpRequest request, @NonNull final UUHttpDelegate delegate)
     {
         UUHttpTask task = new UUHttpTask(delegate);
         task.execute(request);
         return task;
     }
 
+    @NonNull
     @SuppressWarnings("ConstantConditions")
-    protected static UUHttpResponse executeRequest(final UUHttpRequest request)
+    protected static UUHttpResponse executeRequest(@NonNull final UUHttpRequest request)
     {
         UUHttpResponse response = new UUHttpResponse();
         response.setRequest(request);
@@ -165,13 +176,13 @@ public final class UUHttp
             UULog.debug(UUHttp.class, "executeRequest", "Timeout: " + request.getTimeout());
             logRequestHeaders(urlConnection);
 
-            HashMap<String, String> headers = request.getHeaderFields();
+            HashMap<Object, Object> headers = request.getHeaderFields();
             if (headers != null)
             {
-                for (String key : headers.keySet())
+                for (Object key : headers.keySet())
                 {
-                    String val = headers.get(key);
-                    urlConnection.setRequestProperty(key, val);
+                    Object val = headers.get(key);
+                    urlConnection.setRequestProperty(key.toString(), val.toString());
                 }
             }
 
@@ -182,7 +193,7 @@ public final class UUHttp
 
                 urlConnection.setDoOutput(true);
                 urlConnection.setFixedLengthStreamingMode(request.getBody().length);
-                urlConnection.setRequestProperty("Content-Type", request.getContentType());
+                urlConnection.setRequestProperty("Content-Type", request.getContentType().toString());
                 urlConnection.setRequestProperty("Content-Length", Integer.toString(body.length));
                 writeRequest(urlConnection, body);
             }
@@ -411,25 +422,33 @@ public final class UUHttp
 
     protected static String buildFullUrl(final UUHttpRequest request)
     {
-        String url = request.getURL();
+        StringBuilder sb = new StringBuilder();
+        sb.append(request.getURL());
 
-        HashMap<String, String> args = request.getQueryArguments();
+        ArrayList<Object> pathArgs = request.getQueryPathArguments();
+        for (Object pathArg : pathArgs)
+        {
+            sb.append("/");
+            sb.append(pathArg);
+        }
 
-        if (args != null && !args.isEmpty())
+        HashMap<Object, Object> args = request.getQueryArguments();
+
+        if (!args.isEmpty())
         {
             Uri.Builder uri = new Uri.Builder();
 
-            Set<String> keys = args.keySet();
-            for (String key : keys)
+            Set<Object> keys = args.keySet();
+            for (Object key : keys)
             {
-                String val = args.get(key);
-                uri.appendQueryParameter(key, val);
+                Object val = args.get(key);
+                uri.appendQueryParameter(key.toString(), val.toString());
             }
 
-            url += uri.build().toString();
+            sb.append(uri.build().toString());
         }
 
-        return url;
+        return sb.toString();
     }
 
     protected static void writeRequest(final HttpURLConnection connection, final byte[] body)

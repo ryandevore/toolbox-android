@@ -1,43 +1,30 @@
-package uu.toolbox;
+package uu.toolbox.core;
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 
-import uu.toolbox.core.UUFile;
-import uu.toolbox.core.UURandom;
-
-public class UUFileTests extends ApplicationTestCase<Application>
+@RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class UUFileTests
 {
     private static String TEST_FILE_NAME = "DummyFile.dat";
 
-    public UUFileTests()
-    {
-        super(Application.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     private File getTestFile()
     {
-        File file = new File(getContext().getCacheDir(), TEST_FILE_NAME);
+        File file = new File(InstrumentationRegistry.getContext().getCacheDir(), TEST_FILE_NAME);
         Assert.assertNotNull("Expect file object to not be null", file);
         return file;
     }
 
+    @Test
     public void test_0000_ReadFileThatDoesntExist() throws Exception
     {
         File file = getTestFile();
@@ -53,6 +40,7 @@ public class UUFileTests extends ApplicationTestCase<Application>
         Assert.assertNull("Expect null data when file doesn't exist", contents);
     }
 
+    @Test
     public void test_0001_DeleteFileThatDoesNotExist() throws Exception
     {
         File file = getTestFile();
@@ -68,7 +56,8 @@ public class UUFileTests extends ApplicationTestCase<Application>
         Assert.assertFalse("Expect delete file on non existent file to return false", result);
     }
 
-    public void test_0002_tWriteFileThatDoesntExist() throws Exception
+    @Test
+    public void test_0002_WriteFileThatDoesntExist() throws Exception
     {
         File file = getTestFile();
         Assert.assertFalse("Expect file not to exist", file.exists());
@@ -83,9 +72,10 @@ public class UUFileTests extends ApplicationTestCase<Application>
         byte[] contents = UUFile.readFile(file);
         Assert.assertNotNull("Expect actual data when file does exist", contents);
 
-        UUAssert.assertSameArray("Expect readFile to return same bytes that were written", contents, data);
+        Assert.assertArrayEquals("Expect readFile to return same bytes that were written", contents, data);
     }
 
+    @Test
     public void test_0003_DeleteFileThatDoesExist() throws Exception
     {
         File file = getTestFile();

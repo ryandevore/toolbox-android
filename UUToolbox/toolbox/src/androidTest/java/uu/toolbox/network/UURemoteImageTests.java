@@ -1,4 +1,4 @@
-package uu.toolbox;
+package uu.toolbox.network;
 
 import android.app.Application;
 import android.content.BroadcastReceiver;
