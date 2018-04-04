@@ -445,6 +445,13 @@ public class UUString
         return (string != null ? string : "");
     }
 
+    /**
+     * Converts a string to snake_case
+     *
+     * @param string a string
+     *
+     * @return another string
+     */
     @NonNull
     public static String toSnakeCase(@NonNull final String string)
     {
@@ -452,5 +459,25 @@ public class UUString
         String replacement = "$1_$2";
 
         return string.replaceAll(regex, replacement).toLowerCase();
+    }
+
+	/**
+     * Safely truncates a string to a given length
+     *
+     * @param string a string
+     *
+     * @return another string
+     */
+    @NonNull
+    public static String truncateString(@NonNull final String string, final int length)
+    {
+        if (string.length() > length)
+        {
+            return string.substring(0, length);
+        }
+        else
+        {
+            return string;
+        }
     }
 }

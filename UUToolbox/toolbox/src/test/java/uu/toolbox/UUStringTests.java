@@ -48,7 +48,24 @@ public class UUStringTests
             String expected = td.second;
             String actual = UUString.toSnakeCase(input);
             Assert.assertEquals(expected, actual);
+        }
+    }
 
+    @Test
+    public void truncateStringTest()
+    {
+        ArrayList<Object[]> testData = new ArrayList<>();
+        testData.add(new Object[] { "foo",  4, "foo" });
+        testData.add(new Object[] { "foo",  3, "foo" });
+        testData.add(new Object[] { "foo",  2, "fo" });
+
+        for (Object[] td : testData)
+        {
+            String input = (String)td[0];
+            Integer length = (Integer)td[1];
+            String expected = (String)td[2];
+            String actual = UUString.truncateString(input, length);
+            Assert.assertEquals(expected, actual);
         }
     }
 }
