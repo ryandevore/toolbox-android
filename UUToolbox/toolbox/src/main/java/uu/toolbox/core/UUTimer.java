@@ -15,7 +15,7 @@ import uu.toolbox.logging.UULog;
 @SuppressWarnings("unused")
 public class UUTimer
 {
-    private static final boolean LOGGING_ENABLED = true;
+    private static final boolean LOGGING_ENABLED = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public Interfaces
