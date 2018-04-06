@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import uu.toolbox.core.UUCompression;
 import uu.toolbox.core.UUJson;
 import uu.toolbox.logging.UULog;
 
@@ -518,17 +519,27 @@ public final class UUHttp
 
         try
         {
+            byte[] processedResponse = rawResponse;
+
+            if (contentEncoding != null)
+            {
+                if (contentEncoding.contains("gzip"))
+                {
+                    processedResponse = UUCompression.gunzip(rawResponse);
+                }
+            }
+
             if (contentType != null)
             {
                 if (contentType.contains("json"))
                 {
-                    String str = new String(rawResponse);
+                    String str = new String(processedResponse);
                     //AppLog.debug(UUHttp.class, "parseResponse", "Raw JSON: " + str);
                     parsed = UUJson.toJson(str);
                 }
                 else if (contentType.startsWith("text"))
                 {
-                    String str = new String(rawResponse);
+                    String str = new String(processedResponse);
                     UULog.debug(UUHttp.class, "parseResponse", "Raw String: " + str);
                     parsed = str;
                 }
