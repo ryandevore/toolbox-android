@@ -526,6 +526,7 @@ public final class UUHttp
                 if (contentEncoding.contains("gzip"))
                 {
                     processedResponse = UUCompression.gunzip(rawResponse);
+                    logResponseBody(processedResponse);
                 }
             }
 
