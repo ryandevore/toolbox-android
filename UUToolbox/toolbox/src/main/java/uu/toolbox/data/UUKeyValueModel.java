@@ -112,9 +112,9 @@ public class UUKeyValueModel implements UUDataModel
     public ContentValues getContentValues(int version)
     {
         ContentValues cv = new ContentValues();
-        UUContentValues.putIfNotNull(cv, "key", key);
-        UUContentValues.putIfNotNull(cv, "class_name", valueClass());
-        UUContentValues.putIfNotNull(cv, "value", valueToString());
+        UUContentValues.putString(cv, "key", key);
+        UUContentValues.putString(cv, "class_name", valueClass());
+        UUContentValues.putString(cv, "value", valueToString());
         return cv;
     }
 

@@ -263,7 +263,7 @@ public interface UUDataModel
                         Object fieldVal = field.get(this);
                         if (shouldPutColumn(columnAnnotation, fieldVal))
                         {
-                            UUContentValues.putObjectIfNotNull(cv, columnNameForField(field), fieldVal);
+                            UUContentValues.putObject(cv, columnNameForField(field), fieldVal);
                         }
                     }
                 }

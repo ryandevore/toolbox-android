@@ -414,6 +414,24 @@ public class UUDatabaseTests
         Assert.assertEquals(0, count);
     }
 
+    @Test
+    public void test_0012_testUpdateNull() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        UUDataModelWithCompoundKey m = UUDataModelWithCompoundKey.random();
+        UUDataModelWithCompoundKey inserted = db.insertObject(UUDataModelWithCompoundKey.class, m);
+        UUDataModelWithCompoundKey.assertEquals(m, inserted);
+
+        m.data = null;
+        UUDataModelWithCompoundKey updated = db.updateObject(UUDataModelWithCompoundKey.class, m);
+        UUDataModelWithCompoundKey.assertEquals(m, updated);
+    }
+
     private void insertAutoIncrementPrimIntObject(@NonNull final UUDatabase db, int expectedId)
     {
         UUAutoIncrementPrimIntDataModel model = UUAutoIncrementPrimIntDataModel.random();
