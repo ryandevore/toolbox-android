@@ -37,6 +37,7 @@ public class UUHttpRequest
     private Proxy proxy;
     private SSLSocketFactory sslSocketFactory;
     private boolean processMimeTypes = true;
+    private boolean gzipCompression = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Construction
@@ -208,6 +209,16 @@ public class UUHttpRequest
     public void setProcessMimeTypes(final boolean processMimeTypes)
     {
         this.processMimeTypes = processMimeTypes;
+    }
+
+    public boolean usesGzipCompression()
+    {
+        return gzipCompression;
+    }
+
+    public void setGzipCompression(final boolean gzipCompression)
+    {
+        this.gzipCompression = gzipCompression;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

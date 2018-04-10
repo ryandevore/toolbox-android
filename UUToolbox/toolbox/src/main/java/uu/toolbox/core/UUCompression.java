@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.Nullable;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -14,8 +16,14 @@ import uu.toolbox.logging.UULog;
  */
 public class UUCompression
 {
-    public static byte[] gzip(final byte[] data)
+    @Nullable
+    public static byte[] gzip(@Nullable final byte[] data)
     {
+        if (data == null)
+        {
+            return null;
+        }
+
         ByteArrayOutputStream bos = null;
         GZIPOutputStream zos = null;
         byte[] compressed = null;
@@ -41,8 +49,14 @@ public class UUCompression
         return compressed;
     }
 
-    public static byte[] gunzip(final byte[] data)
+    @Nullable
+    public static byte[] gunzip(@Nullable final byte[] data)
     {
+        if (data == null)
+        {
+            return null;
+        }
+
         ByteArrayInputStream bis = null;
         GZIPInputStream zis = null;
         byte[] decompressed = null;

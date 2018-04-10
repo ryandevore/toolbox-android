@@ -187,15 +187,35 @@ public final class UUHttp
                 }
             }
 
+            boolean compressed = request.usesGzipCompression();
+
+            if (compressed)
+            {
+                urlConnection.setRequestProperty("Accept-Encoding", "gzip");
+            }
+
             byte[] body = request.getBody();
+
+
+            if (compressed)
+            {
+                body = UUCompression.gzip(body);
+            }
+
             if (body != null && body.length > 0)
             {
                 logRequestHeaders(urlConnection);
 
                 urlConnection.setDoOutput(true);
-                urlConnection.setFixedLengthStreamingMode(request.getBody().length);
+                urlConnection.setFixedLengthStreamingMode(body.length);
                 urlConnection.setRequestProperty("Content-Type", request.getContentType().toString());
                 urlConnection.setRequestProperty("Content-Length", Integer.toString(body.length));
+
+                if (compressed)
+                {
+                    urlConnection.setRequestProperty("Content-Encoding", "gzip");
+                }
+
                 writeRequest(urlConnection, body);
             }
             else
