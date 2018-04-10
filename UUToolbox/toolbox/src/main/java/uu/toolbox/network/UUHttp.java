@@ -175,7 +175,6 @@ public final class UUHttp
 
             UULog.debug(UUHttp.class, "executeRequest", request.getHttpMethod() + " " + url.toString());
             UULog.debug(UUHttp.class, "executeRequest", "Timeout: " + request.getTimeout());
-            logRequestHeaders(urlConnection);
 
             HashMap<Object, Object> headers = request.getHeaderFields();
             if (headers != null)
@@ -196,7 +195,6 @@ public final class UUHttp
 
             byte[] body = request.getBody();
 
-
             if (compressed)
             {
                 body = UUCompression.gzip(body);
@@ -204,8 +202,6 @@ public final class UUHttp
 
             if (body != null && body.length > 0)
             {
-                logRequestHeaders(urlConnection);
-
                 urlConnection.setDoOutput(true);
                 urlConnection.setFixedLengthStreamingMode(body.length);
                 urlConnection.setRequestProperty("Content-Type", request.getContentType().toString());
@@ -216,6 +212,7 @@ public final class UUHttp
                     urlConnection.setRequestProperty("Content-Encoding", "gzip");
                 }
 
+                logRequestHeaders(urlConnection);
                 writeRequest(urlConnection, body);
             }
             else
