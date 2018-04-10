@@ -117,6 +117,46 @@ public interface UUDataModel
     }
 
     /**
+     * Returns the primary key column name If and Only If there is exactly one
+     *
+     * @return May return null if a column definition is a primary key auto increment
+     */
+    @Nullable
+    default String getSinglePrimaryKeyColumnName()
+    {
+        String columnName = null;
+
+        try
+        {
+            Field[] fields = getClass().getDeclaredFields();
+            for (Field field : fields)
+            {
+                field.setAccessible(true);
+
+                UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
+                if (columnAnnotation != null)
+                {
+                    if (columnAnnotation.primaryKey() || columnAnnotation.type() == UUSqlColumn.Type.INTEGER_PRIMARY_KEY_AUTOINCREMENT)
+                    {
+                        if (columnName != null)
+                        {
+                            return null;
+                        }
+
+                        columnName = columnNameForField(field);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(getClass(), "getSinglePrimaryKeyColumnName", ex);
+        }
+
+        return columnName;
+    }
+
+    /**
      * Returns a formatted string that will be used as a SQL WHERE clause when looking up
      * an object from this table by primary key.
      *

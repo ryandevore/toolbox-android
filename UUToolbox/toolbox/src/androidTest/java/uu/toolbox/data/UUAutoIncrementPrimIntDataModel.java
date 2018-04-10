@@ -24,7 +24,7 @@ public class UUAutoIncrementPrimIntDataModel implements UUDataModel
         UUAutoIncrementPrimIntDataModel m = new UUAutoIncrementPrimIntDataModel();
         m.score = UURandom.randomInt();
         m.timestamp = System.currentTimeMillis();
-        m.name = UURandom.randomString(20);
+        m.name = UURandom.randomLetters(20);
         m.id = 0;//UURandom.randomInt();
         return m;
     }

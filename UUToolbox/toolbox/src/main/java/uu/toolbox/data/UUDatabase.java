@@ -422,6 +422,7 @@ public abstract class UUDatabase
      *
      * @param type row object type
      * @param object the object to update
+     * @param <T> a UUDataModel subclass
      *
      */
     public synchronized <T extends UUDataModel> void deleteObject(
@@ -431,6 +432,158 @@ public abstract class UUDatabase
         String whereClause = object.getPrimaryKeyWhereClause();
         String[] whereArgs = object.getPrimaryKeyWhereArgs();
         delete(object.getTableName(), whereClause, whereArgs);
+    }
+
+
+    /**
+     * Delete's a list of object by primary key
+     *
+     * @param type row object type
+     * @param objectList list of objects to delete
+     * @param <T> a UUDataModel subject
+     */
+    public synchronized <T extends UUDataModel> void deleteObjectList(
+            @NonNull final Class<T> type,
+            @NonNull final ArrayList<T> objectList)
+    {
+        if (canBulkDelete(type))
+        {
+            bulkDeleteObjects(type, objectList);
+        }
+        else
+        {
+            deleteObjectsOneByOne(type, objectList);
+        }
+    }
+
+    /**
+     * An object can be bulk deleted if it has a single column primary key
+     *
+     * @param type row object type
+     * @param <T> a UUDataModel subclass
+     * @return
+     */
+    private  <T extends UUDataModel> boolean canBulkDelete(@NonNull final Class<T> type)
+    {
+        try
+        {
+            T refObj = type.newInstance();
+            String[] args = refObj.getPrimaryKeyWhereArgs();
+            return (args.length == 1);
+        }
+        catch (Exception ex)
+        {
+            logException("canBulkDelete", ex);
+            return false;
+        }
+    }
+
+    /**
+     * Delete's a list of objects by primary key
+     *
+     * @param type row object type
+     * @param objectList list of objects to delete
+     * @param <T> a UUDataModel subclass
+     */
+    private synchronized <T extends UUDataModel> void bulkDeleteObjects(
+            @NonNull final Class<T> type,
+            @NonNull final ArrayList<T> objectList)
+    {
+        int limit = 100;
+
+        while (objectList.size() > 0)
+        {
+            ArrayList<T> tmp = new ArrayList<>();
+            for (int i = 0; i < limit && objectList.size() > 0; i++)
+            {
+                T obj = objectList.remove(0);
+                tmp.add(obj);
+            }
+
+            if (tmp.size() > 0)
+            {
+                bulkDeleteObjectBatch(type, tmp);
+            }
+        }
+    }
+
+    /**
+     * Delete's a list of objects by primary key with a single SQL statement
+     *
+     * @param type row object type
+     * @param objectList list of objects to delete
+     * @param <T> a UUDataModel subclass
+     */
+    private synchronized <T extends UUDataModel> void bulkDeleteObjectBatch(
+            @NonNull final Class<T> type,
+            @NonNull final ArrayList<T> objectList)
+    {
+        try
+        {
+            T refObj = type.newInstance();
+            StringBuilder where = new StringBuilder();
+            where.append(String.format(Locale.US, "%s IN (", refObj.getSinglePrimaryKeyColumnName()));
+
+            String[] whereArgs = new String[objectList.size()];
+            for (int i = 0; i < whereArgs.length; i++)
+            {
+                String[] primaryKeyWhereArgs = objectList.get(i).getPrimaryKeyWhereArgs();
+                if (primaryKeyWhereArgs.length == 1)
+                {
+                    where.append("?");
+                    whereArgs[i] = primaryKeyWhereArgs[0];
+                }
+
+                if (i < (whereArgs.length - 1))
+                {
+                    where.append(",");
+                }
+            }
+
+            where.append(")");
+
+            delete(refObj.getTableName(), where.toString(), whereArgs);
+        }
+        catch (Exception ex)
+        {
+            logException("doDeleteObjectList", ex);
+        }
+    }
+
+    /**
+     * Delete's a list of objects by primary key one bye one.  This is a slower way to delete
+     *
+     * @param type row object type
+     * @param objectList list of objects to delete
+     * @param <T> a UUDataModel subclass
+     */
+    private synchronized <T extends UUDataModel> void deleteObjectsOneByOne(
+            @NonNull final Class<T> type,
+            @NonNull final ArrayList<T> objectList)
+    {
+        UUSQLiteDatabase db = null;
+
+        try
+        {
+            db = getReadWriteDatabase();
+
+            db.beginTransaction();
+
+            for (UUDataModel obj : objectList)
+            {
+                db.delete(obj.getTableName(), obj.getPrimaryKeyWhereClause(), obj.getPrimaryKeyWhereArgs());
+            }
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
+        {
+            logException("deleteObjects", ex);
+        }
+        finally
+        {
+            safeEndTransaction(db);
+        }
     }
 
     /**
@@ -1152,6 +1305,7 @@ public abstract class UUDatabase
             db = getReadWriteDatabase();
 
             db.beginTransaction();
+            logSql("DELETE FROM " + tableName + " " + whereClause + ", Args: " + UUString.componentsJoinedByString(whereArgs, ","));
             db.delete(tableName, whereClause, whereArgs);
             db.setTransactionSuccessful();
         }

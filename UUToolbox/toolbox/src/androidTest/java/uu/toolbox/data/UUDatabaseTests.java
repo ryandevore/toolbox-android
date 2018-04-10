@@ -15,16 +15,6 @@ import org.junit.runners.MethodSorters;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import uu.toolbox.data.UUAllColumnTypesDataModel;
-import uu.toolbox.data.UUAutoIncrementObjIntDataModel;
-import uu.toolbox.data.UUAutoIncrementPrimIntDataModel;
-import uu.toolbox.data.UUCursor;
-import uu.toolbox.data.UUDataModelWithCompoundKey;
-import uu.toolbox.data.UUDataModelWithObjPrimitiveTypes;
-import uu.toolbox.data.UUDatabase;
-import uu.toolbox.data.UUSQLiteDatabase;
-import uu.toolbox.data.UUTestDataModel;
-import uu.toolbox.data.UUTestDatabase;
 import uu.toolbox.logging.UULog;
 
 @RunWith(AndroidJUnit4.class)
@@ -341,86 +331,6 @@ public class UUDatabaseTests
 
         binaryResult = db.querySingleBlobCell("SELECT byte_array_primitive FROM all_columns", null, null);
         Assert.assertArrayEquals(model.byteArrayPrimitive, binaryResult);
-
-        /*
-        @UUSqlColumn()
-        public Byte byteObject;
-
-        @UUSqlColumn()
-        public byte bytePrimitive;
-
-        @UUSqlColumn()
-        public Short shortObject;
-
-        @UUSqlColumn()
-        public short shortPrimitive;
-
-        @UUSqlColumn()
-        public Integer intObject;
-
-        @UUSqlColumn()
-        public int intPrimitive;
-
-        @UUSqlColumn()
-        public Long longObject;
-
-        @UUSqlColumn()
-        public long longPrimitive;
-
-        @UUSqlColumn()
-        public Double doubleObject;
-
-        @UUSqlColumn()
-        public double doublePrimitive;
-
-        @UUSqlColumn()
-        public Float floatObject;
-
-        @UUSqlColumn()
-        public float floatPrimitive;
-
-        @UUSqlColumn()
-        public Boolean booleanObject;
-
-        @UUSqlColumn()
-        public boolean booleanPrimitive;
-
-        @UUSqlColumn()
-        public Character characterObject;
-
-        @UUSqlColumn()
-        public char characterPrimitive;
-
-        @UUSqlColumn()
-        public Byte[] byteArrayObject;
-
-        @UUSqlColumn()
-        public byte[] byteArrayPrimitive;
-
-        @UUSqlColumn()
-        public String stringObject;*/
-
-
-
-//        DataModelWithObjPrimitiveTypes model = new DataModelWithObjPrimitiveTypes();
-//        model.aFloat = 57.0f;
-//        model.anInt = 22;
-//        model.aPrimFloat = 1001.0f;
-//
-//        DataModelWithObjPrimitiveTypes added = db.insertObject(DataModelWithObjPrimitiveTypes.class, model);
-//        Assert.assertNotNull(added);
-//        Assert.assertEquals(model.aFloat, added.aFloat);
-//        Assert.assertEquals(model.anInt, added.anInt);
-//        Assert.assertEquals(model.aPrimFloat, added.aPrimFloat);
-//
-//        model.aFloat = 99.0f;
-//        model.anInt = 1234;
-//        model.aPrimFloat = 129.0f;
-//        DataModelWithObjPrimitiveTypes updated = db.updateObject(DataModelWithObjPrimitiveTypes.class, model);
-//        Assert.assertNotNull(updated);
-//        Assert.assertEquals(model.aFloat, updated.aFloat);
-//        Assert.assertEquals(model.anInt, updated.anInt);
-//        Assert.assertEquals(model.aPrimFloat, updated.aPrimFloat);
     }
 
     @Test
@@ -451,6 +361,57 @@ public class UUDatabaseTests
         {
             insertAutoIncrementObjIntObject(db, i);
         }
+    }
+
+    @Test
+    public void test_0010_testDeletObjectList_BulkStyle() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        int limit = 20;
+        for (int i = 1; i <= limit; i++)
+        {
+            insertAutoIncrementPrimIntObject(db, i);
+        }
+
+        int count = db.count(UUAutoIncrementPrimIntDataModel.class, null, null);
+        Assert.assertEquals(limit, count);
+
+        ArrayList<UUAutoIncrementPrimIntDataModel> list = db.queryMultipleObjects(UUAutoIncrementPrimIntDataModel.class, null, null, null, null);
+        db.deleteObjectList(UUAutoIncrementPrimIntDataModel.class, list);
+
+        count = db.count(UUAutoIncrementPrimIntDataModel.class);
+        Assert.assertEquals(0, count);
+    }
+
+    @Test
+    public void test_0011_testDeletObjectList_NonBulkStyle() throws Exception
+    {
+        Context ctx = getContext();
+        UUTestDatabase.DbDef.CURRENT_VERSION = UUTestDatabase.DbDef.VERSION_FOUR;
+        ctx.deleteDatabase(UUTestDatabase.NAME);
+
+        UUTestDatabase db = new UUTestDatabase(ctx);
+
+        int limit = 20;
+        for (int i = 1; i <= limit; i++)
+        {
+            UUDataModelWithCompoundKey m = UUDataModelWithCompoundKey.random();
+            db.insertObject(UUDataModelWithCompoundKey.class, m);
+        }
+
+        int count = db.count(UUDataModelWithCompoundKey.class, null, null);
+        Assert.assertEquals(limit, count);
+
+        ArrayList<UUDataModelWithCompoundKey> list = db.queryMultipleObjects(UUDataModelWithCompoundKey.class, null, null, null, null);
+        db.deleteObjectList(UUDataModelWithCompoundKey.class, list);
+
+        count = db.count(UUDataModelWithCompoundKey.class);
+        Assert.assertEquals(0, count);
     }
 
     private void insertAutoIncrementPrimIntObject(@NonNull final UUDatabase db, int expectedId)
