@@ -13,6 +13,7 @@ import java.util.Map;
 
 import uu.toolbox.core.UUCloseable;
 import uu.toolbox.core.UUListDelegate;
+import uu.toolbox.core.UUObjectDelegate;
 import uu.toolbox.core.UUString;
 import uu.toolbox.core.UUThread;
 import uu.toolbox.logging.UULog;
@@ -310,6 +311,27 @@ public abstract class UUDatabase
     	
     	return results;
     }
+
+    /**
+     * Queries the database for a set of objects
+     *
+     * @param type row object type
+     * @param rawSqlQuery The sql query
+     * @param selectionArgs bound where arguments
+     * @param delegate async return delegate
+     */
+    public synchronized <T extends UUDataModel> void rawQueryMultipleObjects(
+        @NonNull final Class<T> type,
+        @NonNull final String rawSqlQuery,
+        @Nullable final String[] selectionArgs,
+        @NonNull final UUListDelegate<T> delegate)
+    {
+        UUThread.runOnBackgroundThread(() ->
+        {
+            ArrayList<T> results = rawQueryMultipleObjects(type, rawSqlQuery, selectionArgs);
+            UUListDelegate.safeInvoke(delegate, results);
+        });
+    }
     
     /**
      * Queries the database for a single object
@@ -334,6 +356,29 @@ public abstract class UUDatabase
     	}
 
     	return null;
+    }
+
+    /**
+     * Queries the database for a single object
+     *
+     * @param type row object type
+     * @param selection where clause
+     * @param selectionArgs bound where arguments
+     * @param orderBy order by clause
+     * @param delegate async return delegate
+     */
+    public synchronized <T extends UUDataModel> void querySingleObject(
+        @NonNull final Class<T> type,
+        @Nullable final String selection,
+        @Nullable final String[] selectionArgs,
+        @Nullable final String orderBy,
+        @NonNull final UUObjectDelegate<T> delegate)
+    {
+        UUThread.runOnBackgroundThread(() ->
+        {
+            T result = querySingleObject(type, selection, selectionArgs, orderBy);
+            UUObjectDelegate.safeInvoke(delegate, result);
+        });
     }
 
     /**
