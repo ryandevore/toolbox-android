@@ -639,7 +639,7 @@ public final class UUJson
     }
 
     public static <T extends UUJsonConvertible> ArrayList<T> safeGetArrayOfObjects(
-            final Class<T> type, final JSONObject json, final String key)
+            final Class<T> type, final JSONObject json, final Object key)
     {
         return parseJsonArray(type, safeGetJsonArray(json, key));
     }
