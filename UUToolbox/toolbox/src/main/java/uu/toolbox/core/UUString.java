@@ -308,7 +308,12 @@ public class UUString
     public static String componentsJoinedByString(final Object[] list, final String separator)
     {
         ArrayList<Object> arrayList = new ArrayList<>();
-        Collections.addAll(arrayList, list);
+
+        if (list != null)
+        {
+            Collections.addAll(arrayList, list);
+        }
+
         return componentsJoinedByString(arrayList, separator);
     }
 
