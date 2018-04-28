@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
@@ -259,7 +260,7 @@ public class UULog
         {
             if (exception != null)
             {
-                logLine += ", Exception: " + exception.toString();
+                logLine += ", Exception: " + stackTraceToString(exception);
             }
 
             int expectedToWrite = logLine.length();
@@ -287,7 +288,8 @@ public class UULog
         }
     }
 
-    public static String stackTraceToString(final Throwable throwable)
+    @NonNull
+    public static String stackTraceToString(@Nullable final Throwable throwable)
     {
         try
         {
@@ -302,6 +304,19 @@ public class UULog
         {
             // Eat it
         }
+
+        try
+        {
+            if (throwable != null)
+            {
+                return throwable.toString();
+            }
+        }
+        catch (Throwable t)
+        {
+            // Eat it
+        }
+
 
         return "";
     }
