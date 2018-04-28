@@ -164,7 +164,7 @@ public class UUTimer
 
                 if (LOGGING_ENABLED)
                 {
-                    UULog.debug(getClass(), "safeStartTimer." + timerId, "interval: " + interval + ", expectedFireTime: " + UUDate.formatDate(System.currentTimeMillis() + interval, UUDate.RFC_3999_DATE_TIME_ALTERNATE_FORMAT, TimeZone.getDefault()));
+                    UULog.debug(getClass(), "safeStartTimer." + timerId, "interval: " + interval + ", expectedFireTime: " + UUDate.formatDate(System.currentTimeMillis() + interval, UUDate.RFC_3999_DATE_TIME_WITH_MILLIS_FORMAT, TimeZone.getDefault()));
                 }
 
                 workerThread.postDelayed(runnable, interval);

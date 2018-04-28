@@ -1,39 +1,34 @@
 package uu.toolbox.core;
 
-import android.util.Log;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import uu.toolbox.logging.UULog;
+
 /**
  * UUDate
- * 
+ *
  * Useful Utilities - A set of extension methods for Date
- *  
+ *
  */
-@SuppressWarnings("unused")
-public class UUDate 
+@SuppressWarnings({"unused", "WeakerAccess"})
+public class UUDate
 {
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	// Private Constants
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	private static final String LOG_TAG = UUDate.class.getName();
-
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Public Constants
 	////////////////////////////////////////////////////////////////////////////////////////////////
-    public static final long SECONDS_IN_ONE_MINUTE  = 60;
-    public static final long MINUTES_IN_ONE_HOUR    = 60;
-    public static final long HOURS_IN_ONE_DAY       = 24;
-    public static final long DAYS_IN_ONE_WEEK       = 7;
-    public static final long MILLIS_IN_ONE_SECOND   = 1000;
-    public static final long MILLIS_IN_ONE_MINUTE   = SECONDS_IN_ONE_MINUTE * MILLIS_IN_ONE_SECOND;
-    public static final long MILLIS_IN_ONE_HOUR     = MINUTES_IN_ONE_HOUR * MILLIS_IN_ONE_MINUTE;
-    public static final long MILLIS_IN_ONE_DAY      = HOURS_IN_ONE_DAY * MILLIS_IN_ONE_HOUR;
-    public static final long MILLIS_IN_ONE_WEEK     = DAYS_IN_ONE_WEEK * MILLIS_IN_ONE_DAY;
+	public static final long SECONDS_IN_ONE_MINUTE  = 60;
+	public static final long MINUTES_IN_ONE_HOUR    = 60;
+	public static final long HOURS_IN_ONE_DAY       = 24;
+	public static final long DAYS_IN_ONE_WEEK       = 7;
+	public static final long MILLIS_IN_ONE_SECOND   = 1000;
+	public static final long MILLIS_IN_ONE_MINUTE   = SECONDS_IN_ONE_MINUTE * MILLIS_IN_ONE_SECOND;
+	public static final long MILLIS_IN_ONE_HOUR     = MINUTES_IN_ONE_HOUR * MILLIS_IN_ONE_MINUTE;
+	public static final long MILLIS_IN_ONE_DAY      = HOURS_IN_ONE_DAY * MILLIS_IN_ONE_HOUR;
+	public static final long MILLIS_IN_ONE_WEEK     = DAYS_IN_ONE_WEEK * MILLIS_IN_ONE_DAY;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Date Formats
@@ -48,15 +43,15 @@ public class UUDate
 	public static final String TIME_FORMAT_STAMP = "hh:mm:ss";
 	public static final String MONTH_DAY_FORMAT = "MMMM dd";
 	public static final String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm a";
-	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
-	public static final String RFC_3999_DATE_TIME_ALTERNATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+	public static final String RFC_3999_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	public static final String RFC_3999_DATE_TIME_WITH_MILLIS_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 	public static final String YEAR_MONTH_DAY_FORMAT = "yyyy-MM-dd";
 	public static final String DAY_OF_WEEK_FULL_FORMAT = "EEEE";
 	public static final String DAY_OF_WEEK_SHORT_FORMAT = "E";
 
 	/**
 	 * Create's a Date object filled with only an hour and minute
-	 * 
+	 *
 	 * @param hourOfDay hour of day (0-23)
 	 * @param minute minute of hour (0-59)
 	 * @return a valid Date object
@@ -81,7 +76,7 @@ public class UUDate
 		c.set(Calendar.MINUTE, minute);
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Create's a Date object filled with only year, month, and day
 	 * @param year the year
@@ -109,10 +104,10 @@ public class UUDate
 		c.set(Calendar.DAY_OF_MONTH, day);
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Create's a Date object with the date set to today and a specific Hour and Minute pulled from another date object
-	 * 
+	 *
 	 * @param date the date object to pull the hour and minute from
 	 * @return a valid Date object
 	 */
@@ -120,7 +115,7 @@ public class UUDate
 	{
 		Calendar c = Calendar.getInstance(utcTimeZone());
 		c.setTime(date);
-		
+
 		int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
 		int minute = c.get(Calendar.MINUTE);
 		c.setTime(today());
@@ -129,11 +124,11 @@ public class UUDate
 		c.set(Calendar.SECOND, 0);
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Create's a Date object with the time set to midnight and the day, month, year set from another date object
 	 * @param date the other date object to pull the day, month, year from
-     * @param tz the timezone
+	 * @param tz the timezone
 	 * @return a valid date object
 	 */
 	public static Date dateWithMidnight(final Date date, final TimeZone tz)
@@ -146,19 +141,19 @@ public class UUDate
 		return c.getTime();
 	}
 
-    /**
-     * Create's a Date object with the time set to midnight and the day, month, year set from another date object
-     * @param date the other date object to pull the day, month, year from
-     * @return a valid date object
-     */
-    public static Date utcDateWithMidnight(final Date date)
-    {
-        return dateWithMidnight(date, utcTimeZone());
-    }
-	
+	/**
+	 * Create's a Date object with the time set to midnight and the day, month, year set from another date object
+	 * @param date the other date object to pull the day, month, year from
+	 * @return a valid date object
+	 */
+	public static Date utcDateWithMidnight(final Date date)
+	{
+		return dateWithMidnight(date, utcTimeZone());
+	}
+
 	/**
 	 * Returns the current date
-	 * 
+	 *
 	 * @return a valid Date object
 	 */
 	public static Date today()
@@ -167,7 +162,7 @@ public class UUDate
 		c.setTime(new Date());
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Returns a date object representing one day from the current time
 	 * @return a valid date object.
@@ -176,7 +171,7 @@ public class UUDate
 	{
 		return daysFromToday(1);
 	}
-	
+
 	/**
 	 * Returns a date object representing a number of days from the current time.  Use a negavite value to indicate a time
 	 * in the past
@@ -190,7 +185,7 @@ public class UUDate
 		c.add(Calendar.DAY_OF_YEAR, days);
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Returns a date object representing a number of hours from the current time.  Use a negavite value to indicate a time
 	 * in the past
@@ -204,10 +199,10 @@ public class UUDate
 		c.add(Calendar.HOUR_OF_DAY, hours);
 		return c.getTime();
 	}
-	
+
 	/**
 	 * Checks two dates to see if they are on the same day of the year
-	 * 
+	 *
 	 * @param d1 the first date to check
 	 * @param d2 the second date to check
 	 * @param tz timezone to use
@@ -217,16 +212,16 @@ public class UUDate
 	{
 		Calendar c1 = Calendar.getInstance(tz);
 		c1.setTime(d1);
-		
+
 		Calendar c2 = Calendar.getInstance(tz);
 		c2.setTime(d2);
-		
+
 		int y1 = c1.get(Calendar.YEAR);
 		int day1 = c1.get(Calendar.DAY_OF_YEAR);
-		
+
 		int y2 = c2.get(Calendar.YEAR);
 		int day2 = c2.get(Calendar.DAY_OF_YEAR);
-		
+
 		return (y1 == y2 && day1 == day2);
 	}
 
@@ -235,7 +230,7 @@ public class UUDate
 	 *
 	 * @param time1 the first date to check
 	 * @param time2 the second date to check
-     * @param tz timezone to use
+	 * @param tz timezone to use
 	 * @return boolean if they are on the same day or not
 	 */
 	public static boolean areSameDay(final long time1, final long time2, final TimeZone tz)
@@ -255,73 +250,73 @@ public class UUDate
 		return (y1 == y2 && day1 == day2);
 	}
 
-    public static boolean isToday(final long time, final TimeZone tz)
-    {
-        return areSameDay(time, System.currentTimeMillis(), tz);
-    }
-	
+	public static boolean isToday(final long time, final TimeZone tz)
+	{
+		return areSameDay(time, System.currentTimeMillis(), tz);
+	}
+
 	public static Date parseDate(final String string, final String formatter)
 	{
 		return parseDate(string, TimeZone.getDefault(), formatter);
 	}
 
-    public static Date parseDate(final String string, final String[] formatters)
-    {
-        return parseDate(string, TimeZone.getDefault(), formatters);
-    }
-	
+	public static Date parseDate(final String string, final String[] formatters)
+	{
+		return parseDate(string, TimeZone.getDefault(), formatters);
+	}
+
 	public static Date parseUtcDate(final String string, final String formatter)
 	{
 		return parseDate(string, utcTimeZone(), formatter);
 	}
 
-    public static Date parseUtcDate(final String string, final String[] formatters)
-    {
-        return parseDate(string, utcTimeZone(), formatters);
-    }
+	public static Date parseUtcDate(final String string, final String[] formatters)
+	{
+		return parseDate(string, utcTimeZone(), formatters);
+	}
 
 	public static Date parseDate(final String string, final TimeZone timeZone, final String formatter)
 	{
-        return parseDate(string, timeZone, formatter, null);
+		return parseDate(string, timeZone, formatter, null);
 	}
 
-    public static Date parseDate(final String string, final TimeZone timeZone, final String formatter, final Date defaultVal)
-    {
-        try
-        {
-            SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
-            df.setTimeZone(timeZone);
-            return df.parse(string);
-        }
-        catch (Exception ex)
-        {
-            Log.e(LOG_TAG, "parseDate", ex);
-        }
+	public static Date parseDate(final String string, final TimeZone timeZone, final String formatter, final Date defaultVal)
+	{
+		try
+		{
+			SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
+			df.setTimeZone(timeZone);
+			return df.parse(string);
+		}
+		catch (Exception ex)
+		{
+			UULog.debug(UUDate.class, "parseDate", "Format: " + formatter + ", Input: " + string, ex);
+		}
 
-        return defaultVal;
-    }
+		return defaultVal;
+	}
 
 	public static Date parseDate(final String string, final TimeZone timeZone, final String[] formatters)
 	{
-        return parseDate(string, timeZone, formatters, null);
+		return parseDate(string, timeZone, formatters, null);
 	}
 
-    public static Date parseDate(final String string, final TimeZone timeZone, final String[] formatters, final Date defaultVal)
-    {
-        if (formatters != null)
-        {
-            for (String formatter : formatters)
-            {
-                Date val = parseDate(string, timeZone, formatter, null);
-                if (val != null)
-                {
-                    return val;
-                }
-            }
-        }
+	public static Date parseDate(final String string, final TimeZone timeZone, final String[] formatters, final Date defaultVal)
+	{
+		if (formatters != null)
+		{
+			for (String formatter : formatters)
+			{
+				Date val = parseDate(string, timeZone, formatter, null);
+				if (val != null)
+				{
+					return val;
+				}
+			}
+		}
 
-        return defaultVal;
-    }
+		return defaultVal;
+	}
 
 	public static String formatDate(final Long javaDate, final String formatter, final TimeZone timeZone)
 	{
@@ -330,30 +325,30 @@ public class UUDate
 			Date d = new Date(javaDate);
 			return formatDate(d, formatter, timeZone);
 		}
-		
+
 		return null;
 	}
-	
+
 	public static String formatDateTime(final Date date)
 	{
 		if (date != null)
 		{
 			return formatDate(date, DATE_TIME_FORMAT, TimeZone.getDefault());
 		}
-		
-		return null;	
+
+		return null;
 	}
-	
+
 	public static String formatUtcDateTime(final Date date)
 	{
 		if (date != null)
 		{
 			return formatDate(date, DATE_TIME_FORMAT, utcTimeZone());
 		}
-		
-		return null;	
+
+		return null;
 	}
-	
+
 	public static String formatDate(final Date date, final String formatter, final TimeZone timeZone)
 	{
 		if (date != null)
@@ -362,40 +357,40 @@ public class UUDate
 			df.setTimeZone(timeZone);
 			return df.format(date);
 		}
-		
+
 		return null;
 	}
-	
+
 	public static TimeZone utcTimeZone()
 	{
 		return TimeZone.getTimeZone("UTC");
 	}
-	
+
 	public static String formatAsUtcTimestamp(final Date date)
 	{
 		if (date != null)
 		{
 			return formatDate(date, EXTENDED_DATE_FORMAT, utcTimeZone());
 		}
-		
+
 		return null;
 	}
-	
+
 	public static String formatMonthDayYear(final Date date)
 	{
 		return formatDate(date, MONTH_DAY_YEAR_FORMAT, TimeZone.getDefault());
 	}
-	
+
 	public static String formatMonthDay(final Date date)
 	{
 		return formatDate(date, MONTH_DAY_FORMAT, TimeZone.getDefault());
 	}
-	
+
 	public static String formatUtcMonthDay(final Date date)
 	{
 		return formatDate(date, MONTH_DAY_FORMAT, utcTimeZone());
 	}
-	
+
 	public static String formatTime(final Date date)
 	{
 		return formatDate(date, TIME_FORMAT, TimeZone.getDefault());
@@ -416,22 +411,22 @@ public class UUDate
 	{
 		return formatDate(date, TIME_FORMAT_NO_AM_PM, TimeZone.getDefault());
 	}
-	
+
 	public static String formatUtcTime(final Date date)
 	{
 		return formatDate(date, TIME_FORMAT, utcTimeZone());
 	}
-	
+
 	public static String formatVerboseDate(final Date date)
 	{
 		return formatDate(date, VERBOSE_DATE_FORMAT, TimeZone.getDefault());
 	}
-	
+
 	public static String formatExtendedJavaDate(final Long javaDate)
 	{
 		return formatDate(javaDate, EXTENDED_DATE_FORMAT, TimeZone.getDefault());
 	}
-	
+
 	public static String formatExtendedDate(final Date date)
 	{
 		return formatDate(date, EXTENDED_DATE_FORMAT, TimeZone.getDefault());
@@ -458,15 +453,15 @@ public class UUDate
 		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, utcTimeZone());
 	}
 
-    public static String formatRfc3999JavaDate(final Long javaDate, final TimeZone tz)
-    {
-        return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, tz);
-    }
+	public static String formatRfc3999JavaDate(final Long javaDate, final TimeZone tz)
+	{
+		return formatDate(javaDate, RFC_3999_DATE_TIME_FORMAT, tz);
+	}
 
-    public static String formatRfc3999Date(final Date date, final TimeZone tz)
-    {
-        return formatDate(date, RFC_3999_DATE_TIME_FORMAT, tz);
-    }
+	public static String formatRfc3999Date(final Date date, final TimeZone tz)
+	{
+		return formatDate(date, RFC_3999_DATE_TIME_FORMAT, tz);
+	}
 
 	public static String formatFullDayOfWeek(final Long javaDate, final TimeZone tz)
 	{
@@ -502,12 +497,12 @@ public class UUDate
 	{
 		return formatDate(new Date(), EXTENDED_DATE_FORMAT, utcTimeZone());
 	}
-	
+
 	public static String currentTime()
 	{
 		return formatDate(new Date(), EXTENDED_DATE_FORMAT, TimeZone.getDefault());
 	}
-	
+
 	public static String currentTimeInFileNameFormat()
 	{
 		SimpleDateFormat df = new SimpleDateFormat(EXTENDED_FILE_NAME_FORMAT, Locale.US);
