@@ -434,6 +434,11 @@ public final class UUCursor
             {
                 return UUCursor.safeGetBlob(cursor, column, (byte[])defaultValue);
             }
+            else if (fieldType.isEnum())
+            {
+                String stringVal = safeGetString(cursor, column);
+                return Enum.valueOf((Class<Enum>) fieldType, stringVal);
+            }
         }
         catch (Exception ex)
         {

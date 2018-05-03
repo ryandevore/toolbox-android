@@ -64,6 +64,17 @@ public class UUAllColumnTypesDataModel implements UUDataModel
     @UUSqlColumn()
     public String stringObject;
 
+    public enum SomeEnum
+    {
+        Apple,
+        Banana,
+        Carrot
+    }
+
+    @UUSqlColumn()
+    private SomeEnum singleEnum;
+
+
 
     public static UUAllColumnTypesDataModel random()
     {
@@ -87,6 +98,7 @@ public class UUAllColumnTypesDataModel implements UUDataModel
         o.byteArrayObject = UURandom.randomByteObjArray(50);
         o.byteArrayPrimitive = UURandom.randomByteArray(50);
         o.stringObject = UURandom.randomString(50);
+        o.singleEnum = SomeEnum.values()[UURandom.randomInt(SomeEnum.values().length)];
         return o;
     }
 
@@ -113,5 +125,6 @@ public class UUAllColumnTypesDataModel implements UUDataModel
         Assert.assertArrayEquals(obj.byteArrayObject, other.byteArrayObject);
         Assert.assertArrayEquals(obj.byteArrayPrimitive, other.byteArrayPrimitive);
         Assert.assertEquals(obj.stringObject, other.stringObject);
+        Assert.assertEquals(obj.singleEnum, other.singleEnum);
     }
 }

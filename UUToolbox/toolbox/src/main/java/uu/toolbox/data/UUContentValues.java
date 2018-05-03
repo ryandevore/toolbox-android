@@ -211,6 +211,10 @@ public final class UUContentValues
         {
             putCharacter(cv, key, (Character)value);
         }
+        else if (fieldType.isEnum())
+        {
+            putString(cv, key, ((Enum)value).name());
+        }
         else
         {
             UULog.debug(UUDataModel.class, "putObject", "Field Type " + fieldType + " cannot be coerced into a type to put into ContentValues");
