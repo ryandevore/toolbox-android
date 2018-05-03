@@ -20,13 +20,17 @@ public class UUInteger
     {
         try
         {
-            return Integer.parseInt(s);
+            if (UUString.isNotEmpty(s))
+            {
+                return Integer.parseInt(s);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UUInteger.class, "safeParse", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -41,13 +45,17 @@ public class UUInteger
     {
         try
         {
-            return Integer.parseInt(s, radix);
+            if (UUString.isNotEmpty(s))
+            {
+                return Integer.parseInt(s, radix);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UUInteger.class, "safeParse", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -61,13 +69,17 @@ public class UUInteger
     {
         try
         {
-            return Integer.parseInt(s);
+            if (UUString.isNotEmpty(s))
+            {
+                return Integer.parseInt(s);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UUInteger.class, "safeParseAsInteger", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -82,13 +94,17 @@ public class UUInteger
     {
         try
         {
-            return Integer.parseInt(s, radix);
+            if (UUString.isNotEmpty(s))
+            {
+                return Integer.parseInt(s, radix);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UUInteger.class, "safeParseAsInteger", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**

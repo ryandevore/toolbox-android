@@ -20,13 +20,17 @@ public class UULong
     {
         try
         {
-            return Long.parseLong(s);
+            if (UUString.isNotEmpty(s))
+            {
+                return Long.parseLong(s);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UULong.class, "safeParse", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -41,13 +45,17 @@ public class UULong
     {
         try
         {
-            return Long.parseLong(s, radix);
+            if (UUString.isNotEmpty(s))
+            {
+                return Long.parseLong(s, radix);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UULong.class, "safeParse", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -61,13 +69,17 @@ public class UULong
     {
         try
         {
-            return Long.parseLong(s);
+            if (UUString.isNotEmpty(s))
+            {
+                return Long.parseLong(s);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UULong.class, "safeParseAsLong", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
@@ -82,13 +94,17 @@ public class UULong
     {
         try
         {
-            return Long.parseLong(s, radix);
+            if (UUString.isNotEmpty(s))
+            {
+                return Long.parseLong(s, radix);
+            }
         }
         catch (Exception ex)
         {
             UULog.debug(UULong.class, "safeParseAsLong", ex);
-            return defaultVal;
         }
+
+        return defaultVal;
     }
 
     /**
