@@ -42,10 +42,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.getString(key.toString());
+                val = json.optString(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetString", "key: " + key, ex);
             val = defaultValue;
@@ -68,10 +68,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.getLong(key.toString());
+                val = json.optLong(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetLong", "key: " + key, ex);
             val = defaultValue;
@@ -93,10 +93,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.getInt(key.toString());
+                val = json.optInt(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetInt", "key: " + key, ex);
             val = defaultValue;
@@ -118,10 +118,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.getBoolean(key.toString());
+                val = json.optBoolean(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetBool", "key: " + key, ex);
             val = defaultValue;
@@ -143,10 +143,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = (float)json.getDouble(key.toString());
+                val = (float)json.optDouble(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetFloat", "key: " + key, ex);
             val = defaultValue;
@@ -168,10 +168,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.getDouble(key.toString());
+                val = json.optDouble(key.toString(), defaultValue);
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGetDouble", "key: " + key, ex);
             val = defaultValue;
@@ -251,10 +251,10 @@ public final class UUJson
         {
             if (hasNonNullValueForKey(json, key))
             {
-                val = json.get(key.toString());
+                val = json.opt(key.toString());
             }
         }
-        catch (JSONException ex)
+        catch (Exception ex)
         {
             UULog.error(UUJson.class, "safeGet", "key: " + key, ex);
             val = defaultValue;
