@@ -4,7 +4,6 @@ import android.util.Base64;
 import android.util.JsonReader;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -747,6 +746,10 @@ public final class UUJson
                 }
 
                 json = safeSerializeJson(jsonArray, contentEncoding);
+            }
+            else if (obj instanceof JSONArray)
+            {
+                json = safeSerializeJson((JSONArray)obj, contentEncoding);
             }
         }
 
