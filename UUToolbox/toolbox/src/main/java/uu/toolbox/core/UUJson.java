@@ -643,6 +643,12 @@ public final class UUJson
         return parseJsonArray(type, safeGetJsonArray(json, key));
     }
 
+    public static ArrayList<String> safeGetArrayOfStrings(final JSONObject json, final Object key)
+    {
+        JSONArray array = safeGetJsonArray(json, key);
+        return safeGetJsonStrings(array);
+    }
+
     public static <T extends UUJsonConvertible> T parseJsonObject(final Class<T> type, final JSONObject jsonObj)
     {
         T parsedResult = null;
