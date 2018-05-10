@@ -48,6 +48,8 @@ public class UUDate
 	public static final String YEAR_MONTH_DAY_FORMAT = "yyyy-MM-dd";
 	public static final String DAY_OF_WEEK_FULL_FORMAT = "EEEE";
 	public static final String DAY_OF_WEEK_SHORT_FORMAT = "E";
+	public static final String MONTH_DAY_YEAR_SLASH_FORMAT = "MM/dd/yyyy";
+
 
 	/**
 	 * Create's a Date object filled with only an hour and minute
