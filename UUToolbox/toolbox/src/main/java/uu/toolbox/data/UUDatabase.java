@@ -614,9 +614,11 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
+            String tableName = UUDataModel.tableNameForClass(type);
+
             for (UUDataModel obj : objectList)
             {
-                db.delete(obj.getTableName(), obj.getPrimaryKeyWhereClause(), obj.getPrimaryKeyWhereArgs());
+                db.delete(tableName, obj.getPrimaryKeyWhereClause(), obj.getPrimaryKeyWhereArgs());
             }
 
             db.setTransactionSuccessful();
@@ -650,9 +652,12 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
+            String tableName = UUDataModel.tableNameForClass(type);
+            int dbVersion = db.getVersion();
+
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues(db.getVersion()));
+                db.insert(tableName, null, row.getContentValues(dbVersion));
             }
 
             db.setTransactionSuccessful();
@@ -686,12 +691,14 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
-            UUDataModel dataModel = type.newInstance();
-            db.delete(dataModel.getTableName(), null, null);
+            String tableName = UUDataModel.tableNameForClass(type);
+            int dbVersion = db.getVersion();
+
+            db.delete(tableName, null, null);
 
             for (T row : list)
             {
-                db.insert(row.getTableName(), null, row.getContentValues(db.getVersion()));
+                db.insert(tableName, null, row.getContentValues(dbVersion));
             }
 
             db.setTransactionSuccessful();
