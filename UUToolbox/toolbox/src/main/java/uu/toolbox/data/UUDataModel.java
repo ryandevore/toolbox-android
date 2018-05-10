@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -237,6 +238,49 @@ public interface UUDataModel
         return args.toArray(new String[args.size()]);
     }
 
+    HashMap<Class<?>, Field[]> cachedFields = new HashMap<>();
+
+    static Field[] getFields(@NonNull Class<?> tableClass)
+    {
+        if (cachedFields.containsKey(tableClass))
+        {
+            return cachedFields.get(tableClass);
+        }
+
+        Field[] fields = tableClass.getDeclaredFields();
+        for (Field field: fields)
+        {
+            field.setAccessible(true);
+        }
+
+        cachedFields.put(tableClass, fields);
+        return fields;
+    }
+
+    HashMap<Class<?>, ArrayList<Pair<Field, UUSqlColumn>>> cachedAnnotatedFields = new HashMap<>();
+
+    static ArrayList<Pair<Field, UUSqlColumn>> getAnnotatedFields(@NonNull Class<?> tableClass)
+    {
+        if (cachedAnnotatedFields.containsKey(tableClass))
+        {
+            return cachedAnnotatedFields.get(tableClass);
+        }
+
+        Field[] fields = getFields(tableClass);
+        ArrayList<Pair<Field, UUSqlColumn>> tmp = new ArrayList<>();
+        for (Field field : fields)
+        {
+            UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
+            if (columnAnnotation != null)
+            {
+                tmp.add(new Pair<>(field, columnAnnotation));
+            }
+        }
+
+        cachedAnnotatedFields.put(tableClass, tmp);
+        return tmp;
+    }
+
     /**
      * Creates a ContentValues object populated with data from this object
      *
@@ -250,21 +294,18 @@ public interface UUDataModel
 
         try
         {
-            Field[] fields = getClass().getDeclaredFields();
-            for (Field field : fields)
+            ArrayList<Pair<Field, UUSqlColumn>> annotatedFields = getAnnotatedFields(getClass());
+            for (Pair<Field, UUSqlColumn> annotatedField: annotatedFields)
             {
-                field.setAccessible(true);
+                Field field = annotatedField.first;
+                UUSqlColumn columnAnnotation = annotatedField.second;
 
-                UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
-                if (columnAnnotation != null)
+                if (version >= columnAnnotation.existsInVersion())
                 {
-                    if (version >= columnAnnotation.existsInVersion())
+                    Object fieldVal = field.get(this);
+                    if (shouldPutColumn(columnAnnotation, fieldVal))
                     {
-                        Object fieldVal = field.get(this);
-                        if (shouldPutColumn(columnAnnotation, fieldVal))
-                        {
-                            UUContentValues.putObject(cv, columnNameForField(field), fieldVal);
-                        }
+                        UUContentValues.putObject(cv, columnNameForField(field), fieldVal);
                     }
                 }
             }
@@ -285,17 +326,14 @@ public interface UUDataModel
     {
         try
         {
-            Field[] fields = getClass().getDeclaredFields();
-            for (Field field : fields)
+            ArrayList<Pair<Field, UUSqlColumn>> annotatedFields = getAnnotatedFields(getClass());
+            for (Pair<Field, UUSqlColumn> annotatedField: annotatedFields)
             {
-                field.setAccessible(true);
+                Field field = annotatedField.first;
+                UUSqlColumn columnAnnotation = annotatedField.second;
 
-                UUSqlColumn columnAnnotation = field.getAnnotation(UUSqlColumn.class);
-                if (columnAnnotation != null)
-                {
-                    Object fieldValue = getField(cursor, field);
-                    setField(this, field, fieldValue);
-                }
+                Object fieldValue = getField(cursor, field);
+                setField(this, field, fieldValue);
             }
         }
         catch (Exception ex)
@@ -358,10 +396,16 @@ public interface UUDataModel
         return !("0".equalsIgnoreCase(fieldValue.toString()));
     }
 
+    HashMap<Class<?>, String> cachedTableNames = new HashMap<>();
+
     @NonNull
     static String tableNameForClass(@NonNull Class<?> tableClass)
     {
-        String tableName = null;
+        String tableName = cachedTableNames.get(tableClass);
+        if (tableName != null)
+        {
+            return tableName;
+        }
 
         UUSqlTable annotation = tableClass.getAnnotation(UUSqlTable.class);
         if (annotation != null)
@@ -374,13 +418,20 @@ public interface UUDataModel
             tableName = UUString.toSnakeCase(tableClass.getSimpleName());
         }
 
+        cachedTableNames.put(tableClass, tableName);
         return tableName;
     }
+
+    HashMap<Field, String> cachedColumnNames = new HashMap<>();
 
     @NonNull
     static String columnNameForField(@NonNull final Field field)
     {
-        String columnName = null;
+        String columnName = cachedColumnNames.get(field);
+        if (columnName != null)
+        {
+            return columnName;
+        }
 
         UUSqlColumn annotation = field.getAnnotation(UUSqlColumn.class);
         if (annotation != null)
@@ -393,13 +444,20 @@ public interface UUDataModel
             columnName = UUString.toSnakeCase(field.getName());
         }
 
+        cachedColumnNames.put(field, columnName);
         return columnName;
     }
+
+    HashMap<Field, String> cachedColumnTypes = new HashMap<>();
 
     @NonNull
     static String columnTypeForField(@NonNull final Field field)
     {
-        String columnType = null;
+        String columnType = cachedColumnTypes.get(field);
+        if (columnType != null)
+        {
+            return columnType;
+        }
 
         UUSqlColumn annotation = field.getAnnotation(UUSqlColumn.class);
         if (annotation != null)
@@ -448,6 +506,7 @@ public interface UUDataModel
             columnType = UUSqlColumn.Type.TEXT.toString();
         }
 
+        cachedColumnTypes.put(field, columnType);
         return columnType;
     }
 
