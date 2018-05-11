@@ -286,9 +286,12 @@ public class UUDate
 	{
 		try
 		{
-			SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
-			df.setTimeZone(timeZone);
-			return df.parse(string);
+			if (UUString.isNotEmpty(string))
+			{
+				SimpleDateFormat df = new SimpleDateFormat(formatter, Locale.US);
+				df.setTimeZone(timeZone);
+				return df.parse(string);
+			}
 		}
 		catch (Exception ex)
 		{
