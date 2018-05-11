@@ -9,10 +9,16 @@ import uu.toolbox.logging.UULog;
 
 public interface UUJsonConvertible
 {
-    void fillFromJson(@NonNull final JSONObject json);
+    default void fillFromJson(@NonNull final JSONObject json)
+    {
+
+    }
 
     @NonNull
-    JSONObject toJsonObject();
+    default JSONObject toJsonObject()
+    {
+        return new JSONObject();
+    }
 
 
     default void writeJsonToParcel(Parcel dest, int flags)
