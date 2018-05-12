@@ -12,7 +12,7 @@ import java.util.Set;
 
 import uu.toolbox.core.UUString;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class UUSql
 {
     public static String buildCreateSql(final UUDataModel dataModel, final int version)
@@ -308,5 +308,60 @@ public final class UUSql
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Formats a string as a list of question marks that can be used as the parameter list in a SQL
+     * statement
+     *
+     * @param count number of question marks
+     *
+     * @return a string of question marks seperated by commas
+     */
+    public static String buildParameterList(final int count)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < count; i++)
+        {
+            if (sb.length() > 0)
+            {
+                sb.append(",");
+            }
+
+            sb.append("?");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Formats a SQL WHERE IN statement on a single column
+     *
+     * @param column the column
+     * @param list the list of values
+     * @return sql args
+     */
+    public static UUSqlArgs formatWhereInClause(@NonNull final String column, @NonNull final ArrayList<String> list)
+    {
+        UUSqlArgs args = new UUSqlArgs();
+        args.where = String.format(Locale.US, "%s IN (%s)", column, buildParameterList(list.size()));
+        args.whereArgs = list.toArray(new String[list.size()]);
+        return args;
+    }
+
+    /**
+     * Formats a SQL WHERE NOT IN statement on a single column
+     *
+     * @param column the column
+     * @param list the list of values
+     * @return sql args
+     */
+    public static UUSqlArgs formatWhereNotInClause(@NonNull final String column, @NonNull final ArrayList<String> list)
+    {
+        UUSqlArgs args = new UUSqlArgs();
+        args.where = String.format(Locale.US, "%s NOT IN (%s)", column, buildParameterList(list.size()));
+        args.whereArgs = list.toArray(new String[list.size()]);
+        return args;
     }
 }
