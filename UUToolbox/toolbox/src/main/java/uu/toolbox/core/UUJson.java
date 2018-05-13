@@ -304,9 +304,22 @@ public final class UUJson
         try
         {
             Object obj = safeGet(json, key);
-            if (obj != null && type != null && obj.getClass().isAssignableFrom(type))
+            if (obj != null && type != null)
             {
-                val = (T) obj;
+                if (obj instanceof JSONObject && type != JSONObject.class)
+                {
+                    Object tmp = type.newInstance();
+                    if (tmp instanceof UUJsonConvertible)
+                    {
+                        UUJsonConvertible jsonConvertible = (UUJsonConvertible)tmp;
+                        jsonConvertible.fillFromJson((JSONObject)obj);
+                        val = UUObject.safeCast(type, jsonConvertible);
+                    }
+                }
+                else if (obj.getClass().isAssignableFrom(type))
+                {
+                    val = UUObject.safeCast(type, obj);
+                }
             }
         }
         catch (Exception ex)
