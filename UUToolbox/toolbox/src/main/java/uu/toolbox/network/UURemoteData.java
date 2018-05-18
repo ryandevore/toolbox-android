@@ -135,6 +135,12 @@ public class UURemoteData implements UURemoteDataProtocol
     {
         try
         {
+            if (UUString.isEmpty(key))
+            {
+                // Fast fail if the key is empty
+                return false;
+            }
+
             // A bad URL with throw here
             new URL(key);
         }
@@ -191,5 +197,28 @@ public class UURemoteData implements UURemoteDataProtocol
         md.put(MetaData.MimeType, response.getContentType());
         md.put(MetaData.DownloadTimestamp, System.currentTimeMillis());
         UUDataCache.sharedInstance().setMetaData(md, key);
+    }
+
+
+    public void saveData(@NonNull final byte[] data, @NonNull final String key)
+    {
+        try
+        {
+            UUDataCache.sharedInstance().setData(data, key);
+
+            HashMap<String, Object> md = UUDataCache.sharedInstance().getMetaData(key);
+            md.put(MetaData.MimeType, "raw"); // Is this needed?
+            md.put(MetaData.DownloadTimestamp, System.currentTimeMillis());
+            UUDataCache.sharedInstance().setMetaData(md, key);
+
+            Intent intent = new Intent(Notifications.DataDownloaded);
+            intent.putExtra(NotificationKeys.RemotePath, key);
+
+            broadcastManager.sendBroadcast(intent);
+        }
+        catch (Exception ex)
+        {
+            UULog.error(getClass(), " saveData", ex);
+        }
     }
 }
