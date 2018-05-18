@@ -547,12 +547,11 @@ public final class UUHttp
                 }
             }
 
-            if (contentType != null)
+            if (contentType != null && processedResponse != null)
             {
                 if (contentType.contains("json"))
                 {
                     String str = new String(processedResponse);
-                    //AppLog.debug(UUHttp.class, "parseResponse", "Raw JSON: " + str);
                     parsed = UUJson.toJson(str);
                 }
                 else if (contentType.startsWith("text"))
@@ -561,6 +560,11 @@ public final class UUHttp
                     UULog.debug(UUHttp.class, "parseResponse", "Raw String: " + str);
                     parsed = str;
                 }
+            }
+
+            if (parsed == null)
+            {
+                parsed = processedResponse;
             }
         }
         catch (Exception ex)
