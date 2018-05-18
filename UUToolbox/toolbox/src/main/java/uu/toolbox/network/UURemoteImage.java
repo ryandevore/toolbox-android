@@ -56,10 +56,7 @@ public class UURemoteImage
             opt.inJustDecodeBounds = true;
             BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
 
-            HashMap<String, Object> md = getMetaData(key);
-            md.put(MetaData.ImageWidth, opt.outWidth);
-            md.put(MetaData.ImageHeight, opt.outHeight);
-            setMetaData(md, key);
+            updateMetaDataIfNeeded(key, opt);
 
             opt.inJustDecodeBounds = false;
 
@@ -71,6 +68,32 @@ public class UURemoteImage
         }
 
         return null;
+    }
+
+    private void updateMetaDataIfNeeded(@NonNull final String key, BitmapFactory.Options opt)
+    {
+        HashMap<String, Object> md = getMetaData(key);
+
+        int w = -1;
+        int h = -1;
+        if (md.containsKey(MetaData.ImageWidth) &&
+            md.containsKey(MetaData.ImageHeight))
+        {
+            Object wo = md.get(MetaData.ImageWidth);
+            Object ho = md.get(MetaData.ImageHeight);
+            if (wo != null && ho != null && wo instanceof Integer && ho instanceof Integer)
+            {
+                w = (Integer)wo;
+                h = (Integer)ho;
+            }
+        }
+
+        if (w != opt.outWidth || h != opt.outHeight)
+        {
+            md.put(MetaData.ImageWidth, opt.outWidth);
+            md.put(MetaData.ImageHeight, opt.outHeight);
+            setMetaData(md, key);
+        }
     }
 
     public boolean isDownloadPending(@NonNull final String key)
