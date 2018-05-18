@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import uu.toolbox.core.UUFile;
 import uu.toolbox.core.UUJson;
+import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
 public class UUDataCache implements UUDataCacheProtocol
@@ -115,14 +116,18 @@ public class UUDataCache implements UUDataCacheProtocol
     {
         try
         {
-            File file = getDiskFileName(key);
-            return file.exists();
+            if (UUString.isNotEmpty(key))
+            {
+                File file = getDiskFileName(key);
+                return file.exists();
+            }
         }
         catch (Exception ex)
         {
             UULog.error(getClass(), "doesDataExist", ex);
-            return false;
         }
+
+        return false;
     }
 
     @Override
