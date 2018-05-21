@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Set;
 
+import uu.toolbox.BuildConfig;
 import uu.toolbox.core.UUWorkerThread;
 
 /**
@@ -21,7 +22,7 @@ import uu.toolbox.core.UUWorkerThread;
  */
 public class UULog
 {
-    public static final boolean LOGGING_ENABLED = true;
+    public static final boolean LOGGING_ENABLED = BuildConfig.DEBUG;
     private static final String NEW_LINE = "\n";
     private static final String LOG_TAG = "UULog";
     private static final int LINE_LENGTH = 4000;
