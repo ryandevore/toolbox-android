@@ -310,14 +310,14 @@ public class UUSqlTests
 
             if (version >= VERSION_ONE)
             {
-                UUContentValues.putIfNotNull(cv, ID_COLUMN, id);
-                UUContentValues.putIfNotNull(cv, NAME_COLUMN, name);
-                UUContentValues.putIfNotNull(cv, TEAM_COLUMN, team);
+                UUContentValues.putInteger(cv, ID_COLUMN, id);
+                UUContentValues.putString(cv, NAME_COLUMN, name);
+                UUContentValues.putString(cv, TEAM_COLUMN, team);
             }
 
             if (version >= VERSION_TWO)
             {
-                UUContentValues.putIfNotNull(cv, NUMBER_COLUMN, number);
+                UUContentValues.putInteger(cv, NUMBER_COLUMN, number);
             }
 
             return cv;
