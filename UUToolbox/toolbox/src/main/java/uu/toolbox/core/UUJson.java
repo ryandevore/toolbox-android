@@ -1,5 +1,6 @@
 package uu.toolbox.core;
 
+import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.JsonReader;
 
@@ -371,6 +372,10 @@ public final class UUJson
                         {
                             arr.put(((UUJsonConvertible)o).toJsonObject());
                         }
+                        else
+                        {
+                            arr.put(o);
+                        }
                     }
 
                     json.put(key.toString(), arr);
@@ -575,6 +580,7 @@ public final class UUJson
         return list;
     }
 
+    @NonNull
     public static ArrayList<String> safeGetJsonStrings(final JSONArray json)
     {
         ArrayList<String> list = new ArrayList<>();
@@ -587,6 +593,56 @@ public final class UUJson
                 for (int i = 0; i < count; i++)
                 {
                     String obj = json.getString(i);
+                    list.add(obj);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            list = new ArrayList<>();
+        }
+
+        return list;
+    }
+
+    @NonNull
+    public static ArrayList<Integer> safeGetJsonIntegers(final JSONArray json)
+    {
+        ArrayList<Integer> list = new ArrayList<>();
+
+        try
+        {
+            if (json != null)
+            {
+                int count = json.length();
+                for (int i = 0; i < count; i++)
+                {
+                    int obj = json.getInt(i);
+                    list.add(obj);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            list = new ArrayList<>();
+        }
+
+        return list;
+    }
+
+    @NonNull
+    public static ArrayList<Boolean> safeGetJsonBooleans(final JSONArray json)
+    {
+        ArrayList<Boolean> list = new ArrayList<>();
+
+        try
+        {
+            if (json != null)
+            {
+                int count = json.length();
+                for (int i = 0; i < count; i++)
+                {
+                    boolean obj = json.getBoolean(i);
                     list.add(obj);
                 }
             }
@@ -660,6 +716,18 @@ public final class UUJson
     {
         JSONArray array = safeGetJsonArray(json, key);
         return safeGetJsonStrings(array);
+    }
+
+    public static ArrayList<Integer> safeGetArrayOfIntegers(final JSONObject json, final Object key)
+    {
+        JSONArray array = safeGetJsonArray(json, key);
+        return safeGetJsonIntegers(array);
+    }
+
+    public static ArrayList<Boolean> safeGetArrayOfBooleans(final JSONObject json, final Object key)
+    {
+        JSONArray array = safeGetJsonArray(json, key);
+        return safeGetJsonBooleans(array);
     }
 
     public static <T extends UUJsonConvertible> T parseJsonObject(final Class<T> type, final JSONObject jsonObj)
