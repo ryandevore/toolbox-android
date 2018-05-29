@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.Nullable;
+
 import uu.toolbox.logging.UULog;
 
 /**
@@ -16,7 +18,7 @@ public class UUFloat
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Float.parseFloat, or the default value
      */
-    public static float safeParse(final String s, final float defaultVal)
+    public static float safeParse(@Nullable final String s, final float defaultVal)
     {
         try
         {
@@ -40,7 +42,8 @@ public class UUFloat
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Float.parseFloat, or the default value
      */
-    public static Float safeParseAsFloat(final String s, final Float defaultVal)
+    @Nullable
+    public static Float safeParseAsFloat(@Nullable final String s, @Nullable final Float defaultVal)
     {
         try
         {
@@ -64,7 +67,7 @@ public class UUFloat
      * @param rhs the right hand side to check
      * @return true if they are equal, false if not
      */
-    public static boolean areEqual(final Float lhs, final Float rhs)
+    public static boolean areEqual(@Nullable final Float lhs, @Nullable final Float rhs)
     {
         if (lhs == null && rhs == null)
         {
@@ -87,10 +90,10 @@ public class UUFloat
      * @param rhs the right hand side to check
      * @return comparison result, -1, 0, or 1
      */
-    public static int compare(final Float lhs, final Float rhs)
+    public static int compare(@Nullable final Float lhs, @Nullable final Float rhs)
     {
-        float left = lhs;
-        float right = rhs;
+        float left = lhs != null ? lhs : 0.0f;
+        float right = rhs != null ? rhs : 0.0f;
 
         if (left == right)
         {

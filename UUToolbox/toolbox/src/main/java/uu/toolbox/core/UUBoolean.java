@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.Nullable;
+
 /**
  * Useful set of methods for manipulating Booleans
  *
@@ -14,7 +16,7 @@ public class UUBoolean
      * @param defaultValue the default value to return if the
      * @return if obj is null returns default value, otherwise returns the value of obj.boolValue()
      */
-    public static boolean safeGetValue(final Boolean obj, final boolean defaultValue)
+    public static boolean safeGetValue(@Nullable final Boolean obj, final boolean defaultValue)
     {
         if (obj != null)
         {
@@ -32,7 +34,7 @@ public class UUBoolean
      * @param bool the Boolean to check
      * @return returns true if the instance is non null and the .boolValue() is equal to true.
      */
-    public static boolean isTrue(final Boolean bool)
+    public static boolean isTrue(@Nullable final Boolean bool)
     {
         return safeGetValue(bool, false);
     }
@@ -43,7 +45,7 @@ public class UUBoolean
      * @param bool the Boolean to check
      * @return returns true if the instance is null or non-null the .boolValue() is equal to false.
      */
-    public static boolean isFalse(final Boolean bool)
+    public static boolean isFalse(@Nullable final Boolean bool)
     {
         return !safeGetValue(bool, true);
     }
@@ -55,7 +57,7 @@ public class UUBoolean
      * @param rhs the right hand side to check
      * @return true if they are equal, false if not
      */
-    public static boolean areEqual(final Boolean lhs, final Boolean rhs)
+    public static boolean areEqual(@Nullable final Boolean lhs, @Nullable final Boolean rhs)
     {
         if (lhs == null && rhs == null)
         {
@@ -78,10 +80,10 @@ public class UUBoolean
      * @param rhs the right hand side to check
      * @return comparison result, -1, 0, or 1
      */
-    public static int compare(final Boolean lhs, final Boolean rhs)
+    public static int compare(@Nullable final Boolean lhs, @Nullable final Boolean rhs)
     {
-        boolean left = lhs;
-        boolean right = rhs;
+        boolean left = lhs != null && lhs;
+        boolean right = rhs != null && rhs;
 
         if (left == right)
         {

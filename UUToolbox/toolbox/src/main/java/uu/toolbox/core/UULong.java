@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.Nullable;
+
 import uu.toolbox.logging.UULog;
 
 /**
@@ -16,7 +18,7 @@ public class UULong
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Long.parseLong, or the default value
      */
-    public static long safeParse(final String s, final long defaultVal)
+    public static long safeParse(@Nullable final String s, final long defaultVal)
     {
         try
         {
@@ -41,7 +43,7 @@ public class UULong
      * @param radix the number radix to use
      * @return the result of Long.parseLong, or the default value
      */
-    public static long safeParse(final String s, final int radix, final long defaultVal)
+    public static long safeParse(@Nullable final String s, final int radix, final long defaultVal)
     {
         try
         {
@@ -65,7 +67,8 @@ public class UULong
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Long.parseLong, or the default value
      */
-    public static Long safeParseAsLong(final String s, final Long defaultVal)
+    @Nullable
+    public static Long safeParseAsLong(@Nullable final String s, @Nullable final Long defaultVal)
     {
         try
         {
@@ -90,7 +93,8 @@ public class UULong
      * @param radix the number radix to use
      * @return the result of Long.parseLong, or the default value
      */
-    public static Long safeParseAsLong(final String s, final int radix, final Long defaultVal)
+    @Nullable
+    public static Long safeParseAsLong(@Nullable final String s, final int radix, @Nullable final Long defaultVal)
     {
         try
         {
@@ -114,7 +118,7 @@ public class UULong
      * @param rhs the right hand side to check
      * @return true if they are equal, false if not
      */
-    public static boolean areEqual(final Long lhs, final Long rhs)
+    public static boolean areEqual(@Nullable final Long lhs, @Nullable final Long rhs)
     {
         if (lhs == null && rhs == null)
         {
@@ -137,10 +141,10 @@ public class UULong
      * @param rhs the right hand side to check
      * @return comparison result, -1, 0, or 1
      */
-    public static int compare(final Long lhs, final Long rhs)
+    public static int compare(@Nullable final Long lhs, @Nullable final Long rhs)
     {
-        long left = lhs;
-        long right = rhs;
+        long left = lhs != null ? lhs : 0L;
+        long right = rhs != null ? rhs : 0L;
 
         if (left == right)
         {

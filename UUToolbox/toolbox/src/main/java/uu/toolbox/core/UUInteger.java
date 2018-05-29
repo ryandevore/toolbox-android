@@ -1,5 +1,7 @@
 package uu.toolbox.core;
 
+import android.support.annotation.Nullable;
+
 import uu.toolbox.logging.UULog;
 
 /**
@@ -16,7 +18,7 @@ public class UUInteger
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Integer.parseInt, or the default value
      */
-    public static int safeParse(final String s, final int defaultVal)
+    public static int safeParse(@Nullable final String s, final int defaultVal)
     {
         try
         {
@@ -41,7 +43,7 @@ public class UUInteger
      * @param radix the number radix to use
      * @return the result of Integer.parseInt, or the default value
      */
-    public static int safeParse(final String s, final int radix, final int defaultVal)
+    public static int safeParse(@Nullable final String s, final int radix, final int defaultVal)
     {
         try
         {
@@ -65,7 +67,8 @@ public class UUInteger
      * @param defaultVal the default value is an exception is thrown
      * @return the result of Integer.parseInt, or the default value
      */
-    public static Integer safeParseAsInteger(final String s, final Integer defaultVal)
+    @Nullable
+    public static Integer safeParseAsInteger(@Nullable final String s, @Nullable final Integer defaultVal)
     {
         try
         {
@@ -90,6 +93,7 @@ public class UUInteger
      * @param radix the number radix to use
      * @return the result of Integer.parseInt, or the default value
      */
+    @Nullable
     public static Integer safeParseAsInteger(final String s, final int radix, final Integer defaultVal)
     {
         try
@@ -137,10 +141,10 @@ public class UUInteger
      * @param rhs the right hand side to check
      * @return comparison result, -1, 0, or 1
      */
-    public static int compare(final Integer lhs, final Integer rhs)
+    public static int compare(@Nullable final Integer lhs, @Nullable final Integer rhs)
     {
-        int left = lhs;
-        int right = rhs;
+        int left = lhs != null ? lhs : 0;
+        int right = rhs != null ? rhs : 0;
 
         if (left == right)
         {
