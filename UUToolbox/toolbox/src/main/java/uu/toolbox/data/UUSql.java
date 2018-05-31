@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -318,6 +319,7 @@ public final class UUSql
      *
      * @return a string of question marks seperated by commas
      */
+    @NonNull
     public static String buildParameterList(final int count)
     {
         StringBuilder sb = new StringBuilder();
@@ -342,6 +344,7 @@ public final class UUSql
      * @param list the list of values
      * @return sql args
      */
+    @NonNull
     public static UUSqlArgs formatWhereInClause(@NonNull final String column, @NonNull final ArrayList<String> list)
     {
         UUSqlArgs args = new UUSqlArgs();
@@ -357,11 +360,80 @@ public final class UUSql
      * @param list the list of values
      * @return sql args
      */
+    @NonNull
     public static UUSqlArgs formatWhereNotInClause(@NonNull final String column, @NonNull final ArrayList<String> list)
     {
         UUSqlArgs args = new UUSqlArgs();
         args.where = String.format(Locale.US, "%s NOT IN (%s)", column, buildParameterList(list.size()));
         args.whereArgs = list.toArray(new String[list.size()]);
         return args;
+    }
+
+    /**
+     * Combines a list of where args into a single where statement
+     *
+     * @param list the list of args
+     * @param operator the operator to combine with
+     * @return more args
+     */
+    @NonNull
+    public static UUSqlArgs combineWhereArgs(@NonNull final ArrayList<UUSqlArgs> list, @NonNull final String operator)
+    {
+        StringBuilder where = new StringBuilder();
+        ArrayList<String> whereArgs = new ArrayList<>();
+
+        for (UUSqlArgs arg : list)
+        {
+            if (UUString.isNotEmpty(arg.where))
+            {
+                if (where.length() > 0)
+                {
+                    where.append(" ");
+                    where.append(operator);
+                    where.append(" ");
+                }
+
+                where.append("(");
+                where.append(arg.where);
+                where.append(")");
+
+                if (arg.whereArgs != null && arg.whereArgs.length > 0)
+                {
+                    whereArgs.addAll(Arrays.asList(arg.whereArgs));
+                }
+            }
+        }
+
+        UUSqlArgs args = new UUSqlArgs();
+        args.where = where.toString();
+
+        if (whereArgs.size() > 0)
+        {
+            args.whereArgs = whereArgs.toArray(new String[list.size()]);
+        }
+
+        return args;
+    }
+
+    /**
+     * Combines a list of arguments with an AND clause
+     * @param list the list of args
+     * @return args
+     */
+    @NonNull
+    public static UUSqlArgs combineWithAnd(@NonNull final ArrayList<UUSqlArgs> list)
+    {
+        return combineWhereArgs(list, "AND");
+    }
+
+    /**
+     * Combines a list of arguments with an AND clause
+     * @param list the list of args
+     * @return args
+     */
+    @NonNull
+    public static UUSqlArgs combineWithOr(@NonNull final ArrayList<UUSqlArgs> list)
+    {
+        return combineWhereArgs(list, "OR");
     }
 }
