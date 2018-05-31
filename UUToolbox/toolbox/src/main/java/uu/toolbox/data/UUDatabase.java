@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -804,7 +805,40 @@ public abstract class UUDatabase
      * @param lines the sql statements
      */
     public synchronized void execSqlLines(
-            @NonNull final ArrayList<Pair<String, Object[]>> lines)
+            @NonNull final ArrayList<String> lines)
+    {
+        UUSQLiteDatabase db = null;
+
+        try
+        {
+            db = getReadWriteDatabase();
+
+            db.beginTransaction();
+
+            for (String line : lines)
+            {
+                execSql(line);
+            }
+
+            db.setTransactionSuccessful();
+        }
+        catch (Exception ex)
+        {
+            logException("execSqlLines", ex);
+        }
+        finally
+        {
+            safeEndTransaction(db);
+        }
+    }
+
+    /**
+     * Executes some raw SQL lines with bind arguments
+     *
+     * @param lines the sql statements
+     */
+    public synchronized void execSqlLinesWithArgs(
+        @NonNull final ArrayList<Pair<String, Object[]>> lines)
     {
         UUSQLiteDatabase db = null;
 
@@ -823,7 +857,7 @@ public abstract class UUDatabase
         }
         catch (Exception ex)
         {
-            logException("execSqlLines", ex);
+            logException("execSqlLinesWithArgs", ex);
         }
         finally
         {
@@ -1332,6 +1366,55 @@ public abstract class UUDatabase
     {
         String sql = "SELECT name FROM sqlite_master WHERE type='table';";
         return listSingleStringColumn(sql, null);
+    }
+
+    /**
+     * checks to see if a table exists
+     *
+     * @return true if the table exists, false otherwise
+     */
+    public boolean doesTableExist(@NonNull final String tableName)
+    {
+        int count = count("sqlite_master", "type='table' AND name = ?", new String[] { tableName });
+        return (count > 0);
+    }
+
+    /**
+     * Queries the database for the column names and types
+     *
+     * @param tableName the table name to query
+     * @return a dictionary of column to column type
+     */
+    @NonNull
+    public HashMap<Object,Object> getTableColumnMap(
+        @NonNull final String tableName)
+    {
+        HashMap<Object, Object> map = new HashMap<>();
+
+        Cursor c = null;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+            c = db.rawQuery("PRAGMA table_info(?)", new String[] { tableName });
+
+            while (c.moveToNext())
+            {
+                String name = UUCursor.safeGetString(c, "name");
+                String type = UUCursor.safeGetString(c, "type");
+                map.put(name, type);
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("getTableColumnMap", ex);
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+
+        return map;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
