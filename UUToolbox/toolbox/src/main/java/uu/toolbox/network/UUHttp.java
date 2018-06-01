@@ -232,7 +232,7 @@ public final class UUHttp
 
             long start = System.currentTimeMillis();
             byte[] responseBuffer = readResponse(urlConnection);
-            logResponseBody(responseBuffer);
+            logResponseBody(responseBuffer, response.getContentEncoding());
             response.setRawResponse(responseBuffer);
 
             if (request.getProcessMimeTypes())
@@ -415,7 +415,7 @@ public final class UUHttp
         }
     }
 
-    private static void logResponseBody(final byte[] body)
+    private static void logResponseBody(@Nullable final byte[] body, @Nullable final String contentEncoding)
     {
         try
         {
@@ -423,8 +423,15 @@ public final class UUHttp
             {
                 if (body != null)
                 {
-                    String bodyAsString = new String(body, "UTF-8");
-                    UULog.debug(UUHttp.class, "logResponseBody", bodyAsString);
+                    if (contentEncoding != null && contentEncoding.contains("gzip"))
+                    {
+                        UULog.debug(UUHttp.class, "logResponseBody", "Body is gzipped");
+                    }
+                    else
+                    {
+                        String bodyAsString = new String(body, "UTF-8");
+                        UULog.debug(UUHttp.class, "logResponseBody", bodyAsString);
+                    }
                 }
                 else
                 {
@@ -543,7 +550,7 @@ public final class UUHttp
                 if (contentEncoding.contains("gzip"))
                 {
                     processedResponse = UUCompression.gunzip(rawResponse);
-                    logResponseBody(processedResponse);
+                    logResponseBody(processedResponse, null);
                 }
             }
 
