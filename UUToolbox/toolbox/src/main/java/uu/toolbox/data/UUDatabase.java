@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -757,11 +758,12 @@ public abstract class UUDatabase
      * Logs all records in a table
      *
      * @param type model type to derive the table name from
+     * @param message an optional message to be logged
      * @param <T> a class that implements UUDataModel
      */
-    public <T extends UUDataModel> void logTable(@NonNull final Class<T> type)
+    public <T extends UUDataModel> void logTable(@NonNull final Class<T> type, @Nullable final String message)
     {
-        logTable(UUDataModel.tableNameForClass(type));
+        logTable(UUDataModel.tableNameForClass(type), message);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1501,10 +1503,11 @@ public abstract class UUDatabase
      * Logs all records in a table
      *
       * @param tableName table name to query
+     *  @param message an optional message
      */
-    public void logTable(@NonNull final String tableName)
+    public void logTable(@NonNull final String tableName, @Nullable final String message)
     {
-        logTable(tableName, null, null, null);
+        logTable(tableName, null, null, null, message);
     }
 
     /**
@@ -1515,12 +1518,14 @@ public abstract class UUDatabase
      * @param columns the columns to select
      * @param where the SQL Where clause to use
      * @param whereArgs SQL Where bound arguments
+     * @param message an optional message
      */
     public synchronized void logTable(
         @NonNull final String tableName,
         @Nullable String[] columns,
         @Nullable final String where,
-        @Nullable final String[] whereArgs)
+        @Nullable final String[] whereArgs,
+        @Nullable final String message)
     {
         Cursor c = null;
 
@@ -1534,7 +1539,12 @@ public abstract class UUDatabase
             }
 
             c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
+
+            UULog.debug(UUDatabase.class, "logTable", " ********** BEGIN LOG TABLE (" + tableName + ") ********** " + UUString.safeString(message));
+            UULog.debug(UUDatabase.class, "logTable", "columns: " + UUString.componentsJoinedByString(columns, ",") + ", where" + where + ", whereArgs: " + UUString.componentsJoinedByString(whereArgs, ","));
+            UULog.debug(UUDatabase.class, "logTable", "There are " + c.getCount() + " records in " + tableName);
             logQueryResults(c);
+            UULog.debug(UUDatabase.class, "logTable", " ********** END LOG TABLE (" + tableName + ") ********** " + UUString.safeString(message));
         }
         catch (Exception ex)
         {
@@ -1557,48 +1567,35 @@ public abstract class UUDatabase
         {
             c.moveToPosition(-1);
 
-            boolean first = true;
             while (c.moveToNext())
             {
                 int columnCount = c.getColumnCount();
-                StringBuilder sb = new StringBuilder();
-
-                if (first)
-                {
-                    for (int i = 0; i < columnCount; i++)
-                    {
-                        String colName = c.getColumnName(i);
-                        sb.append(colName);
-                        sb.append(", ");
-                    }
-
-                    UULog.debug(UUDatabase.class, "logQueryResults", sb.toString());
-                }
-
-                first = false;
-
-                sb = new StringBuilder();
+                HashMap<String, String> map = new LinkedHashMap<>();
 
                 for (int i = 0; i < columnCount; i++)
                 {
-                    Object val = UUCursor.safeGet(c, i, null);
-                    if (val == null)
+                    String key = c.getColumnName(i);
+
+                    String val;
+
+                    Object rawVal = UUCursor.safeGet(c, i, null);
+                    if (rawVal == null)
                     {
-                        sb.append("<null>");
+                        val = "<null>";
                     }
-                    else if (val instanceof byte[])
+                    else if (rawVal instanceof byte[])
                     {
-                        sb.append(UUString.byteToHex((byte[])val));
+                        val = UUString.byteToHex((byte[])rawVal);
                     }
                     else
                     {
-                        sb.append(val.toString());
+                        val = rawVal.toString();
                     }
 
-                    sb.append(", ");
+                    map.put(key, val);
                 }
 
-                UULog.debug(UUDataModel.class, "logQueryResults", sb.toString());
+                UULog.debug(UUDatabase.class, "logQueryResults", map.toString());
 
             }
         }
