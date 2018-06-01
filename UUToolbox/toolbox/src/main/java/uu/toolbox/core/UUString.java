@@ -305,7 +305,28 @@ public class UUString
      * @param separator the separator
      * @return a string
      */
-    public static String componentsJoinedByString(final Object[] list, final String separator)
+    @NonNull
+    public static String componentsJoinedByString(@Nullable final Object[] list, @Nullable final String separator)
+    {
+        ArrayList<Object> arrayList = new ArrayList<>();
+
+        if (list != null)
+        {
+            Collections.addAll(arrayList, list);
+        }
+
+        return componentsJoinedByString(arrayList, separator);
+    }
+
+    /**
+     * Joins String array elements into a single string
+     *
+     * @param list the source list
+     * @param separator the separator
+     * @return a string
+     */
+    @NonNull
+    public static String componentsJoinedByString(@Nullable final String[] list, @Nullable final String separator)
     {
         ArrayList<Object> arrayList = new ArrayList<>();
 
@@ -324,7 +345,8 @@ public class UUString
      * @param separator the separator
      * @return a string
      */
-    public static String componentsJoinedByString(final ArrayList<Object> list, final String separator)
+    @NonNull
+    public static String componentsJoinedByString(@Nullable final ArrayList<Object> list, @Nullable final String separator)
     {
         StringBuilder sb = new StringBuilder();
 
