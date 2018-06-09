@@ -793,6 +793,7 @@ public abstract class UUDatabase
         try
         {
             UUSQLiteDatabase db = getReadWriteDatabase();
+            logSql(sql);
             db.execSQL(sql, bindArgs);
         }
         catch (Exception ex)
