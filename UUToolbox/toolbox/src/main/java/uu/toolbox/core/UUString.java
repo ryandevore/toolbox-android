@@ -507,4 +507,28 @@ public class UUString
             return string;
         }
     }
+
+    /**
+     * Checks to see if all characters in a string are a numerical digit
+     *
+     * @param data input string
+     * @return true or false
+     */
+    public static boolean isDigits(@Nullable final String data)
+    {
+        if (data == null)
+        {
+            return false;
+        }
+
+        for (char c : data.toCharArray())
+        {
+            if (!Character.isDigit(c))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
