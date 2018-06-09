@@ -700,7 +700,9 @@ public abstract class UUDatabase
 
             for (T row : list)
             {
-                db.insert(tableName, null, row.getContentValues(dbVersion));
+                ContentValues cv = row.getContentValues(dbVersion);
+                //logContentValues("insert", cv);
+                db.insert(tableName, null, cv);
             }
 
             db.setTransactionSuccessful();
@@ -1680,9 +1682,13 @@ public abstract class UUDatabase
 
     protected void logContentValues(@NonNull final String methodName, @NonNull final ContentValues cv)
     {
+        HashMap<String, Object> map = new LinkedHashMap<>();
+
         for (Map.Entry<String,Object> e : cv.valueSet())
         {
-            UULog.debug(getClass(), methodName, e.getKey() + ": " + e.getValue());
+            map.put(e.getKey(), e.getValue());
         }
+
+        UULog.debug(getClass(), methodName, "ContentValues: " + map.toString());
     }
 }
