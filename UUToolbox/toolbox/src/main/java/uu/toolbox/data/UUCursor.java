@@ -5,6 +5,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import uu.toolbox.core.UUString;
 import uu.toolbox.logging.UULog;
 
 /**
@@ -437,7 +438,10 @@ public final class UUCursor
             else if (fieldType.isEnum())
             {
                 String stringVal = safeGetString(cursor, column);
-                return Enum.valueOf((Class<Enum>) fieldType, stringVal);
+                if (UUString.isNotEmpty(stringVal))
+                {
+                    return Enum.valueOf((Class<Enum>) fieldType, stringVal);
+                }
             }
         }
         catch (Exception ex)
