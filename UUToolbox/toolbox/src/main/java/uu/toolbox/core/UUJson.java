@@ -1,6 +1,7 @@
 package uu.toolbox.core;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.JsonReader;
 
@@ -238,6 +239,18 @@ public final class UUJson
         return result;
     }
 
+    @Nullable
+    public static <T extends Enum<T>> T safeGetEnum(@NonNull final Class<T> type, final JSONObject json, final Object key)
+    {
+        return UUEnum.fromString(type, safeGetString(json, key));
+    }
+
+    @NonNull
+    public static <T extends Enum<T>> T safeGetEnum(@NonNull final Class<T> type, final JSONObject json, final Object key, @NonNull final T defaultValue)
+    {
+        return UUEnum.fromString(type, safeGetString(json, key), defaultValue);
+    }
+
     public static Object safeGet(final JSONObject json, final Object key)
     {
         return safeGet(json, key, null);
@@ -343,6 +356,10 @@ public final class UUJson
                     if (val instanceof UUJsonConvertible)
                     {
                         json.put(key.toString(), ((UUJsonConvertible)val).toJsonObject());
+                    }
+                    else if (val instanceof Enum)
+                    {
+                        json.put(key.toString(), ((Enum) val).name());
                     }
                     else
                     {
