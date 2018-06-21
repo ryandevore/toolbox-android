@@ -1,6 +1,5 @@
 package uu.toolbox.network;
 
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -15,7 +14,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +143,7 @@ public final class UUHttp
         {
             Proxy proxy = request.getProxy();
 
-            URL url = UUHttpUtils.safeCreateUrl(buildFullUrl(request));
+            URL url = UUHttpUtils.safeCreateUrl(request.buildFullUrlString());
 
             if (proxy != null)
             {
@@ -443,37 +441,6 @@ public final class UUHttp
         {
             UULog.error(UUHttp.class, "logResponseBody", ex);
         }
-    }
-
-    protected static String buildFullUrl(final UUHttpRequest request)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(request.getURL());
-
-        ArrayList<Object> pathArgs = request.getQueryPathArguments();
-        for (Object pathArg : pathArgs)
-        {
-            sb.append("/");
-            sb.append(pathArg);
-        }
-
-        HashMap<Object, Object> args = request.getQueryArguments();
-
-        if (!args.isEmpty())
-        {
-            Uri.Builder uri = new Uri.Builder();
-
-            Set<Object> keys = args.keySet();
-            for (Object key : keys)
-            {
-                Object val = args.get(key);
-                uri.appendQueryParameter(key.toString(), val.toString());
-            }
-
-            sb.append(uri.build().toString());
-        }
-
-        return sb.toString();
     }
 
     protected static void writeRequest(final HttpURLConnection connection, final byte[] body)

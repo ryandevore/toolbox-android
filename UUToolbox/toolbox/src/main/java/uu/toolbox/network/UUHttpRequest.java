@@ -1,5 +1,6 @@
 package uu.toolbox.network;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -219,6 +221,38 @@ public class UUHttpRequest
     public void setGzipCompression(final boolean gzipCompression)
     {
         this.gzipCompression = gzipCompression;
+    }
+
+    @NonNull
+    public String buildFullUrlString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getURL());
+
+        ArrayList<Object> pathArgs = getQueryPathArguments();
+        for (Object pathArg : pathArgs)
+        {
+            sb.append("/");
+            sb.append(pathArg);
+        }
+
+        HashMap<Object, Object> args = getQueryArguments();
+
+        if (!args.isEmpty())
+        {
+            Uri.Builder uri = new Uri.Builder();
+
+            Set<Object> keys = args.keySet();
+            for (Object key : keys)
+            {
+                Object val = args.get(key);
+                uri.appendQueryParameter(key.toString(), val.toString());
+            }
+
+            sb.append(uri.build().toString());
+        }
+
+        return sb.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
