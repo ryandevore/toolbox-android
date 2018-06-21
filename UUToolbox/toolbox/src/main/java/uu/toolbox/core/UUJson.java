@@ -10,6 +10,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -418,7 +420,8 @@ public final class UUJson
         }
     }
 
-    public static JSONObject toJsonFromStringMap(final Map<String, String> map)
+    @Nullable
+    public static JSONObject toJsonFromStringMap(@Nullable final Map<String, String> map)
     {
         try
         {
@@ -427,6 +430,51 @@ public final class UUJson
         catch (Exception ex)
         {
             return null;
+        }
+    }
+
+    @Nullable
+    public static JSONObject toJsonFromObjectMap(@Nullable final Map<Object, Object> map)
+    {
+        try
+        {
+            return new JSONObject(map);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
+    @Nullable
+    public static HashMap<Object,Object> jsonStringToHashMap(@Nullable final String jsonString)
+    {
+        JSONObject obj = toJsonObject(jsonString);
+        if (obj == null)
+        {
+            return null;
+        }
+
+        HashMap<Object,Object> map = new HashMap<>();
+
+        Iterator<String> keys = obj.keys();
+        while (keys.hasNext())
+        {
+            String key = keys.next();
+            Object val = obj.opt(key);
+            map.put(key, val);
+        }
+
+        return map;
+    }
+
+    public static void fillFromJsonString(@NonNull final HashMap<Object, Object> map, @Nullable final String jsonString)
+    {
+        map.clear();
+        HashMap<Object, Object> tmp = jsonStringToHashMap(jsonString);
+        if (tmp != null)
+        {
+            map.putAll(tmp);
         }
     }
 
@@ -549,7 +597,8 @@ public final class UUJson
         return jsonStr;
     }
 
-    public static String toJsonStringFromStringMap(final Map<String, String> map)
+    @NonNull
+    public static String toJsonStringFromStringMap(@Nullable final Map<String, String> map)
     {
         String jsonStr = "";
 
@@ -563,7 +612,29 @@ public final class UUJson
         }
         catch (Exception ex)
         {
-            UULog.error(UUJson.class, "toJsonString", ex);
+            UULog.error(UUJson.class, "toJsonStringFromStringMap", ex);
+            jsonStr = "";
+        }
+
+        return jsonStr;
+    }
+
+    @NonNull
+    public static String toJsonStringFromObjectMap(@Nullable final Map<Object, Object> map)
+    {
+        String jsonStr = "";
+
+        try
+        {
+            JSONObject obj = toJsonFromObjectMap(map);
+            if (obj != null)
+            {
+                jsonStr = obj.toString();
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "toJsonStringFromObjectMap", ex);
             jsonStr = "";
         }
 
@@ -747,13 +818,14 @@ public final class UUJson
         return safeGetJsonBooleans(array);
     }
 
-    public static <T extends UUJsonConvertible> T parseJsonObject(final Class<T> type, final JSONObject jsonObj)
+    @Nullable
+    public static <T extends UUJsonConvertible> T parseJsonObject(@NonNull final Class<T> type, @Nullable final JSONObject jsonObj)
     {
         T parsedResult = null;
 
         try
         {
-            if (type != null && jsonObj != null)
+            if (jsonObj != null)
             {
                 parsedResult = type.newInstance();
                 parsedResult.fillFromJson(jsonObj);
@@ -766,6 +838,13 @@ public final class UUJson
         }
 
         return parsedResult;
+    }
+
+    @Nullable
+    public static <T extends UUJsonConvertible> T parseJsonString(@NonNull final Class<T> type, @Nullable final String jsonString)
+    {
+        JSONObject jsonObject = UUJson.toJsonObject(jsonString);
+        return parseJsonObject(type, jsonObject);
     }
 
     public static byte[] safeSerializeJson(final JSONObject jsonObj, final String contentEncoding)
