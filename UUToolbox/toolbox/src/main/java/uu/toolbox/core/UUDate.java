@@ -29,6 +29,7 @@ public class UUDate
 	public static final long MILLIS_IN_ONE_HOUR     = MINUTES_IN_ONE_HOUR * MILLIS_IN_ONE_MINUTE;
 	public static final long MILLIS_IN_ONE_DAY      = HOURS_IN_ONE_DAY * MILLIS_IN_ONE_HOUR;
 	public static final long MILLIS_IN_ONE_WEEK     = DAYS_IN_ONE_WEEK * MILLIS_IN_ONE_DAY;
+	public static final long MINUTES_IN_ONE_DAY 	= MINUTES_IN_ONE_HOUR * HOURS_IN_ONE_DAY;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Date Formats
