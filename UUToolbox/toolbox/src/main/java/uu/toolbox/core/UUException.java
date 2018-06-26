@@ -26,15 +26,21 @@ public final class UUException
      */
     public static boolean isNetworkFailureException(Exception ex)
     {
-        if (ex != null)
-        {
-            if (ex instanceof java.net.UnknownHostException ||
-                    ex instanceof java.net.SocketException)
-            {
-                return true;
-            }
-        }
+        return (ex != null) &&
+                (ex instanceof java.net.UnknownHostException ||
+                 ex instanceof java.net.SocketException ||
+                 ex instanceof java.security.cert.CertPathValidatorException ||
+                 ex instanceof javax.net.ssl.SSLException);
+    }
 
-        return false;
+    /**
+     * Safely checks an exception to determine if it is a unknown host exception
+     *
+     * @param ex the exception to check
+     * @return true if the exception is a UnknownHostException
+     */
+    public static boolean isUnknownHostError(Exception ex)
+    {
+        return (ex != null && ex instanceof java.net.UnknownHostException);
     }
 }
