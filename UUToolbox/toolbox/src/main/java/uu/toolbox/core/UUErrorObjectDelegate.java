@@ -29,4 +29,12 @@ public interface UUErrorObjectDelegate<T>
             UULog.error(UUErrorObjectDelegate.class, "safeInvoke", ex);
         }
     }
+
+    static <T extends Object> void safeInvokeOnMainThread(@Nullable final UUErrorObjectDelegate<T> delegate, @Nullable final UUError error, @Nullable final T object)
+    {
+        UUThread.runOnMainThread(() ->
+        {
+            safeInvoke(delegate, error, object);
+        });
+    }
 }

@@ -29,5 +29,13 @@ public interface UUErrorDelegate
             UULog.error(UUErrorDelegate.class, "safeInvoke", ex);
         }
     }
+
+    static void safeInvokeOnMainThread(@Nullable final UUErrorDelegate delegate, @Nullable final UUError error)
+    {
+        UUThread.runOnMainThread(() ->
+        {
+            safeInvoke(delegate, error);
+        });
+    }
 }
 
