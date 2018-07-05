@@ -9,4 +9,7 @@ public class UUSqlArgs
     public String[] whereArgs;
     public String orderBy;
     public String limit;
+
+    // Used for cases when these will be passed to a raw execSql method.
+    public Object[] bindArgs;
 }
