@@ -322,19 +322,35 @@ public final class UUSql
     @NonNull
     public static String buildParameterList(final int count)
     {
-        StringBuilder sb = new StringBuilder();
-
+        String[] list = new String[count];
         for (int i = 0; i < count; i++)
         {
-            if (sb.length() > 0)
-            {
-                sb.append(",");
-            }
-
-            sb.append("?");
+            list[i] = "?";
         }
 
-        return sb.toString();
+        return UUString.componentsJoinedByString(list, ",");
+    }
+
+    /**
+     * Formats a string as a multi-dimensional array of question marks used to bind multiple sql
+     * insert statements at once.
+     *
+     * @param recordCount number of records
+     * @param fieldCount number of fields per record
+     * @return a string
+     */
+    @NonNull
+    public static String buildMultiRecordParameterList(final int recordCount, final int fieldCount)
+    {
+        String fieldLine = "(" + buildParameterList(fieldCount) + ")";
+
+        String[] list = new String[recordCount];
+        for (int i = 0; i < recordCount; i++)
+        {
+            list[i] = fieldLine;
+        }
+
+        return UUString.componentsJoinedByString(list, ",");
     }
 
     /**
