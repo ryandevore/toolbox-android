@@ -447,6 +447,27 @@ public final class UUJson
     }
 
     @Nullable
+    public static JSONArray toJsonFromStringArray(@NonNull final ArrayList<String> array)
+    {
+        try
+        {
+            JSONArray arr = new JSONArray();
+
+            for (String s : array)
+            {
+                arr.put(s);
+            }
+
+            return arr;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
+
+    @Nullable
     public static HashMap<Object,Object> jsonStringToHashMap(@Nullable final String jsonString)
     {
         JSONObject obj = toJsonObject(jsonString);
