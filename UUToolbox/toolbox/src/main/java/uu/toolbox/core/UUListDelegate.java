@@ -32,4 +32,12 @@ public interface UUListDelegate<T>
             UULog.error(UUListDelegate.class, "safeInvoke", ex);
         }
     }
+
+    static <T extends Object> void safeInvokeOnMainThread(@Nullable final UUListDelegate<T> delegate, @NonNull final ArrayList<T> list)
+    {
+        UUThread.runOnMainThread(() ->
+        {
+            safeInvoke(delegate, list);
+        });
+    }
 }
