@@ -312,6 +312,19 @@ public final class UUSql
     }
 
     /**
+     * Formats a sort by clause with an ascending or descending qualifier
+     *
+     * @param column the column to sort on
+     * @param ascending ascending or descending
+     * @return a string that can be used as a sortBy/orderBy parameter in a SQL statement
+     */
+    @NonNull
+    public static String formatSortByClause(@NonNull final String column, final boolean ascending)
+    {
+        return column + (ascending ? " ASC" : " DESC");
+    }
+
+    /**
      * Formats a string as a list of question marks that can be used as the parameter list in a SQL
      * statement
      *
