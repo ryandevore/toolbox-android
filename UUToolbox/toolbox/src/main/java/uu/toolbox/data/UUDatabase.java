@@ -1560,6 +1560,41 @@ public abstract class UUDatabase
     }
 
     /**
+     *
+     * Logs all records matching the given query
+     *
+     * @param sql the raw query
+     * @param message an optional message
+     */
+    public synchronized void logRawQuery(
+        @NonNull final String sql,
+        @Nullable final String message)
+    {
+        Cursor c = null;
+
+        try
+        {
+            UUSQLiteDatabase db = getReadOnlyDatabase();
+
+            c = db.rawQuery(sql, null);
+
+            UULog.debug(UUDatabase.class, "logTable", " ********** BEGIN LOG QUERY (" + sql + ") ********** " + UUString.safeString(message));
+            //UULog.debug(UUDatabase.class, "logTable", "columns: " + UUString.componentsJoinedByString(columns, ",") + ", where" + where + ", whereArgs: " + UUString.componentsJoinedByString(whereArgs, ","));
+            UULog.debug(UUDatabase.class, "logTable", "There are " + c.getCount() + " records matching the query");
+            logQueryResults(c);
+            UULog.debug(UUDatabase.class, "logTable", " ********** END LOG TABLE (" + sql + ") ********** " + UUString.safeString(message));
+        }
+        catch (Exception ex)
+        {
+            logException("logTable", ex);
+        }
+        finally
+        {
+            UUCloseable.safeClose(c);
+        }
+    }
+
+    /**
      * Logs the results of a query
      *
      * @param c a cursor obtained from a SQL command
