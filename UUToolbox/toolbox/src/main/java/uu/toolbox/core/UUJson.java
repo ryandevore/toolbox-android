@@ -183,6 +183,141 @@ public final class UUJson
         return val;
     }
 
+    @Nullable
+    public static Long safeGetLongObject(final JSONObject json, final Object key)
+    {
+        return safeGetLong(json, key, null);
+    }
+
+    @Nullable
+    public static Long safeGetLong(final JSONObject json, final Object key, @Nullable final Long defaultValue)
+    {
+        Long val = defaultValue;
+
+        try
+        {
+            if (hasNonNullValueForKey(json, key))
+            {
+                val = json.optLong(key.toString());
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetLongObject", "key: " + key, ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
+    @Nullable
+    public static Integer safeGetIntObject(final JSONObject json, final Object key)
+    {
+        return safeGetIntObject(json, key, null);
+    }
+
+    @Nullable
+    public static Integer safeGetIntObject(final JSONObject json, final Object key, @Nullable final Integer defaultValue)
+    {
+        Integer val = defaultValue;
+
+        try
+        {
+            if (hasNonNullValueForKey(json, key))
+            {
+                val = json.optInt(key.toString());
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetIntObject", "key: " + key, ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
+    @Nullable
+    public static Boolean safeGetBoolObject(final JSONObject json, final Object key)
+    {
+        return safeGetBoolObject(json, key, null);
+    }
+
+    @Nullable
+    public static Boolean safeGetBoolObject(final JSONObject json, final Object key, @Nullable final Boolean defaultValue)
+    {
+        Boolean val = defaultValue;
+
+        try
+        {
+            if (hasNonNullValueForKey(json, key))
+            {
+                val = json.optBoolean(key.toString());
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetBoolObject", "key: " + key, ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
+    @Nullable
+    public static Float safeGetFloatObject(final JSONObject json, final Object key)
+    {
+        return safeGetFloatObject(json, key, null);
+    }
+
+    @Nullable
+    public static Float safeGetFloatObject(final JSONObject json, final Object key, @Nullable final Float defaultValue)
+    {
+        Float val = defaultValue;
+
+        try
+        {
+            if (hasNonNullValueForKey(json, key))
+            {
+                val = (float)json.optDouble(key.toString());
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetFloatObject", "key: " + key, ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
+    @Nullable
+    public static Double safeGetDoubleObject(final JSONObject json, final Object key)
+    {
+        return safeGetDoubleObject(json, key, null);
+    }
+
+    @Nullable
+    public static Double safeGetDoubleObject(final JSONObject json, final Object key, @Nullable final Double defaultValue)
+    {
+        Double val = defaultValue;
+
+        try
+        {
+            if (hasNonNullValueForKey(json, key))
+            {
+                val = json.optDouble(key.toString());
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUJson.class, "safeGetDoubleObject", "key: " + key, ex);
+            val = defaultValue;
+        }
+
+        return val;
+    }
+
     public static byte[] safeGetDataFromBase64String(final JSONObject json, final Object key)
     {
         return safeGetDataFromBase64String(json, key, null);
