@@ -293,6 +293,7 @@ public abstract class UUDatabase
     	{
             UUSQLiteDatabase db = getReadOnlyDatabase();
 
+            logSql(rawSqlQuery);
 		    c = db.rawQuery(rawSqlQuery, selectionArgs);
 		    
 		    while (c.moveToNext())
