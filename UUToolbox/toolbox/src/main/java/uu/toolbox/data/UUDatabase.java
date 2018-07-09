@@ -100,6 +100,10 @@ public abstract class UUDatabase
         return databaseDefinition.getDatabaseName();
     }
 
+    public int getDatabaseVersion()
+    {
+        return databaseDefinition.getVersion();
+    }
 
     @NonNull
     protected abstract UUSQLiteDatabase openDatabase();
