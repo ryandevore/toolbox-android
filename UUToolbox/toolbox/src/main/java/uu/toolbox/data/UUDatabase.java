@@ -621,7 +621,7 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
-            String tableName = UUDataModel.tableNameForClass(type);
+            String tableName = tableNameForModel(type);
 
             for (UUDataModel obj : objectList)
             {
@@ -651,6 +651,22 @@ public abstract class UUDatabase
             @NonNull final Class<T> type,
             @NonNull final ArrayList<T> list)
     {
+        bulkInsert(type, tableNameForModel(type), list);
+    }
+
+    /**
+     * Inserts a list of records
+     *
+     * @param type model type to insert
+     * @param tableName the table to insert to
+     * @param list records to insert
+     * @param <T> model type
+     */
+    public synchronized <T extends UUDataModel> void bulkInsert(
+        @NonNull final Class<T> type,
+        @NonNull final String tableName,
+        @NonNull final ArrayList<T> list)
+    {
         UUSQLiteDatabase db = null;
 
         try
@@ -659,7 +675,6 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
-            String tableName = UUDataModel.tableNameForClass(type);
             int dbVersion = db.getVersion();
 
             for (T row : list)
@@ -690,6 +705,22 @@ public abstract class UUDatabase
             @NonNull final Class<T> type,
             @NonNull ArrayList<T> list)
     {
+        bulkReplace(type, tableNameForModel(type), list);
+    }
+
+    /**
+     * Truncates a table and replaces it with the contents of the list passed in
+     *
+     * @param type the data model type.
+     * @param tableName the table to replace records in
+     * @param list the list of new data rows to insert.
+     * @param <T> the data model type, a class that implements the UUDataModel interface.
+     */
+    public synchronized <T extends UUDataModel> void bulkReplace(
+        @NonNull final Class<T> type,
+        @NonNull final String tableName,
+        @NonNull ArrayList<T> list)
+    {
         UUSQLiteDatabase db = null;
 
         try
@@ -698,7 +729,6 @@ public abstract class UUDatabase
 
             db.beginTransaction();
 
-            String tableName = UUDataModel.tableNameForClass(type);
             int dbVersion = db.getVersion();
 
             db.delete(tableName, null, null);
@@ -726,10 +756,9 @@ public abstract class UUDatabase
      * Delete's all records from a table based on the model class table name
      *
      */
-    public <T extends UUDataModel> void truncateTable(
-            @NonNull final Class<T> type)
+    public <T extends UUDataModel> void truncateTable(@NonNull final Class<T> type)
     {
-        truncateTable(UUDataModel.tableNameForClass(type));
+        truncateTable(tableNameForModel(type));
     }
 
     /**
@@ -746,7 +775,7 @@ public abstract class UUDatabase
             @Nullable final String where,
             @Nullable final String[] whereArgs)
     {
-        return count(UUDataModel.tableNameForClass(type), where, whereArgs);
+        return count(tableNameForModel(type), where, whereArgs);
     }
 
     /**
@@ -770,7 +799,7 @@ public abstract class UUDatabase
      */
     public <T extends UUDataModel> void logTable(@NonNull final Class<T> type, @Nullable final String message)
     {
-        logTable(UUDataModel.tableNameForClass(type), message);
+        logTable(tableNameForModel(type), message);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1543,7 +1572,7 @@ public abstract class UUDatabase
 
             if (columns == null)
             {
-                columns = new String[] { "rowid", "*" };
+                columns = new String[] { UUSql.ROWID_COLUMN, "*" };
             }
 
             c = db.query(tableName, columns, where, whereArgs, null, null, null, null);
@@ -1684,6 +1713,20 @@ public abstract class UUDatabase
         catch (Exception ex)
         {
             UULog.debug(UUCloseable.class, "safeClose", ex);
+        }
+    }
+
+    @NonNull
+    public static <T extends UUDataModel> String tableNameForModel(@NonNull final Class<T> type)
+    {
+        try
+        {
+            T obj = type.newInstance();
+            return obj.getTableName();
+        }
+        catch (Exception ex)
+        {
+            return UUDataModel.tableNameForClass(type);
         }
     }
 
