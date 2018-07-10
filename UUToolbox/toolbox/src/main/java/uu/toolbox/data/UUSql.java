@@ -16,6 +16,8 @@ import uu.toolbox.core.UUString;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class UUSql
 {
+    public static final String ROWID_COLUMN = "rowid";
+
     public static String buildCreateSql(final UUDataModel dataModel, final int version)
     {
         return buildCreateSql(dataModel.getTableName(), dataModel.getColumnMap(version), dataModel.getPrimaryKeyColumnName());
@@ -35,7 +37,7 @@ public final class UUSql
             // Super special case.  SQLite has a built in rowid, so if a model defines a column
             // named 'rowid', we skip creating our own column.  This allows the data model to
             // query the built in SQLite rowid rather than an arbitrary user created column.
-            if ("rowid" == col)
+            if (ROWID_COLUMN == col)
             {
                 continue;
             }
