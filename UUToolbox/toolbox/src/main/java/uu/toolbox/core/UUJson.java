@@ -582,15 +582,15 @@ public final class UUJson
     }
 
     @Nullable
-    public static JSONArray toJsonFromStringArray(@NonNull final ArrayList<String> array)
+    public static <T extends Object> JSONArray toJsonFromArray(@NonNull final ArrayList<T> array)
     {
         try
         {
             JSONArray arr = new JSONArray();
 
-            for (String s : array)
+            for (T o : array)
             {
-                arr.put(s);
+                arr.put(o);
             }
 
             return arr;
