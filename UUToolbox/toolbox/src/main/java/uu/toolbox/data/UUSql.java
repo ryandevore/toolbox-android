@@ -467,4 +467,22 @@ public final class UUSql
     {
         return combineWhereArgs(list, "OR");
     }
+
+    /**
+     * Builds a multi-column sort clause
+     *
+     * @param sortClauses list of sort clauses
+     * @return string to be used in a SQL ORDER by statement
+     */
+    public static String buildSortClause(@NonNull final ArrayList<UUSqlSort> sortClauses)
+    {
+        ArrayList<Object> lines = new ArrayList<>();
+
+        for (UUSqlSort sort : sortClauses)
+        {
+            lines.add(formatSortByClause(sort.column, sort.ascending));
+        }
+
+        return UUString.componentsJoinedByString(lines, ",");
+    }
 }
