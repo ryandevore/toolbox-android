@@ -762,6 +762,29 @@ public abstract class UUDatabase
     }
 
     /**
+     * Drops a table from the database
+     *
+     * @param type table model type
+     *
+     * @param <T> Generic type
+     */
+    public <T extends UUDataModel> void dropTable(@NonNull final Class<T> type)
+    {
+        dropTable(tableNameForModel(type));
+    }
+
+    /**
+     * Drops a table from the database
+     *
+     * @param tableName the table name to drop
+     *
+     */
+    public void dropTable(@NonNull final String tableName)
+    {
+        execSql(UUSql.buildDropTableSql(tableName));
+    }
+
+    /**
      * Count of all records in a table matching the specified where clause.  If
      * the where clause is null then the query will count all rows in the table
      *
