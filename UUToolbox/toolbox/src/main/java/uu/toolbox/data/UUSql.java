@@ -440,7 +440,7 @@ public final class UUSql
 
         if (whereArgs.size() > 0)
         {
-            args.whereArgs = whereArgs.toArray(new String[list.size()]);
+            args.whereArgs = whereArgs.toArray(new String[whereArgs.size()]);
         }
 
         return args;
