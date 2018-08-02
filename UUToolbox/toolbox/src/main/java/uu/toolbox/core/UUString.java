@@ -531,4 +531,32 @@ public class UUString
 
         return true;
     }
+
+    /**
+     * Interface for applying a tranform to a string
+     */
+    public interface StringTransform
+    {
+        @NonNull String transform(@NonNull final String input);
+    }
+
+    /**
+     * Applies a simple transform to each element in an array
+     *
+     * @param input the input array
+     * @param transformMethod the transform method
+     * @return the output array
+     */
+    public static String[] tranform(@NonNull final String[] input, @NonNull final StringTransform transformMethod)
+    {
+        String[] output = new String[input.length];
+
+        for (int i = 0; i < input.length; i++)
+        {
+            output[i] = transformMethod.transform(input[i]);
+        }
+
+        return output;
+    }
+
 }
