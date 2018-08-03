@@ -559,4 +559,31 @@ public class UUString
         return output;
     }
 
+    /**
+     * Safely compares two String's
+     *
+     * @param lhs the left hand side to check
+     * @param rhs the right hand side to check
+     * @return comparison result, -1, 0, or 1
+     */
+    public static int compare(@Nullable final String lhs, @Nullable final String rhs)
+    {
+        if (lhs == null && rhs == null)
+        {
+            return 0;
+        }
+        else if (rhs == null)
+        {
+            return 1;
+        }
+        else if (lhs == null)
+        {
+            return -1;
+        }
+        else
+        {
+            return lhs.compareTo(rhs);
+        }
+    }
+
 }
