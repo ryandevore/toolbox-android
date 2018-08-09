@@ -2,6 +2,7 @@ package uu.toolbox.data;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 
 /**
  * Facade to wrap SQLiteDatabase
@@ -31,5 +32,5 @@ public interface UUSQLiteDatabase
 
     int getVersion();
 
-
+    UUSQLiteStatement compileStatement(@NonNull final String sql);
 }

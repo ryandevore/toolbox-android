@@ -702,10 +702,26 @@ public abstract class UUDatabase
      * @param <T> the data model type, a class that implements the UUDataModel interface.
      */
     public synchronized <T extends UUDataModel> void bulkReplace(
-            @NonNull final Class<T> type,
-            @NonNull ArrayList<T> list)
+        @NonNull final Class<T> type,
+        @NonNull ArrayList<T> list)
     {
-        bulkReplace(type, tableNameForModel(type), list);
+        bulkReplace(type, list, true);
+    }
+
+    /**
+     * Truncates a table and replaces it with the contents of the list passed in
+     *
+     * @param type the data model type.
+     * @param list the list of new data rows to insert.
+     * @param <T> the data model type, a class that implements the UUDataModel interface.
+     * @param useTransaction flag indicating whether a transaction should be used or not.
+     */
+    public synchronized <T extends UUDataModel> void bulkReplace(
+            @NonNull final Class<T> type,
+            @NonNull ArrayList<T> list,
+            final boolean useTransaction)
+    {
+        bulkReplace(type, tableNameForModel(type), list, useTransaction);
     }
 
     /**
@@ -721,13 +737,34 @@ public abstract class UUDatabase
         @NonNull final String tableName,
         @NonNull ArrayList<T> list)
     {
+        bulkReplace(type, tableName, list, true);
+    }
+
+    /**
+     * Truncates a table and replaces it with the contents of the list passed in
+     *
+     * @param type the data model type.
+     * @param tableName the table to replace records in
+     * @param list the list of new data rows to insert.
+     * @param <T> the data model type, a class that implements the UUDataModel interface.
+     * @param useTransaction flag indicating whether a transaction should be used or not.
+     */
+    public synchronized <T extends UUDataModel> void bulkReplace(
+        @NonNull final Class<T> type,
+        @NonNull final String tableName,
+        @NonNull ArrayList<T> list,
+        final boolean useTransaction)
+    {
         UUSQLiteDatabase db = null;
 
         try
         {
             db = getReadWriteDatabase();
 
-            db.beginTransaction();
+            if (useTransaction)
+            {
+                db.beginTransaction();
+            }
 
             int dbVersion = db.getVersion();
 
@@ -740,7 +777,10 @@ public abstract class UUDatabase
                 db.insert(tableName, null, cv);
             }
 
-            db.setTransactionSuccessful();
+            if (useTransaction)
+            {
+                db.setTransactionSuccessful();
+            }
         }
         catch (Exception ex)
         {
@@ -748,7 +788,10 @@ public abstract class UUDatabase
         }
         finally
         {
-            safeEndTransaction(db);
+            if (useTransaction)
+            {
+                safeEndTransaction(db);
+            }
         }
     }
 
@@ -1484,7 +1527,7 @@ public abstract class UUDatabase
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Deletes a table row
+     * Deletes a table row using a transaction
      *
      * @param tableName name of the table
      * @param whereClause WHERE clause to use when deleting
@@ -1495,16 +1538,40 @@ public abstract class UUDatabase
             @Nullable final String whereClause,
             @Nullable final String[] whereArgs)
     {
+        delete(tableName, whereClause, whereArgs, true);
+    }
+
+    /**
+     * Deletes a table row optionally using a transaction
+     *
+     * @param tableName name of the table
+     * @param whereClause WHERE clause to use when deleting
+     * @param whereArgs bound arguments applied to ?'s in the whereClause
+     */
+    public synchronized void delete(
+        @NonNull final String tableName,
+        @Nullable final String whereClause,
+        @Nullable final String[] whereArgs,
+        final boolean useTransaction)
+    {
         UUSQLiteDatabase db = null;
 
         try
         {
             db = getReadWriteDatabase();
 
-            db.beginTransaction();
+            if (useTransaction)
+            {
+                db.beginTransaction();
+            }
+
             logSql("DELETE FROM " + tableName + " " + whereClause + ", Args: " + UUString.componentsJoinedByString(whereArgs, ","));
             db.delete(tableName, whereClause, whereArgs);
-            db.setTransactionSuccessful();
+
+            if (useTransaction)
+            {
+                db.setTransactionSuccessful();
+            }
         }
         catch (Exception ex)
         {
@@ -1512,7 +1579,10 @@ public abstract class UUDatabase
         }
         finally
         {
-            safeEndTransaction(db);
+            if (useTransaction)
+            {
+                safeEndTransaction(db);
+            }
         }
     }
 
