@@ -2,6 +2,7 @@ package uu.toolbox.core;
 
 import android.os.Parcel;
 import android.support.annotation.NonNull;
+import android.util.JsonReader;
 
 import org.json.JSONObject;
 
@@ -10,6 +11,11 @@ import uu.toolbox.logging.UULog;
 public interface UUJsonConvertible
 {
     default void fillFromJson(@NonNull final JSONObject json)
+    {
+
+    }
+
+    default void fillFromJsonReader(@NonNull final JsonReader jsonReader)
     {
 
     }
