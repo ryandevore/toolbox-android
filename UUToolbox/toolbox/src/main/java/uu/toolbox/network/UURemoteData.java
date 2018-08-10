@@ -198,7 +198,18 @@ public class UURemoteData implements UURemoteDataProtocol
         try
         {
             UUDataCache.sharedInstance().setData(data, key);
+            notifyDataDownloaded(key);
+        }
+        catch (Exception ex)
+        {
+            UULog.error(getClass(), " saveData", ex);
+        }
+    }
 
+    public void notifyDataDownloaded(@NonNull final String key)
+    {
+        try
+        {
             HashMap<String, Object> md = UUDataCache.sharedInstance().getMetaData(key);
             md.put(MetaData.MimeType, "raw"); // Is this needed?
             md.put(MetaData.DownloadTimestamp, System.currentTimeMillis());
@@ -211,7 +222,7 @@ public class UURemoteData implements UURemoteDataProtocol
         }
         catch (Exception ex)
         {
-            UULog.error(getClass(), " saveData", ex);
+            UULog.error(getClass(), " notifyDataDownloaded", ex);
         }
     }
 }
