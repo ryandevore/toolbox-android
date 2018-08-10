@@ -62,6 +62,11 @@ public class UURemoteImage
         memoryCache = new MemoryCache(cacheSize);
     }
 
+    public void clearCache()
+    {
+        memoryCache.evictAll();
+    }
+
     @Nullable
     public Bitmap getImage(@NonNull final String key, final boolean skipDownload)
     {
