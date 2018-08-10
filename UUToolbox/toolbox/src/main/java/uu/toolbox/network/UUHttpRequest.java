@@ -38,8 +38,9 @@ public class UUHttpRequest
     private byte[] body;
     private Proxy proxy;
     private SSLSocketFactory sslSocketFactory;
-    private boolean processMimeTypes = true;
+    //private boolean processMimeTypes = true;
     private boolean gzipCompression = false;
+    private UUHttpResponseParser responseParser = new UUJsonResponseParser();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Construction
@@ -203,15 +204,15 @@ public class UUHttpRequest
         sslSocketFactory = socketFactory;
     }
 
-    public boolean getProcessMimeTypes()
-    {
-        return processMimeTypes;
-    }
-
-    public void setProcessMimeTypes(final boolean processMimeTypes)
-    {
-        this.processMimeTypes = processMimeTypes;
-    }
+//    public boolean getProcessMimeTypes()
+//    {
+//        return processMimeTypes;
+//    }
+//
+//    public void setProcessMimeTypes(final boolean processMimeTypes)
+//    {
+//        this.processMimeTypes = processMimeTypes;
+//    }
 
     public boolean usesGzipCompression()
     {
@@ -221,6 +222,16 @@ public class UUHttpRequest
     public void setGzipCompression(final boolean gzipCompression)
     {
         this.gzipCompression = gzipCompression;
+    }
+
+    public UUHttpResponseParser getResponseParser()
+    {
+        return responseParser;
+    }
+
+    public void setResponseParser(UUHttpResponseParser responseParser)
+    {
+        this.responseParser = responseParser;
     }
 
     @NonNull

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import uu.toolbox.core.UUObject;
+import uu.toolbox.logging.UULog;
 
 /**
  * UUHttpResponse
@@ -199,5 +200,26 @@ public class UUHttpResponse
         }
 
         return UUObject.safeCast(type, response.getParsedResponse());
+    }
+
+    public void parseResponse()
+    {
+        Object parsedResponse = null;
+
+        try
+        {
+            UUHttpResponseParser parser = _request.getResponseParser();
+            if (parser != null)
+            {
+                parsedResponse = parser.parseResponse(this);
+            }
+        }
+        catch (Exception ex)
+        {
+            UULog.debug(UUHttpResponseParser.class, "parseResponse", ex);
+            parsedResponse = null;
+        }
+
+        setParsedResponse(parsedResponse);
     }
 }

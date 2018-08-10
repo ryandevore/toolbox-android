@@ -90,16 +90,9 @@ public class UURemoteData implements UURemoteDataProtocol
             }
 
             UUHttpRequest request = UUHttpRequest.get(key, null);
-            request.setProcessMimeTypes(false);
+            request.setResponseParser(null);
 
-            UUHttpTask task = UUHttp.execute(request, new UUHttpDelegate()
-            {
-                @Override
-                public void onCompleted(UUHttpResponse response)
-                {
-                    handleDownloadResponse(response, key);
-                }
-            });
+            UUHttpTask task = UUHttp.execute(request, response -> handleDownloadResponse(response, key));
 
             pendingDownloads.put(key, task);
         }

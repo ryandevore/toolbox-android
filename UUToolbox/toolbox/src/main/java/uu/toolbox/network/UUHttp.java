@@ -23,7 +23,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
 import uu.toolbox.core.UUCompression;
-import uu.toolbox.core.UUJson;
 import uu.toolbox.logging.UULog;
 
 /*
@@ -230,14 +229,8 @@ public final class UUHttp
 
             long start = System.currentTimeMillis();
             byte[] responseBuffer = readResponse(urlConnection);
-            logResponseBody(responseBuffer, response.getContentEncoding());
             response.setRawResponse(responseBuffer);
-
-            if (request.getProcessMimeTypes())
-            {
-                response.setParsedResponse(parseResponse(response.getContentType(), response.getContentEncoding(), responseBuffer));
-            }
-
+            response.parseResponse();
             response.setResponseHeaders(safeGetResponseHeaderes(urlConnection));
         }
         catch (Exception ex)
@@ -413,36 +406,6 @@ public final class UUHttp
         }
     }
 
-    private static void logResponseBody(@Nullable final byte[] body, @Nullable final String contentEncoding)
-    {
-        try
-        {
-            if (UULog.LOGGING_ENABLED)
-            {
-                if (body != null)
-                {
-                    if (contentEncoding != null && contentEncoding.contains("gzip"))
-                    {
-                        UULog.debug(UUHttp.class, "logResponseBody", "Body is gzipped");
-                    }
-                    else
-                    {
-                        String bodyAsString = new String(body, "UTF-8");
-                        UULog.debug(UUHttp.class, "logResponseBody", bodyAsString);
-                    }
-                }
-                else
-                {
-                    UULog.debug(UUHttp.class, "logResponseBody", "Body is NULL");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.error(UUHttp.class, "logResponseBody", ex);
-        }
-    }
-
     protected static void writeRequest(final HttpURLConnection connection, final byte[] body)
     {
         OutputStream os = null;
@@ -502,56 +465,5 @@ public final class UUHttp
         }
 
         return bos.toByteArray();
-    }
-
-    protected static Object parseResponse(final String contentType, final String contentEncoding, final byte[] rawResponse)
-    {
-        Object parsed = null;
-
-        try
-        {
-            byte[] processedResponse = rawResponse;
-
-            if (contentEncoding != null)
-            {
-                if (contentEncoding.contains("gzip"))
-                {
-                    processedResponse = UUCompression.gunzip(rawResponse);
-                    logResponseBody(processedResponse, null);
-                }
-            }
-
-            if (contentType != null && processedResponse != null)
-            {
-                if (contentType.contains("json"))
-                {
-                    String str = new String(processedResponse);
-                    parsed = UUJson.toJson(str);
-                }
-                else if (contentType.startsWith("text"))
-                {
-                    String str = new String(processedResponse);
-                    UULog.debug(UUHttp.class, "parseResponse", "Raw String: " + str);
-                    parsed = str;
-                }
-            }
-
-            if (parsed == null)
-            {
-                parsed = processedResponse;
-            }
-        }
-        catch (Exception ex)
-        {
-            UULog.error(UUHttp.class, "parseResponse", "Unable to parse response", ex);
-            parsed = null;
-        }
-
-        if (parsed == null)
-        {
-            parsed = rawResponse;
-        }
-
-        return parsed;
     }
 }
