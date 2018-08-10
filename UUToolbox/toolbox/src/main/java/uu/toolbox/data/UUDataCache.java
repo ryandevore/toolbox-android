@@ -156,8 +156,8 @@ public class UUDataCache implements UUDataCacheProtocol
     @Override
     public void clearCache()
     {
-        UUFile.deleteFile(cacheFolder);
-        UUFile.createFoldersIfNeeded(cacheFolder);
+        clearDiskCache();
+        clearMemoryCache();
 
         metaDataDb.clearAllMetaData();
     }
@@ -340,7 +340,7 @@ public class UUDataCache implements UUDataCacheProtocol
 
     private void clearMemoryCache()
     {
-        try
+        /*try
         {
             UUFile.deleteFile(cacheFolder);
             UUFile.createFoldersIfNeeded(cacheFolder);
@@ -348,7 +348,7 @@ public class UUDataCache implements UUDataCacheProtocol
         catch (Exception ex)
         {
             UULog.error(getClass(), "clearDiskCache", ex);
-        }
+        }*/
     }
 
 
