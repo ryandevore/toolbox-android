@@ -494,4 +494,9 @@ public final class UUSql
 
         return UUString.componentsJoinedByString(lines, ",");
     }
+
+    public static String buildOptimizeFullTextIndexSql(@NonNull final String tableName)
+    {
+        return String.format(Locale.US, "INSERT INTO %s(%s) VALUES ('optimize');", tableName, tableName);
+    }
 }
