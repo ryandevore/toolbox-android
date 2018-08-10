@@ -5,11 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.LruCache;
 import android.util.Size;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Locale;
 
+import uu.toolbox.core.UUThread;
 import uu.toolbox.data.UUDataCache;
 
 public class UURemoteImage
@@ -41,26 +44,63 @@ public class UURemoteImage
         return theSharedInstance;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Members
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    private MemoryCache memoryCache;
+
     public UURemoteImage(@NonNull final Context context)
     {
+        // Get max available VM memory, exceeding this amount will throw an
+        // OutOfMemory exception. Stored in kilobytes as LruCache takes an
+        // int in its constructor.
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        int cacheSize = maxMemory / 8;
+
+        memoryCache = new MemoryCache(cacheSize);
     }
 
     @Nullable
     public Bitmap getImage(@NonNull final String key, final boolean skipDownload)
     {
+        return getImage(key, null, null, skipDownload);
+    }
+
+    @Nullable
+    public Bitmap getImage(@NonNull final String key, @Nullable final Integer targetWidth, @Nullable final Integer targetHeight, final boolean skipDownload)
+    {
+        String photoKey = getPhotoKey(key, targetWidth, targetHeight);
+
         if (UUDataCache.sharedInstance().doesDataExist(key))
         {
-            File file = UUDataCache.sharedInstance().getDiskFileName(key);
+            Bitmap cached = memoryCache.get(photoKey);
+            if (cached != null)
+            {
+                return cached;
+            }
+            else
+            {
+                UUThread.runOnBackgroundThread(() ->
+                {
+                    File file = UUDataCache.sharedInstance().getDiskFileName(key);
 
-            BitmapFactory.Options opt = new BitmapFactory.Options();
-            opt.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
+                    BitmapFactory.Options opt = new BitmapFactory.Options();
+                    opt.inJustDecodeBounds = true;
+                    BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
+                    updateMetaDataIfNeeded(key, opt);
 
-            updateMetaDataIfNeeded(key, opt);
+                    opt.inJustDecodeBounds = false;
+                    opt.inSampleSize = getSampleSize(opt, targetWidth, targetHeight);
 
-            opt.inJustDecodeBounds = false;
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
+                    memoryCache.add(photoKey, bitmap);
+                    UURemoteData.sharedInstance().notifyDataDownloaded(key);
+                });
 
-            return BitmapFactory.decodeFile(file.getAbsolutePath());
+                return null;
+            }
         }
         else if (!skipDownload)
         {
@@ -68,6 +108,31 @@ public class UURemoteImage
         }
 
         return null;
+    }
+
+    @NonNull
+    private String getPhotoKey(@NonNull final String key, @Nullable final Integer targetWidth, @Nullable final Integer targetHeight)
+    {
+        String dimPart = "";
+
+        if (targetWidth != null && targetHeight != null)
+        {
+            dimPart = String.format(Locale.US, "_w%d_w%d", targetWidth, targetHeight);
+        }
+
+        return String.format(Locale.US, "%s%s", key, dimPart);
+    }
+
+    private int getSampleSize(@NonNull BitmapFactory.Options bmOptions, @Nullable final Integer targetWidth, @Nullable final Integer targetHeight)
+    {
+        int scaleFactor = 1;
+
+        if (targetWidth != null && targetHeight != null)
+        {
+            scaleFactor = Math.min(bmOptions.outWidth / targetWidth, bmOptions.outHeight / targetHeight);
+        }
+
+        return scaleFactor;
     }
 
     private void updateMetaDataIfNeeded(@NonNull final String key, BitmapFactory.Options opt)
@@ -130,5 +195,30 @@ public class UURemoteImage
         }
 
         return size;
+    }
+
+
+    static class MemoryCache extends LruCache<String, Bitmap>
+    {
+        MemoryCache(final int cacheSize)
+        {
+            super(cacheSize);
+        }
+
+        @Override
+        protected int sizeOf(String key, Bitmap value)
+        {
+            // The cache size will be measured in kilobytes rather than
+            // number of items.
+            return value.getByteCount() / 1024;
+        }
+
+        void add(@NonNull final String key, @NonNull final Bitmap bitmap)
+        {
+            if (get(key) == null)
+            {
+                put(key, bitmap);
+            }
+        }
     }
 }
