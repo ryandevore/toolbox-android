@@ -34,9 +34,20 @@ public final class UUSql
 
     public static String buildCreateSql(final String tableName, final Map<Object, Object> columnDefs, final String primaryKey)
     {
-        StringBuilder sb = new StringBuilder();
+        return buildCreateSql(tableName, columnDefs, primaryKey, false);
+    }
 
-        sb.append("CREATE TABLE ");
+    public static String buildCreateSql(final String tableName, final Map<Object, Object> columnDefs, final String primaryKey, final boolean isTempTable)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE");
+
+        if (isTempTable)
+        {
+            sb.append(" TEMP");
+        }
+
+        sb.append(" TABLE ");
         sb.append(tableName);
         sb.append(" (");
 
