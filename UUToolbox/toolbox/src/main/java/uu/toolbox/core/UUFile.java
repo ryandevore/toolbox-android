@@ -118,6 +118,51 @@ public class UUFile
     }
 
     /**
+     * Copies a file
+     *
+     * @param src the file to copy
+     * @param dest the destination
+     */
+    public static void copyFile(@NonNull final File src, @NonNull final File dest)
+    {
+        deleteFile(dest);
+
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+
+        try
+        {
+            fis = new FileInputStream(src);
+            fos = new FileOutputStream(dest);
+
+            byte[] buffer = new byte[CHUNK_SIZE];
+
+            int bytesRead;
+
+            do
+            {
+                bytesRead = fis.read(buffer, 0, buffer.length);
+                if (bytesRead > 0)
+                {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+            while (bytesRead > 0);
+
+            fos.flush();
+        }
+        catch (Exception ex)
+        {
+            UULog.error(UUFile.class, "copyFile", ex);
+        }
+        finally
+        {
+            UUCloseable.safeClose(fis);
+            UUCloseable.safeClose(fos);
+        }
+    }
+
+    /**
      * Deletes a file from disk, or if the file is a folder, recursively deletes everything under
      * that folder
      *
