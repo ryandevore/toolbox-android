@@ -430,6 +430,11 @@ public final class UUSql
     @NonNull
     public static UUSqlArgs combineWhereArgs(@NonNull final ArrayList<UUSqlArgs> list, @NonNull final String operator)
     {
+        if (list.size() == 1)
+        {
+            return list.get(0);
+        }
+
         StringBuilder where = new StringBuilder();
         ArrayList<String> whereArgs = new ArrayList<>();
 
