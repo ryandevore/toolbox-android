@@ -659,115 +659,134 @@ public class UUBluetoothSpp
         });
     }
 
-    public void readSppData(final int count, final long timeout, @NonNull final UUBluetoothSppErrorDataDelegate delegate)
+    public interface RxPeekDelegate
+    {
+        boolean shouldKeepReading(@NonNull final byte[] bytesReceived);
+    }
+
+    public void readSppData(final int count, final long timeout, @Nullable final RxPeekDelegate rxPeekDelegate, @NonNull final UUBluetoothSppErrorDataDelegate delegate)
     {
         final String timerId = readSppDataWatchdogTimerId();
 
-        UUBluetoothSppErrorDataDelegate tmpDelegate = new UUBluetoothSppErrorDataDelegate()
+        readSppDataDelegate = (session, data, error) ->
         {
-            @Override
-            public void onComplete(@NonNull UUBluetoothSpp session, @Nullable byte[] data, @Nullable UUBluetoothError error)
-            {
-                debugLog("readSppData", "Read SPP Data complete: " + device + ", error: " + error);
-                UUTimer.cancelActiveTimer(timerId);
-                delegate.onComplete(session, data, error);
-            }
+            debugLog("readSppData", "Read SPP Data complete: " + device + ", error: " + error);
+            UUTimer.cancelActiveTimer(timerId);
+            delegate.onComplete(session, data, error);
         };
 
-        readSppDataDelegate = tmpDelegate;
-
-        UUTimer.startTimer(timerId, timeout, null, new UUTimer.TimerDelegate()
+        UUTimer.startTimer(timerId, timeout, null, (timer, userInfo) ->
         {
-            @Override
-            public void onTimer(@NonNull UUTimer timer, @Nullable Object userInfo)
-            {
-                debugLog("readSppData", "Read SPP timeout: " + device);
-                // TODO: Do we need to disconnect/cleanup on timeout?
-                notifyReadSppDataComplete(UUBluetoothError.timeoutError(), null);
-            }
+            debugLog("readSppData", "Read SPP timeout: " + device);
+            // TODO: Do we need to disconnect/cleanup on timeout?
+            notifyReadSppDataComplete(UUBluetoothError.timeoutError(), null);
         });
 
-        UUThread.runOnBackgroundThread(new Runnable()
+        UUThread.runOnBackgroundThread(() ->
         {
-            @Override
-            public void run()
+            if (device == null)
             {
-                if (device == null)
+                debugLog("readSppData", "device is null!");
+                notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError( "device is null"), null);
+                return;
+            }
+
+            if (bluetoothSocket == null)
+            {
+                debugLog("readSppData", "bluetoothSocket is null!");
+                notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError("bluetoothSocket is null"), null);
+                return;
+            }
+
+            if (!bluetoothSocket.isConnected())
+            {
+                debugLog("readSppData", "bluetoothSocket is not connected!");
+                notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError("bluetoothSocket is not connected"), null);
+                return;
+            }
+
+            byte[] response = null;
+            ByteArrayOutputStream bos = null;
+
+            try
+            {
+                InputStream is = bluetoothSocket.getInputStream();
+                bos = new ByteArrayOutputStream();
+
+                int bytesRead = 0;
+                while (bytesRead < count)
                 {
-                    debugLog("readSppData", "device is null!");
-                    notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError( "device is null"), null);
-                    return;
-                }
-
-                if (bluetoothSocket == null)
-                {
-                    debugLog("readSppData", "bluetoothSocket is null!");
-                    notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError("bluetoothSocket is null"), null);
-                    return;
-                }
-
-                if (!bluetoothSocket.isConnected())
-                {
-                    debugLog("readSppData", "bluetoothSocket is not connected!");
-                    notifyReadSppDataComplete(UUBluetoothError.preconditionFailedError("bluetoothSocket is not connected"), null);
-                    return;
-                }
-
-                byte[] response = null;
-                ByteArrayOutputStream bos = null;
-
-                try
-                {
-                    InputStream is = bluetoothSocket.getInputStream();
-                    bos = new ByteArrayOutputStream();
-
-                    int bytesRead = 0;
-                    while (bytesRead < count)
+                    int bytesAvailable = is.available();
+                    debugLog("readSppData", "There are " + bytesAvailable + " bytes available to read");
+                    if (bytesAvailable <= 0 && bytesRead > 0 && count == Integer.MAX_VALUE)
                     {
-                        int bytesAvailable = is.available();
-                        debugLog("readSppData", "There are " + bytesAvailable + " bytes available to read");
-                        if (bytesAvailable <= 0 && bytesRead > 0)
+                        debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
+                        break;
+                    }
+
+                    byte[] rxChunk = new byte[1024];
+                    debugLog("readSppData", "Attempting to read " + rxChunk.length + " bytes.");
+                    int read = is.read(rxChunk, 0, rxChunk.length);
+                    debugLog("readSppData", "Read " + read + " bytes.");
+
+                    if (read > 0)
+                    {
+                        debugLog("readSppData", "RXChunk: " + UUString.byteToHex(rxChunk, 0, read));
+                        bos.write(rxChunk, 0, read);
+
+                        bytesRead += read;
+
+                        boolean keepReading = rxPeek(bos, rxPeekDelegate);
+                        if (!keepReading)
                         {
-                            debugLog("readSppData", "There are no bytes available to read, bailing out of read loop.");
+                            debugLog("readSppData", "rxPeek returned false, bailing out of receive loop");
                             break;
                         }
 
-                        byte[] rxChunk = new byte[1024];
-                        debugLog("readSppData", "Attempting to read " + rxChunk.length + " bytes.");
-                        int read = is.read(rxChunk, 0, rxChunk.length);
-                        debugLog("readSppData", "Read " + read + " bytes.");
-
-                        if (read > 0)
-                        {
-                            debugLog("readSppData", "RXChunk: " + UUString.byteToHex(rxChunk, 0, read));
-                            bos.write(rxChunk, 0, read);
-
-                            bytesRead += read;
-                        }
-                        else
-                        {
-                            debugLog("readSppData", "inputStream.read returned " + read + ", totalRead: " + bytesRead + ", expectedToRead: " + count);
-                        }
                     }
-
-                    response = bos.toByteArray();
-                }
-                catch (Exception ex)
-                {
-                    logException("readSppData", ex);
-                    notifyReadSppDataComplete(UUBluetoothError.operationFailedError(ex), null);
-                    return;
-                }
-                finally
-                {
-                    closeObject(bos);
+                    else
+                    {
+                        debugLog("readSppData", "inputStream.read returned " + read + ", totalRead: " + bytesRead + ", expectedToRead: " + count);
+                    }
                 }
 
-                debugLog("readSppData", "RX: " + UUString.byteToHex(response));
-
-                notifyReadSppDataComplete(null, response);
+                response = bos.toByteArray();
             }
+            catch (Exception ex)
+            {
+                logException("readSppData", ex);
+                notifyReadSppDataComplete(UUBluetoothError.operationFailedError(ex), null);
+                return;
+            }
+            finally
+            {
+                closeObject(bos);
+            }
+
+            debugLog("readSppData", "RX: " + UUString.byteToHex(response));
+
+            notifyReadSppDataComplete(null, response);
         });
+    }
+
+    private boolean rxPeek(@NonNull final ByteArrayOutputStream bos, @Nullable final RxPeekDelegate delegate)
+    {
+        boolean keepReading = true;
+
+        try
+        {
+            if (delegate != null)
+            {
+                keepReading = delegate.shouldKeepReading(bos.toByteArray());
+            }
+        }
+        catch (Exception ex)
+        {
+            logException("rxPeek", ex);
+            keepReading = true;
+        }
+
+        return keepReading;
     }
 
     private void debugLog(final String method, final String message)
