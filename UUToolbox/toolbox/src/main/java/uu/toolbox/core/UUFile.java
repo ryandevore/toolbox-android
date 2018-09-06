@@ -35,27 +35,30 @@ public class UUFile
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         FileInputStream fis = null;
-        byte[] result;
+        byte[] result = null;
 
         try
         {
-            fis = new FileInputStream(file);
-
-            byte[] buffer = new byte[CHUNK_SIZE];
-
-            int bytesRead;
-
-            do
+            if (file.exists())
             {
-                bytesRead = fis.read(buffer, 0, buffer.length);
-                if (bytesRead > 0)
-                {
-                    bos.write(buffer, 0, bytesRead);
-                }
-            }
-            while (bytesRead > 0);
+                fis = new FileInputStream(file);
 
-            result = bos.toByteArray();
+                byte[] buffer = new byte[CHUNK_SIZE];
+
+                int bytesRead;
+
+                do
+                {
+                    bytesRead = fis.read(buffer, 0, buffer.length);
+                    if (bytesRead > 0)
+                    {
+                        bos.write(buffer, 0, bytesRead);
+                    }
+                }
+                while (bytesRead > 0);
+
+                result = bos.toByteArray();
+            }
         }
         catch (Exception ex)
         {
