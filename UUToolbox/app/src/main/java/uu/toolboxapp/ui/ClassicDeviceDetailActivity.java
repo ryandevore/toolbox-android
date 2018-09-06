@@ -365,7 +365,7 @@ public class ClassicDeviceDetailActivity extends AppCompatActivity
             {
                 if (error == null)
                 {
-                    session.readSppData(100, 30000, new UUBluetoothSppErrorDataDelegate()
+                    session.readSppData(100, 30000, null, new UUBluetoothSppErrorDataDelegate()
                     {
                         @Override
                         public void onComplete(@NonNull UUBluetoothSpp session, byte[] data, @Nullable UUBluetoothError error)

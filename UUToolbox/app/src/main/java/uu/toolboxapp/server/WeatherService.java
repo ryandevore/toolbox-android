@@ -86,9 +86,9 @@ public class WeatherService
                                 summary.fillFromJson(parsedResponse);
                                 UULog.debug(getClass(), "fetchWeather.onComplete", "Weather Summary: " + summary.toString());
 
-                                AppDatabase.sharedInstance().logTable(WeatherSummary.class);
+                                AppDatabase.sharedInstance().logTable(WeatherSummary.class, "Before add");
                                 AppDatabase.sharedInstance().addWeatherSummary(summary);
-                                AppDatabase.sharedInstance().logTable(WeatherSummary.class);
+                                AppDatabase.sharedInstance().logTable(WeatherSummary.class, "After add");
                             }
                             else
                             {
