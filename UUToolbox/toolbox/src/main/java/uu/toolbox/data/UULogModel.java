@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
  * UULogModel is a table representation of an android logcat method call. This is helpful
  * when applications need to write logging statements to a database rather than logcat.
  */
-@UUSqlTable(existsInVersion = 3)
+@UUSqlTable()
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class UULogModel implements UUDataModel
 {
