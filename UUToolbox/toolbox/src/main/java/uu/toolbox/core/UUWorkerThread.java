@@ -1,19 +1,24 @@
 package uu.toolbox.core;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-public class UUWorkerThread extends Thread
+public class UUWorkerThread extends HandlerThread
 {
     private static String LOG_TAG = UUWorkerThread.class.getName();
 
     private Handler handler;
 
-    public UUWorkerThread()
+    public UUWorkerThread(@NonNull final String name)
     {
+        super(name);
         start();
-        safeWait();
+
+        Looper looper = getLooper();
+        handler = new Handler(looper);
     }
 
     public void post(final Runnable runnable)
@@ -49,52 +54,6 @@ public class UUWorkerThread extends Thread
         else
         {
             Log.d(LOG_TAG, "Handler is null! unable to remove runnable!");
-        }
-    }
-
-    public void run()
-    {
-        try
-        {
-            Looper.myLooper();
-            Looper.prepare();
-            handler = new Handler();
-            safeNotify();
-            Looper.loop();
-        }
-        catch (Exception ex)
-        {
-            Log.d(LOG_TAG, "Caught exception in run()", ex);
-        }
-    }
-
-    private void safeWait()
-    {
-        try
-        {
-            synchronized (this)
-            {
-                wait();
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.d(LOG_TAG, "safeWait", ex);
-        }
-    }
-
-    private void safeNotify()
-    {
-        try
-        {
-            synchronized (this)
-            {
-                notify();
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.d(LOG_TAG, "safeNotify", ex);
         }
     }
 }
