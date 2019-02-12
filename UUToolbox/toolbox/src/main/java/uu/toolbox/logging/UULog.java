@@ -27,7 +27,7 @@ public class UULog
     private static final String LOG_TAG = "UULog";
     private static final int LINE_LENGTH = 4000;
 
-    private static UUWorkerThread workerThread = new UUWorkerThread();
+    private static UUWorkerThread workerThread = new UUWorkerThread("UULog");
 
     private UULog()
     {

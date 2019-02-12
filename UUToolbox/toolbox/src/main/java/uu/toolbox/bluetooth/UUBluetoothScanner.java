@@ -50,7 +50,7 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
     {
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
-        scanThread = new UUWorkerThread();
+        scanThread = new UUWorkerThread("UUBluetoothScanner");
     }
 
     public <T extends UUPeripheral> void startScanning(
@@ -67,7 +67,7 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
                 scanFilters = filters;
                 peripheralFactory = factory;
                 isScanning = true;
-                ignoredDevices.clear();
+                clearIgnoredDevices();
                 listener = delegate;
 
                 if (peripheralFactory == null)
@@ -85,6 +85,11 @@ public class UUBluetoothScanner implements BluetoothAdapter.LeScanCallback
                 }
             }
         });
+    }
+
+    private synchronized void clearIgnoredDevices()
+    {
+        ignoredDevices.clear();
     }
 
     public boolean isScanning()

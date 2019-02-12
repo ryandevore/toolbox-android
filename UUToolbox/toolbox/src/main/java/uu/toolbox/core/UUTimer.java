@@ -49,7 +49,7 @@ public class UUTimer
 
     private static final @NonNull HashMap<String, UUTimer> theActiveTimers = new HashMap<>();
 
-    private static UUWorkerThread workerThread = new UUWorkerThread();
+    private static UUWorkerThread workerThread = new UUWorkerThread("UUTimer");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Data Accessors
@@ -299,7 +299,10 @@ public class UUTimer
      */
     public static @Nullable UUTimer findActiveTimer(final @NonNull String timerId)
     {
-        return theActiveTimers.get(timerId);
+        synchronized (theActiveTimers)
+        {
+            return theActiveTimers.get(timerId);
+        }
     }
 
     /**

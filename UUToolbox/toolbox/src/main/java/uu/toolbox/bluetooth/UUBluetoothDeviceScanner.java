@@ -40,7 +40,7 @@ abstract public class UUBluetoothDeviceScanner
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
 
-        scanThread = new UUWorkerThread();
+        scanThread = new UUWorkerThread("UUBluetoothDeviceScanner");
     }
 
     public void startScanning(
@@ -53,14 +53,18 @@ abstract public class UUBluetoothDeviceScanner
             public void run()
             {
                 scanFilters = filters;
-                //deviceFactory = factory;
                 isScanning = true;
-                ignoredDevices.clear();
+                clearIgnoredDevices();
                 listener = delegate;
 
                 internalStartScanning();
             }
         });
+    }
+
+    private synchronized void clearIgnoredDevices()
+    {
+        ignoredDevices.clear();
     }
 
     protected abstract void internalStartScanning();
